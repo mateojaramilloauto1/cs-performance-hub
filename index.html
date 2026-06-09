@@ -683,6 +683,7 @@ tr:hover td{background:#f9fafb !important;}
   <button class="tab-btn" onclick="showTab('p5')">Priority Actions</button>
   <button class="tab-btn" onclick="showTab('p6')">KPI Definitions</button>
   <button class="tab-btn" onclick="showTab('p7')">Changelog</button>
+  <button class="tab-btn" onclick="showTab('p8')">Branch Operations</button>
   <button class="update-nav-btn" onclick="toggleUpdatePanel()">↻ Update Data</button>
 </div>
 <div class="data-status-bar" id="data_status_bar" style="font-size:13px;">
@@ -780,6 +781,7 @@ tr:hover td{background:#f9fafb !important;}
     <h3>Branch Utilisation — Trend per Market</h3>
     <div id="p1_util_empty" style="display:none;color:#94a3b8;font-size:13px;padding:12px 0">No data available.</div>
     <canvas id="p1_util_chart"></canvas>
+    <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty.</p>
   </div>
   <div class="chart-row">
     <div class="chart-box"><h3>% BC Tasks Done — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
@@ -1610,12 +1612,18 @@ const UTIL_COUNTRY_WEEKLY = {
   NL:[59.5,60.9,65.4,60.5,63.8,57.5], PT:[64.7,54.4,49.9,49.8,56.0,59.6],
   SE:[46.9,37.9,43.5,39.5,37.9,42.3]
 };
-// Monthly aggregation: May 2026 = avg(CW18-CW22), Jun 2026 = CW23
-const UTIL_MONTHLY_LABELS = ['May 2026','Jun 2026'];
-function _utilMonthly(weekly) {
-  const may = weekly.slice(0,5).reduce((a,b)=>a+b,0)/5;
-  return [+may.toFixed(2), weekly[5]];
-}
+// Period-to-index map for CW18–CW23 data (May–Jun 2026)
+const CW18_WEEK_MAP = {'2026_18':0,'2026_19':1,'2026_20':2,'2026_21':3,'2026_22':4,'2026_23':5};
+
+// Appointment Conversion data — source: Tableau Purchasing Report 2.1, Cockpit, CW18-CW23
+const APPTCONV_EU_WEEKLY = [53.78, 53.84, 53.14, 53.56, 53.69, 50.59]; // CW18–CW23
+const APPTCONV_COUNTRY_WEEKLY = {
+  AT:[60.36,59.53,55.36,58.65,62.41,58.43], BE:[55.96,60.48,57.85,58.26,58.83,52.30],
+  DE:[59.55,59.71,58.66,59.53,60.28,54.48], ES:[47.98,48.33,48.16,47.25,48.16,46.58],
+  FR:[50.30,49.34,50.86,49.41,51.62,48.04], IT:[46.32,46.20,46.71,47.61,46.01,44.99],
+  NL:[64.31,61.67,60.48,60.67,61.33,62.02], PT:[49.39,44.20,48.84,46.70,46.49,46.88],
+  SE:[53.29,51.53,50.10,56.64,49.75,46.00]
+};
 
 // ========== PUBLIC HOLIDAYS (national, 2025-01-01 – 2026-05-31) ==========
 // Source: officeholidays.com per country. Easter 2025 = Apr 20, Easter 2026 = Apr 5.
@@ -1874,6 +1882,7 @@ function rerenderActivePage() {
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
   else if (id==='p5') renderP5();
+  else if (id==='p8') renderP8();
 }
 
 // ---- Chart registry (destroy before recreate) ----
@@ -4254,13 +4263,14 @@ function showTab(id) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    if (['p1','p2','p3','p4','p5','p6','p7'][i] === id) b.classList.add('active');
+    if (['p1','p2','p3','p4','p5','p6','p7','p8'][i] === id) b.classList.add('active');
   });
   if (id==='p1') renderP1();
   else if (id==='p2') renderP2();
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
   else if (id==='p5') renderP5();
+  else if (id==='p8') renderP8();
   // p6, p7 are static — no render needed
 }
 
@@ -4457,6 +4467,8 @@ function updateP1ChartVisibility() {
   // Cancelled chart: always rebuild — stacked bars depend on current country selection
   buildP1CancelledChart();
   updateVolChart();
+  // Util chart: rebuild since it reads P1_IS_ALL / P1_SELECTED directly
+  renderP1UtilChart();
 }
 
 function buildP1ToggleBar() {
@@ -4959,58 +4971,129 @@ function renderP1() {
   renderP1UtilChart();
 }
 
-function renderP1UtilChart() {
-  const ptype = GLOBAL_PTYPE;
-  const labels = ptype === 'week' ? UTIL_WEEKLY_LABELS : UTIL_MONTHLY_LABELS;
-  const getData = weekly => ptype === 'week' ? weekly : _utilMonthly(weekly);
-  const euData = getData(UTIL_EU_WEEKLY);
+// Converts a period name to a value from a 6-element CW18-CW23 array (or null if out of range)
+function _cw18Val(arr, period, ptype) {
+  if (ptype === 'week') {
+    const idx = CW18_WEEK_MAP[period];
+    return idx !== undefined ? arr[idx] : null;
+  }
+  if (period === '2026_05') return +(arr.slice(0,5).reduce((a,b)=>a+b,0)/5).toFixed(2);
+  if (period === '2026_06') return arr[5];
+  return null;
+}
 
-  const isAllMode = GLOBAL_COUNTRY_SET.size === 0;
-  const selectedCountries = isAllMode ? COUNTRIES : [...GLOBAL_COUNTRY_SET].filter(c => COUNTRIES.includes(c));
-
+function _renderTrendChart(canvasId, ptype, euArr, countryMap, yMax) {
+  const periods = getPeriods(ptype);
   const datasets = [];
-
-  // EU All line (dashed), shown in all-countries mode or when GLOBAL_SHOW_EU_AVG is on
-  if (isAllMode || GLOBAL_SHOW_EU_AVG) {
+  if (P1_IS_ALL || P1_SELECTED.has('EU_AVG')) {
     datasets.push({
-      label: 'EU All', data: euData,
-      borderColor: '#6b7280', borderWidth: 2.5, borderDash: [5,3],
-      backgroundColor: 'transparent', tension: 0.3, pointRadius: 3,
-      fill: false
+      label: 'EU Avg', data: periods.map(p => _cw18Val(euArr, p, ptype)),
+      borderColor: '#6366f1', borderWidth: 2.5, borderDash: [6,3],
+      tension: 0.3, pointRadius: 3, fill: false,
+      datalabels: { display: false }
     });
   }
-
-  selectedCountries.forEach(c => {
-    if (!UTIL_COUNTRY_WEEKLY[c]) return;
+  COUNTRIES.forEach(c => {
+    if (!countryMap[c]) return;
     datasets.push({
-      label: c, data: getData(UTIL_COUNTRY_WEEKLY[c]),
-      borderColor: COUNTRY_COLORS[c], borderWidth: 2,
-      backgroundColor: 'transparent', tension: 0.3, pointRadius: 3,
-      fill: false
+      label: c, data: periods.map(p => _cw18Val(countryMap[c], p, ptype)),
+      borderColor: COUNTRY_COLORS[c], borderWidth: 1.5,
+      tension: 0.3, pointRadius: 2, fill: false,
+      hidden: !(P1_IS_ALL || P1_SELECTED.has(c)),
+      datalabels: { display: false }
     });
   });
-
-  destroyChart('p1_util_chart');
-  const canvas = document.getElementById('p1_util_chart');
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
   if (!canvas) return;
-  CHARTS['p1_util_chart'] = new Chart(canvas, {
-    type: 'line',
-    data: { labels, datasets },
+  CHARTS[canvasId] = new Chart(canvas, {
+    type: 'line', plugins: [ChartDataLabels],
+    data: { labels: periods, datasets },
     options: {
       responsive: true, maintainAspectRatio: true,
       plugins: {
         legend: { display: false },
         datalabels: { display: false },
-        tooltip: {
-          mode: 'index', intersect: false,
+        tooltip: { mode: 'index', intersect: false,
           callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : 'n/a'}` }
         }
       },
-      scales: {
-        y: { min: 0, max: 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } }
-      }
+      scales: { y: { min: 0, max: yMax || 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } } }
     }
   });
+}
+
+function renderP1UtilChart() {
+  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_COUNTRY_WEEKLY, 100);
+}
+
+// ========== PAGE 8 — Branch Operations ==========
+function renderP8() {
+  renderP8KpiCards();
+  _renderTrendChart('p8_ac_chart', GLOBAL_PTYPE, APPTCONV_EU_WEEKLY, APPTCONV_COUNTRY_WEEKLY, 100);
+  _renderTrendChart('p8_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_COUNTRY_WEEKLY, 100);
+}
+
+function renderP8KpiCards() {
+  const ptype = GLOBAL_PTYPE;
+  const container = document.getElementById('p8_kpi_cards');
+  if (!container) return;
+  const periods = getPeriods(ptype);
+  const latestP = periods[periods.length - 1];
+  const prevP = periods.length > 1 ? periods[periods.length - 2] : null;
+
+  const fmtDelta = (cur, prev) => {
+    if (cur == null || prev == null) return '';
+    const d = +(cur - prev).toFixed(1);
+    const cls = d >= 0 ? 'delta-pos' : 'delta-neg';
+    return `<div class="delta ${cls}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)} pp vs prev</div>`;
+  };
+
+  // Find last period with actual AC data to show as "latest"
+  const lastDataP = [...periods].reverse().find(p => _cw18Val(APPTCONV_EU_WEEKLY, p, ptype) != null) || latestP;
+  const prevDataP = (() => { const i = periods.indexOf(lastDataP); return i > 0 ? periods[i-1] : null; })();
+
+  // Which countries to show
+  const countries = P1_IS_ALL ? COUNTRIES : [...P1_SELECTED].filter(c => COUNTRIES.includes(c));
+
+  const cardHtml = (label, cur, prev) => {
+    if (cur == null) return '';
+    return `<div class="kpi-card">
+      <div class="label">${label}</div>
+      <div class="value">${cur.toFixed(1)}%</div>
+      <div class="sub">${ptype === 'week' ? lastDataP.replace('2026_','CW') : lastDataP.replace('2026_0','May ').replace('2026_','Jun ')}</div>
+      ${fmtDelta(cur, prevDataP ? _cw18Val(APPTCONV_EU_WEEKLY, prevDataP, ptype) !== null ? prev : null : null)}
+    </div>`;
+  };
+
+  let html = '';
+  const euCur = _cw18Val(APPTCONV_EU_WEEKLY, lastDataP, ptype);
+  const euPrev = prevDataP ? _cw18Val(APPTCONV_EU_WEEKLY, prevDataP, ptype) : null;
+  if (euCur != null) {
+    const d = euPrev != null ? +(euCur - euPrev).toFixed(1) : null;
+    const cls = d != null ? (d >= 0 ? 'delta-pos' : 'delta-neg') : '';
+    html += `<div class="kpi-card kpi-card-primary">
+      <div class="label">EU Avg — Appt Conversion</div>
+      <div class="value">${euCur.toFixed(1)}%</div>
+      <div class="sub">${ptype === 'week' ? lastDataP.replace('2026_','CW') : (lastDataP === '2026_05' ? 'May 2026' : 'Jun 2026')}</div>
+      ${d != null ? `<div class="delta ${cls}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)} pp vs prev</div>` : ''}
+    </div>`;
+  }
+  countries.forEach(c => {
+    if (!APPTCONV_COUNTRY_WEEKLY[c]) return;
+    const cur = _cw18Val(APPTCONV_COUNTRY_WEEKLY[c], lastDataP, ptype);
+    const prev = prevDataP ? _cw18Val(APPTCONV_COUNTRY_WEEKLY[c], prevDataP, ptype) : null;
+    if (cur == null) return;
+    const d = prev != null ? +(cur - prev).toFixed(1) : null;
+    const cls = d != null ? (d >= 0 ? 'delta-pos' : 'delta-neg') : '';
+    html += `<div class="kpi-card">
+      <div class="label">${c} — Appt Conversion</div>
+      <div class="value">${cur.toFixed(1)}%</div>
+      <div class="sub">${ptype === 'week' ? lastDataP.replace('2026_','CW') : (lastDataP === '2026_05' ? 'May 2026' : 'Jun 2026')}</div>
+      ${d != null ? `<div class="delta ${cls}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)} pp vs prev</div>` : ''}
+    </div>`;
+  });
+  container.innerHTML = html || '<div style="color:#94a3b8;font-size:13px;padding:12px 0">No data for selected period.</div>';
 }
 
 function buildP1InsightCards(ptype, period, compMode, euMode, euSRcur, euSRprev) {
@@ -7194,6 +7277,27 @@ document.addEventListener('DOMContentLoaded', () => {
       </ul>
     </div>
 
+  </div>
+</div>
+
+<div id="p8" class="page">
+  <div class="section-title" style="margin-bottom:16px">Branch Operations</div>
+
+  <!-- KPI cards: appointment conversion per country -->
+  <div class="kpi-row" id="p8_kpi_cards"></div>
+
+  <!-- Appointment Conversion trend chart -->
+  <div class="chart-box" style="margin-bottom:16px">
+    <h3>Appointment Conversion — Trend per Market</h3>
+    <canvas id="p8_ac_chart"></canvas>
+    <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty. Source: Tableau Purchasing Report 2.1.</p>
+  </div>
+
+  <!-- Branch Utilisation trend chart -->
+  <div class="chart-box" style="margin-bottom:16px">
+    <h3>Branch Utilisation — Trend per Market</h3>
+    <canvas id="p8_util_chart"></canvas>
+    <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty. Source: Tableau Purchasing Report 2.1.</p>
   </div>
 </div>
 
