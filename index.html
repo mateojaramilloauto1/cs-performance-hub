@@ -791,7 +791,12 @@ tr:hover td{background:#f9fafb !important;}
       <h3 id="p1_vol_title">Booking Confirmation Task Volume — EU Aggregate</h3>
       <canvas id="p1_vol_chart"></canvas>
     </div>
-    <div class="chart-box" style="margin-bottom:0;visibility:hidden"></div>
+    <div class="chart-box" style="margin-bottom:0">
+      <h3>Lead Share by Cohort — EU</h3>
+      <div id="p1_ls_legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:8px;font-size:11px;color:#374151"></div>
+      <canvas id="p1_ls_chart"></canvas>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px">Source: CJ Dashboard · Lead Share By view · EU aggregate · CW06–CW23</p>
+    </div>
   </div>
 
 
@@ -1548,6 +1553,40 @@ const COUNTRY_COLORS = {
   FR:'#84CC16', IT:'#06B6D4', NL:'#F59E0B', PT:'#EF4444', SE:'#10B981'
 };
 const COUNTRIES = ['AT','BE','DE','ES','FR','IT','NL','PT','SE'];
+
+// Lead Share by Cohort — source: Tableau CJ Dashboard, LEAD SHARE BY view (EU aggregate, all countries)
+// Array order per period: [Dealer_Now, Private_Now, Dealer_4W, Private_4W, Dealer_3M, Private_3M, Not_Planned]
+const LEAD_SHARE_SEGMENTS = ['Dealer Now','Private Now','Dealer 4W','Private 4W','Dealer 3M','Private 3M','Not Planned'];
+const LEAD_SHARE_COLORS   = ['#0d9488','#2dd4bf','#f97316','#fbbf24','#3b82f6','#818cf8','#94a3b8'];
+const LEAD_SHARE_WEEKLY = {
+  '2026_06':[36.54,19.06,19.96,11.46,7.16,4.39,1.45],
+  '2026_07':[36.49,19.07,19.98,11.37,7.15,4.40,1.53],
+  '2026_08':[36.65,19.03,19.95,11.33,7.12,4.40,1.52],
+  '2026_09':[37.19,19.09,19.76,11.30,6.88,4.29,1.50],
+  '2026_10':[37.14,19.15,20.20,11.47,6.55,4.06,1.44],
+  '2026_11':[37.11,18.93,20.44,11.36,6.72,4.09,1.35],
+  '2026_12':[37.25,19.17,20.06,11.46,6.59,4.10,1.38],
+  '2026_13':[37.18,19.12,19.95,11.59,6.67,4.08,1.41],
+  '2026_14':[36.15,18.98,20.45,11.60,6.98,4.31,1.53],
+  '2026_15':[36.78,18.51,20.47,11.67,6.88,4.24,1.45],
+  '2026_16':[37.84,19.04,19.82,11.22,6.62,4.05,1.40],
+  '2026_17':[37.98,19.19,19.73,11.15,6.57,3.95,1.42],
+  '2026_18':[37.48,19.26,19.89,11.21,6.61,4.05,1.50],
+  '2026_19':[38.67,19.35,19.47,10.99,6.22,3.85,1.46],
+  '2026_20':[38.88,19.39,19.54,11.00,6.02,3.70,1.47],
+  '2026_21':[40.32,19.59,19.08,10.37,5.67,3.55,1.42],
+  '2026_22':[40.48,19.37,19.42,10.35,5.61,3.44,1.34],
+  '2026_23':[40.57,19.31,19.47,10.11,5.68,3.46,1.40],
+};
+// Monthly: avg of constituent CWs. Jan has no data.
+const LEAD_SHARE_MONTHLY = {
+  '2026_01':null,
+  '2026_02':[36.56,19.05,19.96,11.39,7.14,4.40,1.50],
+  '2026_03':[37.17,19.09,20.08,11.44,6.68,4.12,1.42],
+  '2026_04':[37.19,18.93,20.12,11.41,6.76,4.14,1.45],
+  '2026_05':[38.84,19.40,19.50,10.89,6.13,3.79,1.46],
+  '2026_06':[40.53,19.34,19.44,10.23,5.64,3.45,1.37],
+};
 
 // Branch Utilisation data — source: Tableau Purchasing Report 2.1, Cockpit view, CW18-CW24 (2026)
 const UTIL_WEEKLY_LABELS = ['CW18','CW19','CW20','CW21','CW22','CW23','CW24'];
@@ -4949,6 +4988,7 @@ function renderP1() {
   // Apply country selection visibility AFTER charts are fully built
   updateP1ChartVisibility();
   renderP1UtilChart();
+  renderP1LeadShareChart();
 }
 
 // Reusable Chart.js plugin that draws ▲/▼ delta badges between consecutive non-null points on a trend line
@@ -5161,6 +5201,59 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
           title: { display: true, text: '# Eval Slots', font: {size:11}, color: '#94a3b8' },
           ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, color: '#94a3b8' },
           grid: { drawOnChartArea: false }
+        }
+      }
+    }
+  });
+}
+
+function renderP1LeadShareChart() {
+  const ptype = GLOBAL_PTYPE;
+  const periods = getPeriods(ptype);
+  const lsData = ptype === 'week' ? LEAD_SHARE_WEEKLY : LEAD_SHARE_MONTHLY;
+
+  const legend = document.getElementById('p1_ls_legend');
+  if (legend && !legend.children.length) {
+    legend.innerHTML = LEAD_SHARE_SEGMENTS.map((s, i) =>
+      `<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:${LEAD_SHARE_COLORS[i]};flex-shrink:0"></span>${s}</span>`
+    ).join('');
+  }
+
+  const datasets = LEAD_SHARE_SEGMENTS.map((label, i) => ({
+    label,
+    data: periods.map(p => (lsData[p] ? +lsData[p][i].toFixed(1) : null)),
+    backgroundColor: LEAD_SHARE_COLORS[i],
+    borderWidth: 0,
+    datalabels: { display: false },
+  }));
+
+  destroyChart('p1_ls_chart');
+  CHARTS['p1_ls_chart'] = new Chart(document.getElementById('p1_ls_chart'), {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: { labels: periods, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: false },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1) + '%' : 'n/a'}`
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(0,0,0,.05)' } },
+        y: {
+          stacked: true,
+          min: 0,
+          max: 100,
+          ticks: { callback: v => v + '%' },
+          grid: { color: 'rgba(0,0,0,.05)' }
         }
       }
     }
@@ -7224,6 +7317,27 @@ document.addEventListener('DOMContentLoaded', () => {
         <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Branch Utilisation</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
         <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Conversion</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
         <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Cancellation</strong> — weekly: CW18–CW23; monthly: Jan–Jun 2026. Source: Tableau</li>
+      </ul>
+    </div>
+
+    <div class="cl-version">
+      <div class="cl-version-header">
+        <span class="cl-version-title">v17 — Lead Share by Cohort Chart</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-new">NEW</span> Lead Share by Cohort stacked bar chart added to Executive Overview — placed next to BC Task Volume chart; shows breakdown across 7 cohorts (Dealer Now, Private Now, Dealer 4W, Private 4W, Dealer 3M, Private 3M, Not Planned)</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Delta badges now fall back to EU aggregate data when multiple countries or all-countries mode is selected — badges were previously hidden in those modes</li>
+      </ul>
+    </div>
+
+    <div class="cl-data-block">
+      <div class="cl-version-header">
+        <span class="cl-version-title">DATA UPDATE — Lead Share by Cohort</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Lead Share by Cohort</strong> — weekly: CW06–CW23 (EU aggregate); monthly: Feb–Jun 2026 (Jan excluded — no data). Source: Tableau CJ Dashboard · Lead Share By view</li>
       </ul>
     </div>
 
