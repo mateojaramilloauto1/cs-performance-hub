@@ -35,7 +35,7 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 .delta-neg{color:#b91c1c}
 .delta-neu{color:#64748b}
 .chart-box{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:16px}
-.chart-box h3{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px}
+.chart-box h3{font-size:15px;font-weight:600;color:#374151;margin-bottom:12px}
 .chart-row{display:flex;gap:16px;margin-bottom:16px}
 .chart-row .chart-box{flex:1;min-width:0}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -4702,10 +4702,10 @@ function renderP1() {
   const _p1PrimaryCountry = (!P1_IS_ALL && P1_SELECTED.size === 1) ? [...P1_SELECTED][0] : null;
   const primarySRData = _p1PrimaryCountry
     ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; })
-    : euSRData;
+    : [];
   const primaryDoneData = _p1PrimaryCountry
     ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.bc_done_rate != null) ? +(m.bc_done_rate*100).toFixed(2) : null; })
-    : euDoneData;
+    : [];
 
   const euDataset = (data) => ({
     label: 'EU Avg', data,
@@ -4953,6 +4953,7 @@ function makeDeltaPlugin(canvasId, primaryData) {
   return {
     id: 'dpl_' + canvasId,
     afterDraw(chart) {
+      if (!primaryData || primaryData.length === 0) return;
       const { ctx, scales } = chart;
       if (!scales.x || !scales.y) return;
       ctx.save();
@@ -4967,21 +4968,19 @@ function makeDeltaPlugin(canvasId, primaryData) {
         const arrow = delta >= 0 ? '▲' : '▼';
         const sign  = delta >= 0 ? '+' : '';
         const color = delta >= 0 ? '#16a34a' : '#dc2626';
-        const text  = `${arrow} ${sign}${Math.abs(delta).toFixed(1)}pp`;
-        const x0 = scales.x.getPixelForTick(i - 1);
-        const x1 = scales.x.getPixelForTick(i);
-        const xMid = (x0 + x1) / 2;
+        const text  = `${arrow} ${sign}${Math.abs(delta).toFixed(1)}%`;
+        const xPos = scales.x.getPixelForTick(i);   // aligned to current period column
         const yA = scales.y.getPixelForValue(prev);
         const yB = scales.y.getPixelForValue(curr);
         const yCenter = (yA + yB) / 2 + 16;
         const w = ctx.measureText(text).width;
         ctx.fillStyle = 'rgba(255,255,255,0.88)';
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(xMid - w/2 - 3, yCenter - 8, w + 6, 16, 3);
-        else ctx.rect(xMid - w/2 - 3, yCenter - 8, w + 6, 16);
+        if (ctx.roundRect) ctx.roundRect(xPos - w/2 - 3, yCenter - 8, w + 6, 16, 3);
+        else ctx.rect(xPos - w/2 - 3, yCenter - 8, w + 6, 16);
         ctx.fill();
         ctx.fillStyle = color;
-        ctx.fillText(text, xMid, yCenter);
+        ctx.fillText(text, xPos, yCenter);
       }
       ctx.restore();
     }
@@ -5026,13 +5025,12 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
   const y2SuggestedMax = maxStackedSlots > 0 ? maxStackedSlots * (isSingleSel ? 2.5 : 1.55) : undefined;
 
   // Primary utilisation data for period-over-period delta annotations
-  const primaryDataForDelta = periods.map(p => {
-    if (isSingleSel && sel.selected.size === 1) {
-      const sc = [...sel.selected][0];
-      return _getVal(countryWeekly[sc], countryMonthly ? countryMonthly[sc] : null, p, ptype);
-    }
-    return _getVal(euWeekly, euMonthly, p, ptype);
-  });
+  const primaryDataForDelta = (isSingleSel && sel.selected.size === 1)
+    ? periods.map(p => {
+        const sc = [...sel.selected][0];
+        return _getVal(countryWeekly[sc], countryMonthly ? countryMonthly[sc] : null, p, ptype);
+      })
+    : [];
 
   const deltaPlugin = makeDeltaPlugin(canvasId, primaryDataForDelta);
 
@@ -6400,7 +6398,7 @@ function renderP4() {
   });
   const p4SrDatasets = P4_SHOW_EU_AVG ? [p4EuDataset, ...p4CtyDatasets] : [...p4CtyDatasets];
   const p4PrimaryDeltaData = isEU
-    ? euSRData4
+    ? []
     : periods.map(p => { const m = countryMetrics(ptype, p, country, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; });
   // Holiday footer: show selected country's holidays when a country is active, or all when EU mode
   const p4HolidayCountry = isEU ? 'EU' : country;
