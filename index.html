@@ -4963,8 +4963,8 @@ function makeDeltaPlugin(canvasId, primaryData) {
       for (let i = 1; i < primaryData.length; i++) {
         const prev = primaryData[i - 1];
         const curr = primaryData[i];
-        if (prev == null || curr == null) continue;
-        const delta = +(curr - prev).toFixed(1);
+        if (prev == null || curr == null || prev === 0) continue;
+        const delta = +((curr - prev) / prev * 100).toFixed(1);
         const arrow = delta >= 0 ? '▲' : '▼';
         const sign  = delta >= 0 ? '+' : '';
         const color = delta >= 0 ? '#16a34a' : '#dc2626';
