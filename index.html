@@ -4702,10 +4702,10 @@ function renderP1() {
   const _p1PrimaryCountry = (!P1_IS_ALL && P1_SELECTED.size === 1) ? [...P1_SELECTED][0] : null;
   const primarySRData = _p1PrimaryCountry
     ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; })
-    : [];
+    : euSRData;
   const primaryDoneData = _p1PrimaryCountry
     ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.bc_done_rate != null) ? +(m.bc_done_rate*100).toFixed(2) : null; })
-    : [];
+    : euDoneData;
 
   const euDataset = (data) => ({
     label: 'EU Avg', data,
@@ -5030,7 +5030,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
         const sc = [...sel.selected][0];
         return _getVal(countryWeekly[sc], countryMonthly ? countryMonthly[sc] : null, p, ptype);
       })
-    : [];
+    : periods.map(p => _getVal(euWeekly, euMonthly, p, ptype));
 
   const deltaPlugin = makeDeltaPlugin(canvasId, primaryDataForDelta);
 
@@ -6398,7 +6398,7 @@ function renderP4() {
   });
   const p4SrDatasets = P4_SHOW_EU_AVG ? [p4EuDataset, ...p4CtyDatasets] : [...p4CtyDatasets];
   const p4PrimaryDeltaData = isEU
-    ? []
+    ? euSRData4
     : periods.map(p => { const m = countryMetrics(ptype, p, country, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; });
   // Holiday footer: show selected country's holidays when a country is active, or all when EU mode
   const p4HolidayCountry = isEU ? 'EU' : country;
