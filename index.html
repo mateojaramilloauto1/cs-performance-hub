@@ -711,7 +711,8 @@ tr:hover td{background:#f9fafb !important;}
   <button class="gcb-btn window-btn" id="gwb_8"  onclick="setGlobalWindow(8)">8</button>
   <button class="gcb-btn window-btn" id="gwb_10" onclick="setGlobalWindow(10)">10</button>
   <button class="gcb-btn window-btn" id="gwb_12" onclick="setGlobalWindow(12)">12</button>
-  <button class="gcb-btn window-btn active" id="gwb_all" onclick="setGlobalWindow(null)">All</button>
+  <button class="gcb-btn window-btn" id="gwb_all" onclick="setGlobalWindow(null)">All</button>
+  <span id="window_label" style="margin-left:10px;font-size:12px;font-weight:600;color:#1e293b;white-space:nowrap;opacity:0.7">Last 6 weeks</span>
 </div>
 </div><!-- end #sticky-header -->
 <div class="help-panel" id="help_panel">
@@ -1800,13 +1801,13 @@ let GLOBAL_PTYPE = 'week';          // 'week' | 'month' — drives all tabs
 let GLOBAL_COUNTRY = 'EU';          // primary ISO code or 'EU' — for single-country pages (P2, P3, P4)
 let GLOBAL_COUNTRY_SET = new Set(); // multi-selection for P1 (empty = All/EU, max 2 entries)
 let GLOBAL_SHOW_EU_AVG = false;      // whether EU Avg line is shown when 1 country is selected on P1
-let GLOBAL_WINDOW = null;           // null = all periods, or integer = last N periods
+let GLOBAL_WINDOW = 6;              // null = all periods, or integer = last N periods
 
 function setGlobalPtype(v) {
   GLOBAL_PTYPE = v;
-  // Repopulate period selects that depend on ptype
   populatePeriodSelect('p3_period', v, true);
   populatePeriodSelect('p4_period', v, true);
+  updateWindowBtnStyles();
   rerenderActivePage();
 }
 
@@ -1818,10 +1819,15 @@ function setGlobalWindow(n) {
 
 function updateWindowBtnStyles() {
   document.querySelectorAll('.window-btn').forEach(btn => {
-    const id = btn.id; // e.g. gwb_4, gwb_all
+    const id = btn.id;
     const val = id === 'gwb_all' ? null : parseInt(id.replace('gwb_', ''), 10);
     btn.classList.toggle('active', val === GLOBAL_WINDOW);
   });
+  const lbl = document.getElementById('window_label');
+  if (lbl) {
+    const unit = GLOBAL_PTYPE === 'week' ? 'weeks' : 'months';
+    lbl.textContent = GLOBAL_WINDOW ? `Last ${GLOBAL_WINDOW} ${unit}` : `All ${unit}`;
+  }
 }
 
 function setGlobalCountry(c) {
@@ -4692,6 +4698,15 @@ function renderP1() {
     euDoneData.push((m && m.bc_done_rate != null) ? +(m.bc_done_rate*100).toFixed(2) : null);
   });
 
+  // Primary data for delta badges: single-country selection uses that country; otherwise EU avg
+  const _p1PrimaryCountry = (!P1_IS_ALL && P1_SELECTED.size === 1) ? [...P1_SELECTED][0] : null;
+  const primarySRData = _p1PrimaryCountry
+    ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; })
+    : euSRData;
+  const primaryDoneData = _p1PrimaryCountry
+    ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.bc_done_rate != null) ? +(m.bc_done_rate*100).toFixed(2) : null; })
+    : euDoneData;
+
   const euDataset = (data) => ({
     label: 'EU Avg', data,
     borderColor: '#6366f1', borderWidth: 2.5, borderDash: [6,3],
@@ -4813,7 +4828,7 @@ function renderP1() {
 
   destroyChart('p1_sr_chart');
   CHARTS['p1_sr_chart'] = new Chart(document.getElementById('p1_sr_chart'), {
-    type: 'line', plugins: [ChartDataLabels],
+    type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p1_sr_chart', primarySRData)],
     data: { labels: periods, datasets: [...apptBarDatasets, ...purchaseBarDatasets, euDataset(euSRData), ...countryDatasets('sr')] },
     options: {
       responsive: true, maintainAspectRatio: true,
@@ -4846,7 +4861,7 @@ function renderP1() {
 
   destroyChart('p1_done_chart');
   CHARTS['p1_done_chart'] = new Chart(document.getElementById('p1_done_chart'), {
-    type: 'line', plugins: [ChartDataLabels],
+    type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p1_done_chart', primaryDoneData)],
     data: { labels: periods, datasets: [
       euDataset(euDoneData),
       ...countryDatasets('bc_done_rate'),
@@ -4933,6 +4948,46 @@ function renderP1() {
   renderP1UtilChart();
 }
 
+// Reusable Chart.js plugin that draws ▲/▼ delta badges between consecutive non-null points on a trend line
+function makeDeltaPlugin(canvasId, primaryData) {
+  return {
+    id: 'dpl_' + canvasId,
+    afterDraw(chart) {
+      const { ctx, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      ctx.save();
+      ctx.font = '600 13px system-ui,-apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 1; i < primaryData.length; i++) {
+        const prev = primaryData[i - 1];
+        const curr = primaryData[i];
+        if (prev == null || curr == null) continue;
+        const delta = +(curr - prev).toFixed(1);
+        const arrow = delta >= 0 ? '▲' : '▼';
+        const sign  = delta >= 0 ? '+' : '';
+        const color = delta >= 0 ? '#16a34a' : '#dc2626';
+        const text  = `${arrow} ${sign}${Math.abs(delta).toFixed(1)}pp`;
+        const x0 = scales.x.getPixelForTick(i - 1);
+        const x1 = scales.x.getPixelForTick(i);
+        const xMid = (x0 + x1) / 2;
+        const yA = scales.y.getPixelForValue(prev);
+        const yB = scales.y.getPixelForValue(curr);
+        const yCenter = (yA + yB) / 2 + 16;
+        const w = ctx.measureText(text).width;
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(xMid - w/2 - 3, yCenter - 8, w + 6, 16, 3);
+        else ctx.rect(xMid - w/2 - 3, yCenter - 8, w + 6, 16);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.fillText(text, xMid, yCenter);
+      }
+      ctx.restore();
+    }
+  };
+}
+
 // Converts a period name to a value from weekly/monthly arrays (null if no data for that period)
 function _getVal(weeklyArr, monthlyArr, period, ptype) {
   if (ptype === 'week') {
@@ -4979,47 +5034,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
     return _getVal(euWeekly, euMonthly, p, ptype);
   });
 
-  // Plugin: draws ▲/▼ % change badges between consecutive x-axis ticks
-  const deltaPlugin = {
-    id: 'dpl_' + canvasId,
-    afterDraw(chart) {
-      const { ctx, chartArea, scales } = chart;
-      if (!scales.x) return;
-      ctx.save();
-      ctx.font = '600 12px system-ui,-apple-system,sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      for (let i = 1; i < primaryDataForDelta.length; i++) {
-        const prev = primaryDataForDelta[i - 1];
-        const curr = primaryDataForDelta[i];
-        if (prev == null || curr == null) continue;
-        const delta = +(curr - prev).toFixed(1);
-        const arrow = delta >= 0 ? '▲' : '▼';
-        const sign = delta >= 0 ? '+' : '';
-        const color = delta >= 0 ? '#16a34a' : '#dc2626';
-        const text = `${arrow} ${sign}${Math.abs(delta).toFixed(1)}pp`;
-        const x0 = scales.x.getPixelForTick(i - 1);
-        const x1 = scales.x.getPixelForTick(i);
-        const xMid = (x0 + x1) / 2;
-        // Position badge just below the midpoint of the two adjacent trend data points
-        const yA = scales.y.getPixelForValue(prev);
-        const yB = scales.y.getPixelForValue(curr);
-        const yCenter = (yA + yB) / 2 + 14;
-        const w = ctx.measureText(text).width;
-        ctx.fillStyle = 'rgba(255,255,255,0.88)';
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(xMid - w / 2 - 3, yCenter - 7, w + 6, 14, 3);
-        } else {
-          ctx.rect(xMid - w / 2 - 3, yCenter - 7, w + 6, 14);
-        }
-        ctx.fill();
-        ctx.fillStyle = color;
-        ctx.fillText(text, xMid, yCenter);
-      }
-      ctx.restore();
-    }
-  };
+  const deltaPlugin = makeDeltaPlugin(canvasId, primaryDataForDelta);
 
   const datasets = [];
 
@@ -5407,9 +5422,14 @@ function renderP2() {
     if (allNull(euData)) showChartEmpty(canvasId, 'No data available for this period');
     else hideChartEmpty(canvasId);
 
+    const p2DeltaData = periods.map(p => {
+      const m = countryMetrics(ptype, p, country, euMode);
+      return (m && m[metricKey] != null) ? +(m[metricKey]*100).toFixed(2) : null;
+    });
+
     destroyChart(canvasId);
     CHARTS[canvasId] = new Chart(document.getElementById(canvasId), {
-      type: 'line', plugins: [ChartDataLabels],
+      type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin(canvasId, p2DeltaData)],
       data: { labels: periods, datasets },
       options: {
         responsive: true, maintainAspectRatio: true,
@@ -6379,6 +6399,9 @@ function renderP4() {
     };
   });
   const p4SrDatasets = P4_SHOW_EU_AVG ? [p4EuDataset, ...p4CtyDatasets] : [...p4CtyDatasets];
+  const p4PrimaryDeltaData = isEU
+    ? euSRData4
+    : periods.map(p => { const m = countryMetrics(ptype, p, country, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; });
   // Holiday footer: show selected country's holidays when a country is active, or all when EU mode
   const p4HolidayCountry = isEU ? 'EU' : country;
   const fmtAppt4 = v => v == null ? '' : v >= 1000 ? (v/1000).toFixed(1)+'k' : String(v);
@@ -6450,7 +6473,7 @@ function renderP4() {
 
   destroyChart('p4_sr_chart');
   CHARTS['p4_sr_chart'] = new Chart(document.getElementById('p4_sr_chart'), {
-    type: 'line', plugins: [ChartDataLabels],
+    type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p4_sr_chart', p4PrimaryDeltaData)],
     data: { labels: periods, datasets: [...p4ApptDatasets, ...p4PurchaseDatasets, ...p4SrDatasets] },
     options: {
       responsive: true, maintainAspectRatio: true,
@@ -7086,6 +7109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSelects();
   buildDataStatus();
   updateCountryBarStyles();
+  updateWindowBtnStyles();
   renderP1();
   requestAnimationFrame(updateFilterBarTop);
   window.addEventListener('resize', updateFilterBarTop);
