@@ -7212,6 +7212,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div class="cl-version">
       <div class="cl-version-header">
+        <span class="cl-version-title">v16 — Global Window Filter, Delta Badges &amp; UX Refinements</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-new">NEW</span> Global window filter (Last 4 / 6 / 8 / 10 / 12 / All) added to the top bar — controls the x-axis window across every chart simultaneously; default is last 6 periods</li>
+        <li><span class="cl-tag cl-tag-new">NEW</span> Dynamic "Last N weeks / months" label updates alongside the active window selection</li>
+        <li><span class="cl-tag cl-tag-new">NEW</span> Period-over-period delta badges (▲/▼) on all trend charts — displayed in % aligned to each period column</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Delta badges shown only when exactly 1 country is selected; hidden automatically in EU/all mode or when 2+ countries are selected (reduces visual clutter)</li>
+        <li><span class="cl-tag cl-tag-fix">FIX</span> All charts now share the same x-axis via <code>getPeriods()</code> — Branch Utilisation chart x-axis now aligns with Show Rate; periods before CW18 render as empty gaps instead of 0%</li>
+        <li><span class="cl-tag cl-tag-fix">FIX</span> # Appointments y2 axis auto-scales independently per chart — removed cross-chart y2 sync that was inflating the scale</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Priority Actions tab removed</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Booking Confirmation Task Volume chart anchored to the left 50% column; right slot reserved for a future chart</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Chart title font size increased to 15 px for better readability</li>
+      </ul>
+    </div>
+
+    <div class="cl-version">
+      <div class="cl-version-header">
         <span class="cl-version-title">v15 — Non-BC Charts: Correct Data Source & Weekly/Monthly Support</span>
         <span class="cl-version-date">2026-06-03 · Agent1</span>
       </div>
