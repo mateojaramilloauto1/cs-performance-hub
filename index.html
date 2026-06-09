@@ -766,7 +766,14 @@ tr:hover td{background:#f9fafb !important;}
   <!-- Row 1: AI Analysis (left) + Show Rate (right) -->
   <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
     <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column">
-      <h3 style="margin-bottom:10px">AI Analysis — Key Show Rate Drivers</h3>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <h3 style="margin:0;flex:1">AI Analysis — Key Show Rate Drivers</h3>
+        <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:11px;padding:4px 10px;border:1px solid #6366f1;border-radius:6px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0">✨ Generate with AI</button>
+      </div>
+      <div id="p1_ai_key_row" style="display:none;margin-bottom:8px">
+        <input type="password" id="p1_ai_key_input" placeholder="sk-ant-... (stored in localStorage)" style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit">
+        <p style="margin:3px 0 0;font-size:10px;color:#94a3b8">Press Enter or click Generate again · key is saved locally in your browser</p>
+      </div>
       <div id="p1_ai_analysis" style="flex:1;overflow-y:auto;color:#374151;padding-right:2px"></div>
     </div>
     <div class="chart-box" style="margin-bottom:0">
@@ -5062,6 +5069,180 @@ function renderP1AiAnalysis() {
   p2 = actionMap[topKey] || '';
 
   el.innerHTML = `<p style="margin:0 0 8px;font-size:12.5px;line-height:1.6">${p1}</p><p style="margin:0;font-size:12.5px;line-height:1.6">${p2}</p><p style="margin:6px 0 0;font-size:11px;color:#94a3b8">Pearson r over all available ${ptype} periods · |r|≥0.75 strong · ≥0.5 moderate · ≥0.3 weak</p>`;
+}
+
+async function generateAiAnalysis() {
+  const btn = document.getElementById('p1_ai_generate_btn');
+  const el = document.getElementById('p1_ai_analysis');
+  const keyRow = document.getElementById('p1_ai_key_row');
+  const keyInput = document.getElementById('p1_ai_key_input');
+
+  // API key: check input first, then localStorage
+  let apiKey = keyInput?.value?.trim() || localStorage.getItem('anthropic_api_key');
+  if (!apiKey) {
+    keyRow.style.display = 'block';
+    keyInput.focus();
+    keyInput.onkeydown = e => { if (e.key === 'Enter') generateAiAnalysis(); };
+    return;
+  }
+  if (keyInput?.value?.trim()) {
+    localStorage.setItem('anthropic_api_key', keyInput.value.trim());
+    keyRow.style.display = 'none';
+  }
+
+  const ptype = GLOBAL_PTYPE;
+  const euMode = document.querySelector('input[name=p1_eumode]:checked')?.value || 'weighted';
+  const focusCountries = P1_IS_ALL ? [] : [...P1_SELECTED].filter(c => c !== 'EU_AVG');
+  const useCountry = focusCountries.length === 1 ? focusCountries[0] : null;
+  const label = useCountry || 'EU-wide';
+
+  const allPeriods = [...new Set(RAW_DATA.filter(r => r.period_type === ptype).map(r => r.period_name))].sort();
+  const last6 = allPeriods.slice(-6);
+
+  const getSR = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.sr != null ? +(m.sr*100).toFixed(1) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const sr = euSR(rows, euMode); return sr != null ? +(sr*100).toFixed(1) : null;
+  };
+  const getDone = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.bc_done_rate != null ? +(m.bc_done_rate*100).toFixed(1) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const agg = aggRows(rows); const ex = agg.bc_created - agg.bc_cancelled;
+    return ex ? +(agg.bc_done / ex * 100).toFixed(1) : null;
+  };
+  const getAttempt = p => { const v = getBCAttemptedRate(ptype, p, useCountry); return v != null ? +(v*100).toFixed(1) : null; };
+  const getUtil = p => {
+    const v = useCountry ? _getVal(UTIL_COUNTRY_WEEKLY[useCountry], UTIL_COUNTRY_MONTHLY?.[useCountry], p, ptype)
+                         : _getVal(UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, p, ptype);
+    return v != null ? +v.toFixed(1) : null;
+  };
+  const getCancel = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.bc_cancel_rate != null ? +(m.bc_cancel_rate*100).toFixed(1) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const agg = aggRows(rows); return agg.bc_created ? +(agg.bc_cancelled / agg.bc_created * 100).toFixed(1) : null;
+  };
+  const getLeader = p => { const d = ptype==='week' ? LEAD_SHARE_WEEKLY[p] : LEAD_SHARE_MONTHLY[p]; return d ? +d[0].toFixed(1) : null; };
+
+  const allSR = allPeriods.map(getSR);
+  const factorDefs = [
+    { label: '% BC Tasks Done',        fn: getDone },
+    { label: '% BC Tasks Attempted',   fn: getAttempt },
+    { label: 'Branch Utilisation %',   fn: getUtil },
+    { label: 'BC Cancellation Rate %', fn: getCancel },
+    { label: 'Dealer Now Lead Share %',fn: getLeader },
+  ];
+  const corrs = factorDefs
+    .map(f => ({ label: f.label, r: pearsonCorr(allSR, allPeriods.map(f.fn)) }))
+    .filter(f => f.r != null)
+    .sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+
+  const fmt = v => v != null ? String(v) : 'n/a';
+  const periodLabels = last6.map(p => p.replace(/(\d{4})_(\d+)/, (_, y, w) => ptype==='week' ? `CW${w}` : `${y}-M${w}`)).join(' | ');
+  const dataTable = [
+    `Show Rate %:             ${last6.map(getSR).map(fmt).join(' | ')}`,
+    `BC Tasks Done %:         ${last6.map(getDone).map(fmt).join(' | ')}`,
+    `BC Tasks Attempted %:    ${last6.map(getAttempt).map(fmt).join(' | ')}`,
+    `Branch Utilisation %:    ${last6.map(getUtil).map(fmt).join(' | ')}`,
+    `BC Cancellation Rate %:  ${last6.map(getCancel).map(fmt).join(' | ')}`,
+    `Dealer Now Lead Share %: ${last6.map(getLeader).map(fmt).join(' | ')}`,
+  ].join('\n');
+  const corrTable = corrs.map(f => `  ${f.label}: r=${f.r > 0 ? '+' : ''}${f.r}`).join('\n');
+  const nPeriods = allSR.filter(v => v != null).length;
+
+  const userPrompt = `You are a Customer Success performance analyst at Auto1 Group. Analyze the following dashboard data and write a brief, insightful performance summary.
+
+Market: ${label}
+Period: ${ptype === 'week' ? 'Weekly' : 'Monthly'}
+Last 6 periods (${periodLabels}):
+
+${dataTable}
+
+Pearson correlations with Show Rate (across all ${nPeriods} available periods):
+${corrTable}
+
+Write 2–3 short paragraphs (no headers, no bullet points, plain prose). Be specific: cite the actual numbers from the table. Cover:
+1. The show rate trend over the last 6 periods — is it improving, declining, or stable?
+2. Which factor has the strongest correlation with show rate and what does that imply?
+3. One concrete recommendation the CS team can act on this week.
+
+Keep it under 130 words. Be direct and data-driven.`;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  el.innerHTML = '<p style="color:#94a3b8;font-size:12px;font-style:italic;margin:0">Generating analysis with Claude…</p>';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-7',
+        max_tokens: 512,
+        thinking: { type: 'adaptive' },
+        stream: true,
+        messages: [{ role: 'user', content: userPrompt }],
+      }),
+    });
+
+    if (!resp.ok) {
+      const errBody = await resp.json().catch(() => ({}));
+      throw new Error(errBody.error?.message || `HTTP ${resp.status}`);
+    }
+
+    let accText = '';
+    el.innerHTML = '';
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
+    const renderText = () => {
+      const html = accText.trim()
+        .split(/\n\n+/)
+        .filter(Boolean)
+        .map(p => `<p style="margin:0 0 8px;font-size:12.5px;line-height:1.6">${p.replace(/\n/g, ' ')}</p>`)
+        .join('');
+      el.innerHTML = html + '<p style="margin:6px 0 0;font-size:11px;color:#94a3b8">Generated by Claude (claude-opus-4-7) · regenerate anytime</p>';
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(raw);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            accText += evt.delta.text;
+            renderText();
+          }
+        } catch (_) {}
+      }
+    }
+    if (!accText.trim()) el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>';
+    btn.textContent = '✨ Regenerate';
+  } catch (err) {
+    el.innerHTML = `<p style="color:#dc2626;font-size:12px;margin:0">Error: ${err.message}</p>`;
+    if (err.message.includes('401') || err.message.toLowerCase().includes('auth')) {
+      localStorage.removeItem('anthropic_api_key');
+      keyRow.style.display = 'block';
+    }
+    btn.textContent = '✨ Generate with AI';
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 function makeDeltaPlugin(canvasId, primaryData) {
