@@ -1625,23 +1625,35 @@ const APPTCONV_COUNTRY_WEEKLY = {
   SE:[53.29,51.53,50.10,56.64,49.75,46.00,37.00]
 };
 
-// Monthly period-to-index map: Mar 2026 → 0, Apr → 1, May → 2, Jun → 3
-const MONTHLY_MAP = {'2026_03':0,'2026_04':1,'2026_05':2,'2026_06':3};
+// Monthly period-to-index map: Dec 2025 → 0, Jan → 1, Feb → 2, Mar → 3, Apr → 4, May → 5, Jun → 6
+const MONTHLY_MAP = {'2025_12':0,'2026_01':1,'2026_02':2,'2026_03':3,'2026_04':4,'2026_05':5,'2026_06':6};
 
-// EU monthly Util — source: Tableau Main KPIs view (M3, M2, M1, MTD)
-const UTIL_EU_MONTHLY   = [61.8, 57.7, 55.5, 54.9];
+// EU monthly Util — source: Tableau Cockpit monthly view (Dec 25 → Jun 26 MTD)
+const UTIL_EU_MONTHLY   = [57.1, 57.9, 59.4, 61.8, 57.7, 55.5, 54.9];
 const UTIL_COUNTRY_MONTHLY = {
-  // Mar/Apr not available at country level; May/Jun derived from weekly CW18-CW23 data
-  AT:[null,null,58.8,63.5], BE:[null,null,57.8,53.6], DE:[null,null,79.4,82.2], ES:[null,null,46.9,48.1],
-  FR:[null,null,44.7,45.6], IT:[null,null,46.2,40.9], NL:[null,null,61.9,57.5], PT:[null,null,54.5,59.6], SE:[null,null,40.7,42.3]
+  AT:[53.1, 60.5, 60.8, 66.5, 59.2, 59.0, 58.1],
+  BE:[66.5, 73.4, 67.4, 62.3, 59.1, 57.5, 54.4],
+  DE:[76.9, 68.1, 75.3, 87.5, 84.1, 79.6, 78.8],
+  ES:[49.5, 45.3, 47.7, 48.2, 45.4, 46.9, 48.1],
+  FR:[47.8, 51.2, 51.2, 52.7, 48.4, 43.9, 46.2],
+  IT:[47.5, 58.7, 57.7, 53.0, 44.5, 47.0, 40.4],
+  NL:[63.3, 63.8, 61.8, 61.6, 59.3, 62.6, 58.8],
+  PT:[55.7, 57.4, 47.3, 51.9, 57.2, 53.7, 58.3],
+  SE:[54.7, 44.8, 42.8, 51.7, 51.8, 40.2, 44.6]
 };
 
-// EU monthly Appt Conversion — source: Tableau Main KPIs view (M3, M2, M1, MTD)
-const APPTCONV_EU_MONTHLY = [54.3, 54.0, 53.5, 49.4];
+// EU monthly Appt Conversion — source: Tableau Cockpit monthly view (Dec 25 → Jun 26 MTD)
+const APPTCONV_EU_MONTHLY = [55.9, 54.6, 54.2, 54.3, 54.0, 53.5, 49.4];
 const APPTCONV_COUNTRY_MONTHLY = {
-  // Mar/Apr not available at country level; May/Jun derived from weekly CW18-CW23 data
-  AT:[null,null,59.1,62.6], BE:[null,null,58.7,55.7], DE:[null,null,60.1,56.5], ES:[null,null,48.5,47.5],
-  FR:[null,null,50.8,48.7], IT:[null,null,47.1,44.5], NL:[null,null,61.5,64.0], PT:[null,null,47.5,44.5], SE:[null,null,52.2,48.9]
+  AT:[63.7, 63.5, 60.6, 60.7, 61.8, 58.8, 56.2],
+  BE:[59.8, 57.4, 57.9, 60.1, 58.2, 58.7, 51.3],
+  DE:[62.7, 62.0, 60.9, 60.6, 59.5, 59.4, 53.1],
+  ES:[50.4, 47.5, 48.5, 46.5, 47.4, 47.9, 45.4],
+  FR:[53.3, 54.0, 53.3, 52.3, 51.4, 50.2, 46.4],
+  IT:[47.4, 45.9, 45.7, 45.9, 46.1, 46.5, 46.1],
+  NL:[64.1, 62.4, 61.5, 61.9, 62.0, 61.4, 60.0],
+  PT:[47.4, 44.8, 45.0, 46.6, 46.5, 46.7, 46.5],
+  SE:[53.0, 54.7, 52.4, 52.1, 52.9, 52.1, 43.9]
 };
 
 // Evaluation slots available per country per week — source: Tableau Cockpit, CW18-CW24
@@ -1653,12 +1665,18 @@ const EVAL_SLOTS_COUNTRY_WEEKLY = {
   NL:[1394,1623,1305,1700,1371,1714,248], PT:[1272,1592,1675,1644,1615,1239,251],
   SE:[1103,1455,1205,1474,1533,1155,267]
 };
-// Monthly eval slots: May = sum(CW18-21), Jun = sum(CW22-24); Mar/Apr unavailable
-const EVAL_SLOTS_EU_MONTHLY    = [null, null, 198966, 109412];
+// Monthly eval slots — source: Tableau Cockpit monthly view (Dec 25 → Jun 26 MTD)
+const EVAL_SLOTS_EU_MONTHLY    = [208167, 233845, 221346, 240123, 223477, 209657, 60706];
 const EVAL_SLOTS_COUNTRY_MONTHLY = {
-  AT:[null,null,5144,2439], BE:[null,null,10609,6206], DE:[null,null,50440,25833],
-  ES:[null,null,33530,18575], FR:[null,null,42170,25244], IT:[null,null,39631,21722],
-  NL:[null,null,6022,3333], PT:[null,null,6183,3105], SE:[null,null,5237,2955]
+  AT:[5604, 6074, 5900, 6629, 5854, 5130, 1416],
+  BE:[12117, 14446, 12575, 13716, 12762, 11218, 3683],
+  DE:[49794, 58575, 55226, 61466, 56547, 50646, 14965],
+  ES:[33927, 38043, 37522, 39899, 35388, 35604, 10061],
+  FR:[46841, 52527, 48128, 51123, 48951, 47127, 13664],
+  IT:[42237, 44634, 42589, 46364, 45527, 40908, 12043],
+  NL:[7014, 7487, 6855, 7409, 6892, 6566, 1962],
+  PT:[5664, 6437, 6595, 7021, 6045, 6673, 1490],
+  SE:[4969, 5622, 5956, 6496, 5511, 5785, 1422]
 };
 
 // ========== PUBLIC HOLIDAYS (national, 2025-01-01 – 2026-05-31) ==========
@@ -5097,7 +5115,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
       scales: {
         x: { ticks: { callback: (_, i) => ptype === 'week'
           ? periods[i].replace('2026_','CW')
-          : ({'2026_03':'Mar 26','2026_04':'Apr 26','2026_05':'May 26','2026_06':'Jun 26'}[periods[i]] || periods[i]) } },
+          : ({'2025_12':'Dec 25','2026_01':'Jan 26','2026_02':'Feb 26','2026_03':'Mar 26','2026_04':'Apr 26','2026_05':'May 26','2026_06':'Jun 26'}[periods[i]] || periods[i]) } },
         y: { min: 0, max: 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } },
         y2: {
           display: hasSlots, position: 'right',
