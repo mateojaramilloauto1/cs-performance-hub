@@ -5297,7 +5297,7 @@ function renderP1LeadShareChart() {
     backgroundColor: LEAD_SHARE_COLORS[i],
     borderWidth: 0,
     datalabels: {
-      display: ctx => (ctx.parsed.y ?? 0) >= 5,
+      display: ctx => ctx.parsed != null && (ctx.parsed.y ?? 0) >= 5,
       formatter: v => v != null ? v.toFixed(1) + '%' : '',
       color: '#fff',
       font: { size: 10, weight: '600' },
