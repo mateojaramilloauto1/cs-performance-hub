@@ -4969,7 +4969,7 @@ function makeDeltaPlugin(canvasId, primaryData) {
         const sign  = delta >= 0 ? '+' : '';
         const color = delta >= 0 ? '#16a34a' : '#dc2626';
         const text  = `${arrow} ${sign}${Math.abs(delta).toFixed(1)}%`;
-        const xPos = scales.x.getPixelForTick(i);   // aligned to current period column
+        const xPos = (scales.x.getPixelForTick(i - 1) + scales.x.getPixelForTick(i)) / 2;
         const yA = scales.y.getPixelForValue(prev);
         const yB = scales.y.getPixelForValue(curr);
         const yCenter = (yA + yB) / 2 + 16;
