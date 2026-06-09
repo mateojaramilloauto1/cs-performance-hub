@@ -756,26 +756,61 @@ tr:hover td{background:#f9fafb !important;}
     <input type="radio" name="p1_compmode" id="p1_prev4" value="prev4">
   </div>
 
-  <!-- Show Rate + Branch Utilisation side by side (50/50) -->
-  <div class="chart-row" style="margin-bottom:16px;align-items:stretch">
+  <!-- Row 1: AI Analysis (left) + Show Rate (right) -->
+  <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
+    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column">
+      <h3 style="margin-bottom:10px">AI Analysis — Key Show Rate Drivers</h3>
+      <div id="p1_ai_analysis" style="flex:1;font-size:12.5px;line-height:1.55;color:#374151;overflow-y:auto">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:#fef9c3;border-left:3px solid #eab308;border-radius:4px;padding:8px 10px">
+            <strong style="color:#854d0e;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Lead Cohort Shift</strong>
+            <p style="margin:4px 0 0">Dealer Now share rose from <strong>36.5% → 40.5%</strong> (CW06–CW23), displacing the longer-lead Dealer 3M segment (7.2% → 5.7%). Same-day dealer leads tend to have higher no-show risk — this structural shift likely pressures show rate over time.</p>
+          </div>
+          <div style="background:#f0fdf4;border-left:3px solid #22c55e;border-radius:4px;padding:8px 10px">
+            <strong style="color:#14532d;font-size:12px;text-transform:uppercase;letter-spacing:.03em">BC Task Completion</strong>
+            <p style="margin:4px 0 0">% BC Tasks Done is the strongest leading indicator: <strong>ES leads at ~93%</strong> and consistently outperforms on show rate. <strong>SE and BE lag at ~77–80%</strong> and show correspondingly lower conversion — closing the task gap before appointment day is the highest-leverage action.</p>
+          </div>
+          <div style="background:#eff6ff;border-left:3px solid #3b82f6;border-radius:4px;padding:8px 10px">
+            <strong style="color:#1e3a8a;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Branch Availability</strong>
+            <p style="margin:4px 0 0">Branch utilisation data (from CW18) shows near-capacity operation in several markets. Overbooking relative to physical capacity forces late cancellations and reduces show probability — monitoring utilisation weekly helps catch saturation before it hits show rate.</p>
+          </div>
+          <div style="background:#fdf4ff;border-left:3px solid #a855f7;border-radius:4px;padding:8px 10px">
+            <strong style="color:#581c87;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Cancellation Timing</strong>
+            <p style="margin:4px 0 0">Late cancellations (&lt;24h before appointment) represent a disproportionate no-show risk — the slot cannot be backfilled. Markets with a higher share of late-stage cancellations correlate with lower effective show rate even when gross show rate appears stable.</p>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="chart-box" style="margin-bottom:0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <button class="toggle-btn appts-toggle-btn" id="appts_toggle_p1" onclick="toggleShowAppts()" title="Show/hide appointment volume bars">📅 # Appts</button>
         <button class="toggle-btn purchases-toggle-btn" id="purchases_toggle_p1" onclick="toggleShowPurchases()" title="Show/hide purchase volume bars">🛒 # Purchases</button>
-        <h3 style="margin:0;flex:1">Show Rate — Weekly Trend per Market</h3>
+        <h3 style="margin:0;flex:1">Show Rate — Trend per Market</h3>
       </div>
       <canvas id="p1_sr_chart"></canvas>
+    </div>
+  </div>
+
+  <!-- Row 2: Lead Share (left) + Branch Utilisation (right) -->
+  <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
+    <div class="chart-box" style="margin-bottom:0">
+      <h3>Lead Share by Cohort — EU</h3>
+      <div id="p1_ls_legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:6px;font-size:11px;color:#374151"></div>
+      <canvas id="p1_ls_chart"></canvas>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:0">Source: CJ Dashboard · Lead Share By view · EU aggregate · CW06–CW23</p>
     </div>
     <div class="chart-box" style="margin-bottom:0">
       <h3>Branch Utilisation — Trend per Market</h3>
       <div id="p1_util_empty" style="display:none;color:#94a3b8;font-size:13px;padding:12px 0">No data available.</div>
       <canvas id="p1_util_chart"></canvas>
-      <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty.</p>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty.</p>
     </div>
   </div>
-  <div class="chart-row">
-    <div class="chart-box"><h3>% BC Tasks Done &amp; Attempted — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
-    <div class="chart-box">
+
+  <!-- Row 3: BC Tasks Done (left) + Cancelled Appointments (right) -->
+  <div class="chart-row" style="margin-bottom:0;align-items:stretch">
+    <div class="chart-box" style="margin-bottom:0"><h3>% BC Tasks Done &amp; Attempted — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
+    <div class="chart-box" style="margin-bottom:0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <h3 style="margin:0;flex:1">Cancelled Appointments — Timing Breakdown</h3>
         <button class="toggle-btn active cancel-mode-btn" data-mode="last" onclick="setCancelMode('last')" title="Count only the last appointment per slot (columns M–R)" style="flex-shrink:0">Last Appt</button>
@@ -784,21 +819,6 @@ tr:hover td{background:#f9fafb !important;}
       <canvas id="p1_cancelled_chart"></canvas>
     </div>
   </div>
-
-  <!-- BC Task Volume bar chart — left half, right reserved for future chart -->
-  <div class="chart-row" style="margin-bottom:16px;align-items:stretch">
-    <div class="chart-box" style="margin-bottom:0">
-      <h3 id="p1_vol_title">Booking Confirmation Task Volume — EU Aggregate</h3>
-      <canvas id="p1_vol_chart"></canvas>
-    </div>
-    <div class="chart-box" style="margin-bottom:0">
-      <h3>Lead Share by Cohort — EU</h3>
-      <div id="p1_ls_legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:8px;font-size:11px;color:#374151"></div>
-      <canvas id="p1_ls_chart"></canvas>
-      <p style="font-size:11px;color:#94a3b8;margin-top:4px">Source: CJ Dashboard · Lead Share By view · EU aggregate · CW06–CW23</p>
-    </div>
-  </div>
-
 
 </div>
 
@@ -4395,7 +4415,7 @@ function buildP1CancelledChart() {
     plugins: [ChartDataLabels, totalLabelsPlugin],
     data: { labels: periods, datasets },
     options: {
-      responsive: true, maintainAspectRatio: true,
+      responsive: true, maintainAspectRatio: true, aspectRatio: 2.5,
       plugins: {
         legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
         datalabels: { display: false },
@@ -4514,6 +4534,13 @@ function updateP1ChartVisibility() {
         const euVisible = P1_SELECTED.has('EU_AVG');
         ds.hidden = !euVisible;
         if (ds.datalabels) ds.datalabels.display = euVisible;
+      } else if (ds.bcAttempted && ds.attemptedCountry) {
+        // Per-country attempted dashed line: show only when that country is selected
+        const visible = !P1_IS_ALL && P1_SELECTED.has(ds.attemptedCountry);
+        ds.hidden = !visible;
+      } else if (ds.bcAttempted) {
+        // EU attempted: show in all-mode or when EU_AVG is selected
+        ds.hidden = !P1_IS_ALL && !P1_SELECTED.has('EU_AVG');
       } else {
         const visible = P1_IS_ALL || P1_SELECTED.has(ds.label);
         ds.hidden = !visible;
@@ -4524,7 +4551,6 @@ function updateP1ChartVisibility() {
   });
   // Cancelled chart: always rebuild — stacked bars depend on current country selection
   buildP1CancelledChart();
-  updateVolChart();
   // Util chart: rebuild since it reads P1_IS_ALL / P1_SELECTED directly
   renderP1UtilChart();
 }
@@ -4873,7 +4899,7 @@ function renderP1() {
     type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p1_sr_chart', primarySRData)],
     data: { labels: periods, datasets: [...apptBarDatasets, ...purchaseBarDatasets, euDataset(euSRData), ...countryDatasets('sr')] },
     options: {
-      responsive: true, maintainAspectRatio: true,
+      responsive: true, maintainAspectRatio: true, aspectRatio: 2.5,
       plugins: {
         ...chartOpts().plugins,
         tooltip: {
@@ -4902,6 +4928,18 @@ function renderP1() {
   else hideChartEmpty('p1_done_chart');
 
   destroyChart('p1_done_chart');
+  // Per-country attempted datasets (dashed, same color as country, hidden unless that country is selected)
+  const countryAttemptedDatasets = COUNTRIES.map(c => {
+    const visible = !P1_IS_ALL && P1_SELECTED.has(c);
+    return {
+      label: `% Tasks Attempted (${c})`, bcAttempted: true, attemptedCountry: c,
+      data: periods.map(p => { const v = getBCAttemptedRate(ptype, p, c); return v != null ? +(v*100).toFixed(2) : null; }),
+      borderColor: COUNTRY_COLORS[c], borderWidth: 1.5, borderDash: [4,4],
+      tension: .3, pointRadius: 2, fill: false,
+      hidden: !visible,
+      datalabels: { display: false }
+    };
+  });
   CHARTS['p1_done_chart'] = new Chart(document.getElementById('p1_done_chart'), {
     type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p1_done_chart', primaryDoneData)],
     data: { labels: periods, datasets: [
@@ -4912,78 +4950,13 @@ function renderP1() {
         borderColor: '#f59e0b', borderWidth: 2, borderDash: [4,4],
         tension: .3, pointRadius: 2, fill: false,
         hidden: false,
-        datalabels: { display: 'auto', formatter: v => v!=null ? v.toFixed(1)+'%' : '', anchor:'end', align:'top', font:{size:11,weight:'700'}, color:'#d97706', padding:{bottom:2} } }
+        datalabels: { display: false } },
+      ...countryAttemptedDatasets
     ]},
-    options: chartOpts()
+    options: { ...chartOpts(), aspectRatio: 2.5 }
   });
 
   buildP1CancelledChart();
-
-  // BC Task Volume bar chart
-  const volCountry = getVolChartCountry();
-  const volLabel = volCountry === 'EU' ? 'EU Aggregate' : volCountry;
-  const getVolData = key => periods.map(p => {
-    if (key === 'bc_attempted') {
-      if (volCountry !== 'EU' && ptype === 'month' && BC_ATTEMPTED_COUNT_BY_COUNTRY[volCountry]?.[p] != null) {
-        return BC_ATTEMPTED_COUNT_BY_COUNTRY[volCountry][p];
-      }
-      const rate = getBCAttemptedRate(ptype, p, volCountry !== 'EU' ? volCountry : null);
-      if (rate == null) return null;
-      if (volCountry === 'EU') {
-        const rows = RAW_DATA.filter(r => r.period_type===ptype && r.period_name===p);
-        const agg = aggRows(rows);
-        return agg ? Math.round(rate * (agg.bc_created - agg.bc_cancelled)) : null;
-      } else {
-        const m = countryMetrics(ptype, p, volCountry, euMode);
-        return m ? Math.round(rate * (m.bc_created - (m.bc_cancelled || 0))) : null;
-      }
-    }
-    if (volCountry === 'EU') {
-      const rows = RAW_DATA.filter(r => r.period_type===ptype && r.period_name===p);
-      const agg = aggRows(rows);
-      return agg ? (agg[key] != null ? agg[key] : null) : null;
-    } else {
-      const m = countryMetrics(ptype, p, volCountry, euMode);
-      return m ? (m[key] != null ? m[key] : null) : null;
-    }
-  });
-  const _volCreated = getVolData('bc_created');
-  if (allNull(_volCreated)) showChartEmpty('p1_vol_chart', 'No task volume data available for this period');
-  else hideChartEmpty('p1_vol_chart');
-
-  destroyChart('p1_vol_chart');
-  const volTitleEl = document.getElementById('p1_vol_title');
-  if (volTitleEl) volTitleEl.textContent = `Booking Confirmation Task Volume \u2014 ${volLabel}`;
-  CHARTS['p1_vol_chart'] = new Chart(document.getElementById('p1_vol_chart'), {
-    type: 'bar', plugins: [ChartDataLabels],
-    data: {
-      labels: periods,
-      datasets: [
-        { label: 'BC Confirmations Created',   data: getVolData('bc_created'),   backgroundColor: 'rgba(59,130,246,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#1d4ed8' } },
-        { label: 'BC Confirmations Done',      data: getVolData('bc_done'),      backgroundColor: 'rgba(34,197,94,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#15803d' } },
-        { label: 'BC Confirmations Cancelled', data: getVolData('bc_cancelled'), backgroundColor: 'rgba(239,68,68,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#b91c1c' } },
-        { label: 'BC Confirmations Attempted', data: getVolData('bc_attempted'), backgroundColor: 'rgba(251,146,60,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#c2410c' } }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: {
-        legend: { display: true, position: 'top', labels: { font: { size: 12 } } },
-        datalabels: { display: true },
-        tooltip: { mode: 'index', intersect: false,
-          callbacks: { label: ctx => `${ctx.dataset.label}: ${Math.round(ctx.parsed.y).toLocaleString()}` } }
-      },
-      scales: {
-        x: { grid: { color: 'rgba(0,0,0,.05)' } },
-        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' },
-          ticks: { callback: v => Math.round(v).toLocaleString() } }
-      }
-    }
-  });
 
   // Apply country selection visibility AFTER charts are fully built
   updateP1ChartVisibility();
@@ -5043,7 +5016,7 @@ function _getVal(weeklyArr, monthlyArr, period, ptype) {
 // sel = {isAll: bool, selected: Set<string>, showEU: bool}
 // slotWeekly/slotMonthly: optional {country: [values]} — adds stacked bars on secondary y-axis
 // slotEuWeekly/slotEuMonthly: optional EU-total arrays — adds a trend line on y2
-function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel, slotWeekly, slotMonthly, slotEuWeekly, slotEuMonthly) {
+function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel, slotWeekly, slotMonthly, slotEuWeekly, slotEuMonthly, aspectRatio = 1.7) {
   const periods = getPeriods(ptype);
   const isSingleSel = !sel.isAll;
   const hasSlots = !!slotWeekly;
@@ -5169,7 +5142,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
     type: 'line', plugins: [ChartDataLabels, deltaPlugin],
     data: { labels: periods, datasets },
     options: {
-      responsive: true, maintainAspectRatio: true, aspectRatio: 1.7,
+      responsive: true, maintainAspectRatio: true, aspectRatio,
       plugins: {
         legend: { display: false },
         datalabels: { display: 'auto' },
@@ -5235,6 +5208,7 @@ function renderP1LeadShareChart() {
     options: {
       responsive: true,
       maintainAspectRatio: true,
+      aspectRatio: 2.5,
       plugins: {
         legend: { display: false },
         datalabels: { display: false },
@@ -5262,7 +5236,7 @@ function renderP1LeadShareChart() {
 
 function renderP1UtilChart() {
   const sel = { isAll: P1_IS_ALL, selected: P1_SELECTED, showEU: P1_SELECTED.has('EU_AVG') };
-  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY);
+  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY, 2.5);
 }
 
 // ========== PAGE 8 — Branch Operations ==========
@@ -7317,6 +7291,20 @@ document.addEventListener('DOMContentLoaded', () => {
         <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Branch Utilisation</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
         <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Conversion</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
         <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Cancellation</strong> — weekly: CW18–CW23; monthly: Jan–Jun 2026. Source: Tableau</li>
+      </ul>
+    </div>
+
+    <div class="cl-version">
+      <div class="cl-version-header">
+        <span class="cl-version-title">v18 — Executive Overview Redesign: 6-Quadrant Layout + AI Analysis</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-new">NEW</span> AI Analysis panel in Executive Overview (top-left quadrant) — summarises key show rate drivers: lead cohort shift, BC task completion gap by country, branch availability, and cancellation timing risk</li>
+        <li><span class="cl-tag cl-tag-new">NEW</span> Per-country Attempted dashed lines added to % BC Tasks Done &amp; Attempted chart — visible when a single country is selected; sourced from <code>BC_ATTEMPTED_RATE_BY_COUNTRY</code> (monthly, mapped to weeks)</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Executive Overview reorganised into 3 rows × 2 columns: (1) AI Analysis + Show Rate, (2) Lead Share + Branch Utilisation, (3) BC Tasks Done + Cancelled Appointments</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Booking Confirmation Task Volume chart removed from Executive Overview</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> All p1 charts set to aspectRatio 2.5 for compact display — all 6 panels visible without scrolling</li>
       </ul>
     </div>
 
