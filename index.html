@@ -5053,11 +5053,24 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
       datasets.push({
         type: 'bar', label: `${c} Slots`,
         data: periods.map(p => _getVal(slotWeekly[c], slotMonthly ? slotMonthly[c] : null, p, ptype)),
-        backgroundColor: COUNTRY_COLORS[c] + '28',
-        borderColor: COUNTRY_COLORS[c] + '55',
+        backgroundColor: COUNTRY_COLORS[c] + '38',
+        borderColor: COUNTRY_COLORS[c] + '88',
         borderWidth: 0.5,
         stack: 'slots', yAxisID: 'y2', hidden: !visible,
-        datalabels: { display: false }
+        datalabels: {
+          display: 'auto',
+          anchor: isSingleSel ? 'end' : 'center',
+          align: isSingleSel ? 'top' : 'center',
+          clamp: true,
+          offset: isSingleSel ? 4 : 0,
+          formatter: v => {
+            if (!v) return null;
+            const num = v >= 1000 ? (v/1000).toFixed(1)+'k' : String(v);
+            return isSingleSel ? `${num} eval slots` : `${c} ${num}`;
+          },
+          color: COUNTRY_COLORS[c],
+          font: { size: 9, weight: '600' }
+        }
       });
     });
   }
