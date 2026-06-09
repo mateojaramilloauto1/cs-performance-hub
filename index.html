@@ -677,9 +677,10 @@ tr:hover td{background:#f9fafb !important;}
 
 <div class="header">
   <div class="header-top">
-    <div>
-      <h1>Customer Service — Show Rate Dashboard</h1>
-      <div class="subtitle">Ada · Senior Experience Business Analyst &nbsp;|&nbsp; Audience: Mateo (PM) &amp; CS HQ Director</div>
+    <h1 style="margin:0;flex:1;min-width:0">Customer Service — Show Rate Dashboard <span style="font-size:12px;font-weight:400;color:#94a3b8">[Ada · Senior Experience Business Analyst &nbsp;|&nbsp; Audience: Mateo (PM) &amp; CS HQ Director]</span></h1>
+    <div style="font-size:11px;color:#64748b;white-space:nowrap;text-align:right;line-height:1.6;flex-shrink:0">
+      Showing data for week <strong id="ds_latest_week" style="color:#1d4ed8;">—</strong> (latest available)<br>
+      last updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;">—</span>
     </div>
   </div>
 </div>
@@ -693,11 +694,8 @@ tr:hover td{background:#f9fafb !important;}
   <button class="tab-btn" onclick="showTab('p6')">KPI Definitions</button>
   <button class="tab-btn" onclick="showTab('p8')">Branch Operations</button>
   <button class="tab-btn" onclick="showTab('p7')">Changelog</button>
+  <button class="help-toggle" style="margin-left:auto;font-size:12px;padding:0 8px" onclick="toggleHelp()">? Help</button>
   <button class="update-nav-btn" onclick="toggleUpdatePanel()">↻ Update Data</button>
-</div>
-<div class="data-status-bar" id="data_status_bar" style="font-size:13px;">
-  Showing data for week <strong id="ds_latest_week" style="color:#1d4ed8;">—</strong> (latest available) &nbsp;·&nbsp; last updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;">—</span>
-  <button class="help-toggle" style="margin-left:auto" onclick="toggleHelp()">? How to read this dashboard</button>
 </div>
 <div class="global-country-bar" id="global_country_bar">
   <span class="nav-ptype-toggle" style="margin-right:12px">
@@ -789,7 +787,8 @@ tr:hover td{background:#f9fafb !important;}
   <!-- Row 2: Lead Share (left) + Branch Utilisation (right) -->
   <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
     <div class="chart-box" style="margin-bottom:0">
-      <h3>Lead Share by Cohort — EU</h3>
+      <h3 id="p1_ls_title">Lead Share by Cohort — EU</h3>
+      <p id="p1_ls_country_note" style="display:none;font-size:11px;color:#f59e0b;margin:0 0 4px">⚠ Country-level lead share not yet available — showing EU aggregate</p>
       <div id="p1_ls_legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:6px;font-size:13px;color:#374151"></div>
       <canvas id="p1_ls_chart"></canvas>
       <p style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:0">Source: CJ Dashboard · Lead Share By view · EU aggregate · CW06–CW23</p>
@@ -4549,6 +4548,8 @@ function updateP1ChartVisibility() {
   // Util chart: rebuild since it reads P1_IS_ALL / P1_SELECTED directly
   renderP1UtilChart();
   renderP1AiAnalysis();
+  // Lead Share: rebuild to update title/note for selected country
+  renderP1LeadShareChart();
 }
 
 function buildP1ToggleBar() {
@@ -5465,6 +5466,14 @@ function renderP1LeadShareChart() {
   const periods = getPeriods(ptype);
   const lsData = ptype === 'week' ? LEAD_SHARE_WEEKLY : LEAD_SHARE_MONTHLY;
 
+  // Reflect selected country in title + show note (only EU aggregate available)
+  const focusCountries = P1_IS_ALL ? [] : [...P1_SELECTED].filter(c => c !== 'EU_AVG');
+  const useCountry = focusCountries.length === 1 ? focusCountries[0] : null;
+  const titleEl = document.getElementById('p1_ls_title');
+  if (titleEl) titleEl.textContent = useCountry ? `Lead Share by Cohort — ${useCountry}` : 'Lead Share by Cohort — EU';
+  const noteEl = document.getElementById('p1_ls_country_note');
+  if (noteEl) noteEl.style.display = useCountry ? 'block' : 'none';
+
   const legend = document.getElementById('p1_ls_legend');
   if (legend) {
     legend.innerHTML = LEAD_SHARE_SEGMENTS.map((s, i) =>
@@ -5472,13 +5481,24 @@ function renderP1LeadShareChart() {
     ).join('');
   }
 
+  // Precompute top-3 segment indices per period (for always-on data labels)
+  const top3ByPeriodIdx = periods.map(p => {
+    if (!lsData[p]) return new Set();
+    return new Set(
+      lsData[p].map((v, si) => ({ si, v }))
+        .sort((a, b) => b.v - a.v)
+        .slice(0, 3)
+        .map(r => r.si)
+    );
+  });
+
   const datasets = LEAD_SHARE_SEGMENTS.map((label, i) => ({
     label,
     data: periods.map(p => (lsData[p] ? +lsData[p][i].toFixed(1) : null)),
     backgroundColor: LEAD_SHARE_COLORS[i],
     borderWidth: 0,
     datalabels: {
-      display: ctx => ctx.parsed != null && (ctx.parsed.y ?? 0) >= 5,
+      display: ctx => ctx.parsed != null && top3ByPeriodIdx[ctx.dataIndex]?.has(i),
       formatter: v => v != null ? v.toFixed(1) + '%' : '',
       color: '#fff',
       font: { size: 10, weight: '600' },
