@@ -19,6 +19,13 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 .banner-gap{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
 .page{display:none;padding:16px}
 .page.active{display:block}
+/* Executive Overview: flex-fill so all 6 panels fit in one viewport */
+#p1.active{display:flex;flex-direction:column;height:calc(100vh - 128px);overflow:hidden;gap:8px;padding-bottom:8px}
+#p1 .chart-row{flex:1;min-height:0;margin-bottom:0!important;gap:8px}
+#p1 .chart-row .chart-box{overflow:hidden;margin-bottom:0;display:flex;flex-direction:column;padding:10px 14px}
+#p1 .chart-row .chart-box h3{flex-shrink:0;margin-bottom:6px;font-size:14px}
+#p1 .chart-row .chart-box canvas{flex:1;min-height:0;width:100%!important}
+#p1 .chart-row .chart-box>p{flex-shrink:0;margin:3px 0 0}
 .filter-bar{position:sticky;top:var(--filter-bar-top,116px);z-index:50;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .filter-bar label{font-size:12px;color:#64748b;font-weight:600;margin-right:4px}
 .filter-bar select{border:1px solid #e2e8f0;border-radius:4px;padding:4px 8px;font-size:13px;background:#fff;color:#1e293b}
@@ -760,26 +767,7 @@ tr:hover td{background:#f9fafb !important;}
   <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
     <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column">
       <h3 style="margin-bottom:10px">AI Analysis — Key Show Rate Drivers</h3>
-      <div id="p1_ai_analysis" style="flex:1;font-size:12.5px;line-height:1.55;color:#374151;overflow-y:auto">
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="background:#fef9c3;border-left:3px solid #eab308;border-radius:4px;padding:8px 10px">
-            <strong style="color:#854d0e;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Lead Cohort Shift</strong>
-            <p style="margin:4px 0 0">Dealer Now share rose from <strong>36.5% → 40.5%</strong> (CW06–CW23), displacing the longer-lead Dealer 3M segment (7.2% → 5.7%). Same-day dealer leads tend to have higher no-show risk — this structural shift likely pressures show rate over time.</p>
-          </div>
-          <div style="background:#f0fdf4;border-left:3px solid #22c55e;border-radius:4px;padding:8px 10px">
-            <strong style="color:#14532d;font-size:12px;text-transform:uppercase;letter-spacing:.03em">BC Task Completion</strong>
-            <p style="margin:4px 0 0">% BC Tasks Done is the strongest leading indicator: <strong>ES leads at ~93%</strong> and consistently outperforms on show rate. <strong>SE and BE lag at ~77–80%</strong> and show correspondingly lower conversion — closing the task gap before appointment day is the highest-leverage action.</p>
-          </div>
-          <div style="background:#eff6ff;border-left:3px solid #3b82f6;border-radius:4px;padding:8px 10px">
-            <strong style="color:#1e3a8a;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Branch Availability</strong>
-            <p style="margin:4px 0 0">Branch utilisation data (from CW18) shows near-capacity operation in several markets. Overbooking relative to physical capacity forces late cancellations and reduces show probability — monitoring utilisation weekly helps catch saturation before it hits show rate.</p>
-          </div>
-          <div style="background:#fdf4ff;border-left:3px solid #a855f7;border-radius:4px;padding:8px 10px">
-            <strong style="color:#581c87;font-size:12px;text-transform:uppercase;letter-spacing:.03em">Cancellation Timing</strong>
-            <p style="margin:4px 0 0">Late cancellations (&lt;24h before appointment) represent a disproportionate no-show risk — the slot cannot be backfilled. Markets with a higher share of late-stage cancellations correlate with lower effective show rate even when gross show rate appears stable.</p>
-          </div>
-        </div>
-      </div>
+      <div id="p1_ai_analysis" style="flex:1;overflow-y:auto;color:#374151;padding-right:2px"></div>
     </div>
     <div class="chart-box" style="margin-bottom:0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
@@ -4415,7 +4403,7 @@ function buildP1CancelledChart() {
     plugins: [ChartDataLabels, totalLabelsPlugin],
     data: { labels: periods, datasets },
     options: {
-      responsive: true, maintainAspectRatio: true, aspectRatio: 2.5,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
         datalabels: { display: false },
@@ -4553,6 +4541,7 @@ function updateP1ChartVisibility() {
   buildP1CancelledChart();
   // Util chart: rebuild since it reads P1_IS_ALL / P1_SELECTED directly
   renderP1UtilChart();
+  renderP1AiAnalysis();
 }
 
 function buildP1ToggleBar() {
@@ -4899,7 +4888,7 @@ function renderP1() {
     type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p1_sr_chart', primarySRData)],
     data: { labels: periods, datasets: [...apptBarDatasets, ...purchaseBarDatasets, euDataset(euSRData), ...countryDatasets('sr')] },
     options: {
-      responsive: true, maintainAspectRatio: true, aspectRatio: 2.5,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         ...chartOpts().plugins,
         tooltip: {
@@ -4953,7 +4942,7 @@ function renderP1() {
         datalabels: { display: false } },
       ...countryAttemptedDatasets
     ]},
-    options: { ...chartOpts(), aspectRatio: 2.5 }
+    options: { ...chartOpts(), maintainAspectRatio: false }
   });
 
   buildP1CancelledChart();
@@ -4965,6 +4954,106 @@ function renderP1() {
 }
 
 // Reusable Chart.js plugin that draws ▲/▼ delta badges between consecutive non-null points on a trend line
+// ── Pearson correlation (null-safe) ──────────────────────────────────────────
+function pearsonCorr(xs, ys) {
+  const pairs = xs.map((x, i) => [x, ys[i]]).filter(([a, b]) => a != null && b != null);
+  const n = pairs.length;
+  if (n < 4) return null;
+  const mx = pairs.reduce((s, [a]) => s + a, 0) / n;
+  const my = pairs.reduce((s, [, b]) => s + b, 0) / n;
+  const num = pairs.reduce((s, [a, b]) => s + (a - mx) * (b - my), 0);
+  const dx = Math.sqrt(pairs.reduce((s, [a]) => s + (a - mx) ** 2, 0));
+  const dy = Math.sqrt(pairs.reduce((s, [, b]) => s + (b - my) ** 2, 0));
+  return (!dx || !dy) ? null : +(num / (dx * dy)).toFixed(2);
+}
+
+function renderP1AiAnalysis() {
+  const el = document.getElementById('p1_ai_analysis');
+  if (!el) return;
+  const ptype = GLOBAL_PTYPE;
+  const euMode = document.querySelector('input[name=p1_eumode]:checked')?.value || 'weighted';
+  const focusCountries = P1_IS_ALL ? [] : [...P1_SELECTED].filter(c => c !== 'EU_AVG');
+  const useCountry = focusCountries.length === 1 ? focusCountries[0] : null;
+  const label = useCountry || 'EU';
+  const ctx = useCountry ? `For <strong>${useCountry}</strong>` : 'Across <strong>EU markets</strong>';
+
+  // All periods in RAW_DATA for better statistical power
+  const allPeriods = [...new Set(RAW_DATA.filter(r => r.period_type === ptype).map(r => r.period_name))].sort();
+
+  const getSR = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.sr != null ? +(m.sr*100) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const sr = euSR(rows, euMode); return sr != null ? +(sr*100) : null;
+  };
+  const getDone = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.bc_done_rate != null ? +(m.bc_done_rate*100) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const agg = aggRows(rows); const ex = agg.bc_created - agg.bc_cancelled;
+    return ex ? +(agg.bc_done / ex * 100) : null;
+  };
+  const getAttempt = p => { const v = getBCAttemptedRate(ptype, p, useCountry); return v != null ? +(v*100) : null; };
+  const getUtil = p => {
+    if (useCountry) return UTIL_COUNTRY_WEEKLY[useCountry]?.[p] ?? UTIL_COUNTRY_MONTHLY?.[useCountry]?.[p] ?? null;
+    return UTIL_EU_WEEKLY[p] ?? (UTIL_EU_MONTHLY?.[p] ?? null);
+  };
+  const getCancel = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.bc_cancel_rate != null ? +(m.bc_cancel_rate*100) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const agg = aggRows(rows); return agg.bc_created ? +(agg.bc_cancelled / agg.bc_created * 100) : null;
+  };
+
+  const srArr = allPeriods.map(getSR);
+  const factors = [
+    { key: 'done',    label: '% BC Tasks Done',          data: allPeriods.map(getDone),   positive: true },
+    { key: 'attempt', label: '% Tasks Attempted',        data: allPeriods.map(getAttempt),positive: true },
+    { key: 'util',    label: 'Branch Utilisation',       data: allPeriods.map(getUtil),   positive: null },
+    { key: 'cancel',  label: 'BC Cancellation Rate',     data: allPeriods.map(getCancel), positive: false },
+    { key: 'dealer',  label: 'Dealer Now Lead Share',    data: allPeriods.map(p => { const d = ptype==='week' ? LEAD_SHARE_WEEKLY[p] : LEAD_SHARE_MONTHLY[p]; return d ? d[0] : null; }), positive: null },
+  ].map(f => ({ ...f, r: pearsonCorr(srArr, f.data) }))
+   .filter(f => f.r != null)
+   .sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+
+  const fmtR = r => `<strong style="font-family:monospace">r = ${r > 0 ? '+' : ''}${r}</strong>`;
+  const strength = r => { const a = Math.abs(r); return a >= 0.75 ? 'strong' : a >= 0.5 ? 'moderate' : a >= 0.3 ? 'weak' : 'negligible'; };
+  const dir = r => r > 0 ? 'positive' : 'negative';
+
+  // Paragraph 1: top driver
+  let p1 = '', p2 = '';
+  if (factors.length === 0) {
+    el.innerHTML = '<p style="color:#94a3b8;font-style:italic;font-size:12px">Not enough data to compute correlations for the selected filter.</p>';
+    return;
+  }
+  const top = factors[0];
+  const n = factors.reduce((s, f) => s + (f.data.filter(v => v!=null)).length, 0);
+  const nPeriods = srArr.filter(v => v!=null).length;
+  p1 = `${ctx}, the factor tracking most closely with Show Rate over <strong>${nPeriods} ${ptype === 'week' ? 'weekly' : 'monthly'} periods</strong> is <strong>${top.label}</strong> (${fmtR(top.r)} — ${strength(top.r)} ${dir(top.r)} correlation).`;
+  if (factors.length >= 2) {
+    const f2 = factors[1];
+    p1 += ` <strong>${f2.label}</strong> ranks second (${fmtR(f2.r)}).`;
+  }
+  if (factors.length >= 3) {
+    const rest = factors.slice(2).map(f => `${f.label} (${fmtR(f.r)})`).join(', ');
+    p1 += ` Other measured factors — ${rest} — show ${factors.slice(2).every(f => Math.abs(f.r) < 0.3) ? 'weaker' : 'lower'} associations.`;
+  }
+
+  // Paragraph 2: actionable interpretation
+  const topKey = top.key;
+  const topR = top.r;
+  const actionMap = {
+    done:    `Closing the BC task completion gap — especially ensuring agents work through every created task before appointment day — is the most data-supported lever to lift show rate${useCountry ? ` in ${useCountry}` : ''}.`,
+    attempt: `Early outreach quality drives outcomes: markets that achieve higher task-attempt rates earlier in the week see higher show rates, pointing to scheduling and workload distribution as priority areas.`,
+    util:    `Branch capacity utilisation ${topR < 0 ? 'is negatively correlated with show rate — near-capacity branches may be accepting appointments they cannot service well, leading to last-minute cancellations.' : 'correlates positively with show rate — higher-utilisation periods tend to coincide with stronger conversion.'}`,
+    cancel:  `BC task cancellation rate shows a ${strength(topR)} ${dir(topR)} relationship — ${topR < 0 ? 'reducing unnecessary task cancellations' : 'managing cancellation patterns'} would have a measurable show rate impact.`,
+    dealer:  `The growing Dealer Now cohort share ${topR < 0 ? '(r = ' + topR + ') is negatively associated with show rate — same-day dealer leads carry higher no-show risk. Rebalancing pipeline toward longer-lead cohorts or improving same-day handling is the implied opportunity.' : 'does not appear to be dragging show rate down in this market — cohort composition risk is contained.'}`,
+  };
+  p2 = actionMap[topKey] || '';
+
+  el.innerHTML = `<p style="margin:0 0 8px;font-size:12.5px;line-height:1.6">${p1}</p><p style="margin:0;font-size:12.5px;line-height:1.6">${p2}</p><p style="margin:6px 0 0;font-size:11px;color:#94a3b8">Pearson r over all available ${ptype} periods · |r|≥0.75 strong · ≥0.5 moderate · ≥0.3 weak</p>`;
+}
+
 function makeDeltaPlugin(canvasId, primaryData) {
   return {
     id: 'dpl_' + canvasId,
@@ -5016,7 +5105,7 @@ function _getVal(weeklyArr, monthlyArr, period, ptype) {
 // sel = {isAll: bool, selected: Set<string>, showEU: bool}
 // slotWeekly/slotMonthly: optional {country: [values]} — adds stacked bars on secondary y-axis
 // slotEuWeekly/slotEuMonthly: optional EU-total arrays — adds a trend line on y2
-function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel, slotWeekly, slotMonthly, slotEuWeekly, slotEuMonthly, aspectRatio = 1.7) {
+function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel, slotWeekly, slotMonthly, slotEuWeekly, slotEuMonthly, aspectRatio = 1.7, maintainAR = true) {
   const periods = getPeriods(ptype);
   const isSingleSel = !sel.isAll;
   const hasSlots = !!slotWeekly;
@@ -5142,7 +5231,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
     type: 'line', plugins: [ChartDataLabels, deltaPlugin],
     data: { labels: periods, datasets },
     options: {
-      responsive: true, maintainAspectRatio: true, aspectRatio,
+      responsive: true, maintainAspectRatio: maintainAR, aspectRatio,
       plugins: {
         legend: { display: false },
         datalabels: { display: 'auto' },
@@ -5207,8 +5296,7 @@ function renderP1LeadShareChart() {
     data: { labels: periods, datasets },
     options: {
       responsive: true,
-      maintainAspectRatio: true,
-      aspectRatio: 2.5,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         datalabels: { display: false },
@@ -5236,7 +5324,7 @@ function renderP1LeadShareChart() {
 
 function renderP1UtilChart() {
   const sel = { isAll: P1_IS_ALL, selected: P1_SELECTED, showEU: P1_SELECTED.has('EU_AVG') };
-  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY, 2.5);
+  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY, 1.7, false);
 }
 
 // ========== PAGE 8 — Branch Operations ==========
