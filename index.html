@@ -782,10 +782,13 @@ tr:hover td{background:#f9fafb !important;}
     </div>
   </div>
 
-  <!-- BC Task Volume bar chart -->
-  <div class="chart-box" style="margin-bottom:16px">
-    <h3 id="p1_vol_title">Booking Confirmation Task Volume — EU Aggregate</h3>
-    <canvas id="p1_vol_chart"></canvas>
+  <!-- BC Task Volume bar chart — left half, right reserved for future chart -->
+  <div class="chart-row" style="margin-bottom:16px;align-items:stretch">
+    <div class="chart-box" style="margin-bottom:0">
+      <h3 id="p1_vol_title">Booking Confirmation Task Volume — EU Aggregate</h3>
+      <canvas id="p1_vol_chart"></canvas>
+    </div>
+    <div class="chart-box" style="margin-bottom:0;visibility:hidden"></div>
   </div>
 
 
@@ -4661,7 +4664,6 @@ function toggleShowAppts() {
     _applyVolumeBarVisibility(id, ch);
     ch.update();
   });
-  syncP1Y2Axes();
 }
 
 function toggleShowPurchases() {
@@ -4672,7 +4674,6 @@ function toggleShowPurchases() {
     _applyVolumeBarVisibility(id, ch);
     ch.update();
   });
-  syncP1Y2Axes();
 }
 
 function toggleBCAttempted() {
@@ -4968,7 +4969,6 @@ function renderP1() {
   // Apply country selection visibility AFTER charts are fully built
   updateP1ChartVisibility();
   renderP1UtilChart();
-  syncP1Y2Axes();
 }
 
 // Converts a period name to a value from weekly/monthly arrays (null if no data for that period)
@@ -5024,7 +5024,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
       const { ctx, chartArea, scales } = chart;
       if (!scales.x) return;
       ctx.save();
-      ctx.font = '600 9px system-ui,-apple-system,sans-serif';
+      ctx.font = '600 12px system-ui,-apple-system,sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       for (let i = 1; i < primaryDataForDelta.length; i++) {
@@ -5192,21 +5192,6 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
 function renderP1UtilChart() {
   const sel = { isAll: P1_IS_ALL, selected: P1_SELECTED, showEU: P1_SELECTED.has('EU_AVG') };
   _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY);
-}
-
-function syncP1Y2Axes() {
-  const srChart = CHARTS['p1_sr_chart'];
-  const utilChart = CHARTS['p1_util_chart'];
-  if (!srChart || !utilChart) return;
-  const srY2 = srChart.scales['y2'];
-  const utilY2 = utilChart.scales['y2'];
-  if (!srY2 || !utilY2) return;
-  const sharedMax = Math.max(srY2.max || 0, utilY2.max || 0);
-  if (sharedMax <= 0) return;
-  srChart.options.scales.y2.max = sharedMax;
-  utilChart.options.scales.y2.max = sharedMax;
-  srChart.update('none');
-  utilChart.update('none');
 }
 
 // ========== PAGE 8 — Branch Operations ==========
