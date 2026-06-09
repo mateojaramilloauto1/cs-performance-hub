@@ -1644,6 +1644,23 @@ const APPTCONV_COUNTRY_MONTHLY = {
   FR:[null,null,50.8,48.7], IT:[null,null,47.1,44.5], NL:[null,null,61.5,64.0], PT:[null,null,47.5,44.5], SE:[null,null,52.2,48.9]
 };
 
+// Evaluation slots available per country per week — source: Tableau Cockpit, CW18-CW24
+const EVAL_SLOTS_EU_WEEKLY = [44392, 53453, 47210, 53911, 48706, 51018, 9688];
+const EVAL_SLOTS_COUNTRY_WEEKLY = {
+  AT:[1128,1473,1140,1403,1023,1088,328], BE:[2386,2879,2239,3105,2523,3235,448],
+  DE:[11607,14322,10840,13671,10868,12231,2734], ES:[7203,8761,8684,8882,8514,8520,1541],
+  FR:[8695,11375,10057,12043,11580,11897,1767], IT:[9604,9973,10065,9989,9679,9939,2104],
+  NL:[1394,1623,1305,1700,1371,1714,248], PT:[1272,1592,1675,1644,1615,1239,251],
+  SE:[1103,1455,1205,1474,1533,1155,267]
+};
+// Monthly eval slots: May = sum(CW18-21), Jun = sum(CW22-24); Mar/Apr unavailable
+const EVAL_SLOTS_EU_MONTHLY    = [null, null, 198966, 109412];
+const EVAL_SLOTS_COUNTRY_MONTHLY = {
+  AT:[null,null,5144,2439], BE:[null,null,10609,6206], DE:[null,null,50440,25833],
+  ES:[null,null,33530,18575], FR:[null,null,42170,25244], IT:[null,null,39631,21722],
+  NL:[null,null,6022,3333], PT:[null,null,6183,3105], SE:[null,null,5237,2955]
+};
+
 // ========== PUBLIC HOLIDAYS (national, 2025-01-01 – 2026-05-31) ==========
 // Source: officeholidays.com per country. Easter 2025 = Apr 20, Easter 2026 = Apr 5.
 const HOLIDAYS = {
@@ -5001,12 +5018,32 @@ function _getVal(weeklyArr, monthlyArr, period, ptype) {
 }
 
 // sel = {isAll: bool, selected: Set<string>, showEU: bool}
-function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel) {
+// slotWeekly/slotMonthly: optional {country: [values]} — adds stacked bars on secondary y-axis
+function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel, slotWeekly, slotMonthly) {
   const periods = ptype === 'week'
     ? Object.keys(CW18_WEEK_MAP).sort()
     : Object.keys(MONTHLY_MAP).sort();
   const isSingleSel = !sel.isAll;
+  const hasSlots = !!slotWeekly;
   const datasets = [];
+
+  // Stacked slot bars (drawn first so lines render on top)
+  if (hasSlots) {
+    COUNTRIES.forEach(c => {
+      if (!slotWeekly[c]) return;
+      const visible = sel.isAll || sel.selected.has(c);
+      datasets.push({
+        type: 'bar', label: `${c} Slots`,
+        data: periods.map(p => _getVal(slotWeekly[c], slotMonthly ? slotMonthly[c] : null, p, ptype)),
+        backgroundColor: COUNTRY_COLORS[c] + '28',
+        borderColor: COUNTRY_COLORS[c] + '55',
+        borderWidth: 0.5,
+        stack: 'slots', yAxisID: 'y2', hidden: !visible,
+        datalabels: { display: false }
+      });
+    });
+  }
+
   if (sel.showEU) {
     datasets.push({
       label: 'EU Avg', data: periods.map(p => _getVal(euWeekly, euMonthly, p, ptype)),
@@ -5044,15 +5081,30 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
       plugins: {
         legend: { display: false },
         datalabels: { display: 'auto' },
-        tooltip: { mode: 'index', intersect: false,
-          callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : 'n/a'}` }
+        tooltip: {
+          mode: 'index', intersect: false,
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.yAxisID === 'y2') {
+                const v = ctx.parsed.y;
+                return v != null ? `${ctx.dataset.label.replace(' Slots','')}: ${v.toLocaleString()} slots` : null;
+              }
+              return `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : 'n/a'}`;
+            }
+          }
         }
       },
       scales: {
         x: { ticks: { callback: (_, i) => ptype === 'week'
           ? periods[i].replace('2026_','CW')
           : ({'2026_03':'Mar 26','2026_04':'Apr 26','2026_05':'May 26','2026_06':'Jun 26'}[periods[i]] || periods[i]) } },
-        y: { min: 0, max: 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } }
+        y: { min: 0, max: 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } },
+        y2: {
+          display: hasSlots, position: 'right',
+          title: { display: true, text: '# Eval Slots', font: {size:11}, color: '#94a3b8' },
+          ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, color: '#94a3b8' },
+          grid: { drawOnChartArea: false }
+        }
       }
     }
   });
@@ -5060,14 +5112,14 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
 
 function renderP1UtilChart() {
   const sel = { isAll: P1_IS_ALL, selected: P1_SELECTED, showEU: P1_SELECTED.has('EU_AVG') };
-  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel);
+  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY);
 }
 
 // ========== PAGE 8 — Branch Operations ==========
 function renderP8() {
   const isAll = GLOBAL_COUNTRY_SET.size === 0;
   const sel = { isAll, selected: GLOBAL_COUNTRY_SET, showEU: GLOBAL_SHOW_EU_AVG };
-  _renderTrendChart('p8_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel);
+  _renderTrendChart('p8_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY);
 }
 
 function renderP8KpiCards() {
