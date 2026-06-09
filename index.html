@@ -680,7 +680,6 @@ tr:hover td{background:#f9fafb !important;}
   <button class="tab-btn" onclick="showTab('p2')">Country Deep Dive</button>
   <button class="tab-btn" onclick="showTab('p3')">Customer Service Tasks Overview</button>
   <button class="tab-btn" onclick="showTab('p4')">Appointment Cancellation Overview</button>
-  <button class="tab-btn" onclick="showTab('p5')">Priority Actions</button>
   <button class="tab-btn" onclick="showTab('p6')">KPI Definitions</button>
   <button class="tab-btn" onclick="showTab('p8')">Branch Operations</button>
   <button class="tab-btn" onclick="showTab('p7')">Changelog</button>
@@ -906,39 +905,6 @@ tr:hover td{background:#f9fafb !important;}
     <canvas id="p4_stack"></canvas>
   </div>
   <div class="chart-box"><h3>Cancelled Volume vs Show Rate — by Country</h3><canvas id="p4_scatter"></canvas></div>
-</div>
-
-<!-- PAGE 5 -->
-<div id="p5" class="page">
-  <div class="filter-bar">
-    <span><label for="p5_period">Period:</label><select id="p5_period" onchange="renderP5()"></select></span>
-    <span><label>Compare vs:</label>
-      <span class="radio-group">
-        <input type="radio" name="p5_compmode" id="p5_prev1" value="prev1" checked onchange="renderP5()"><label for="p5_prev1">Prev period</label>
-        <input type="radio" name="p5_compmode" id="p5_prev4" value="prev4" onchange="renderP5()"><label for="p5_prev4">4-period avg</label>
-      </span>
-    </span>
-  </div>
-  <div class="selection-summary" id="p5_selection_summary"></div>
-  <div class="table-header-row" style="margin-bottom:8px">
-    <div class="section-title">Priority Ranking</div>
-    <button class="export-btn" onclick="exportTableToCSV('p5_tbody','priority-actions')">Export CSV</button>
-  </div>
-  <div class="priority-legend">
-    <span style="font-size:12px;color:#64748b;font-weight:600">Category:</span>
-    <span class="badge badge-critical">Critical ≥75</span>
-    <span class="badge badge-high">High 50–74</span>
-    <span class="badge badge-medium">Medium 25–49</span>
-    <span class="badge badge-low">Low &lt;25</span>
-  </div>
-  <div class="note" style="margin-bottom:8px">Score 0–100 — management prioritization tool, not a statistical model. Scoring: BC volume (25) + SR gap vs EU (25) + SR decline (20) + BC Done decline (15) + Cancelled vol increase (10) + BC pending (5).</div>
-  <div class="chart-box tbl-scroll" style="padding:0"><table><thead><tr>
-    <th>Rank</th><th>Country</th><th>Score</th><th>Category</th><th>Show Rate</th><th>SR Δ</th>
-    <th>BC Created</th><th>% BC Tasks Done</th><th>Done Δ</th><th>BC Pending</th>
-    <th>Cancelled Vol</th><th>Cancel Δ</th><th>Main Drivers</th>
-  </tr></thead><tbody id="p5_tbody"></tbody></table></div>
-  <div class="section-title">Priority Narratives</div>
-  <div class="ic-cards" id="p5_narratives"></div>
 </div>
 
 <!-- PAGE 6 -->
@@ -1841,7 +1807,6 @@ function setGlobalPtype(v) {
   // Repopulate period selects that depend on ptype
   populatePeriodSelect('p3_period', v, true);
   populatePeriodSelect('p4_period', v, true);
-  populatePeriodSelect('p5_period', v, true);
   rerenderActivePage();
 }
 
@@ -1927,7 +1892,6 @@ function rerenderActivePage() {
   else if (id==='p2') renderP2();
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
-  else if (id==='p5') renderP5();
   else if (id==='p8') renderP8();
 }
 
@@ -4238,7 +4202,6 @@ function rebuildData(csvText) {
     else if (pid==='p2') renderP2();
     else if (pid==='p3') renderP3();
     else if (pid==='p4') renderP4();
-    else if (pid==='p5') renderP5();
   }
   const weeks = getPeriods('week');
   const latestWeek = weeks[weeks.length-1] || '—';
@@ -4311,13 +4274,12 @@ function showTab(id) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    if (['p1','p2','p3','p4','p5','p6','p8','p7'][i] === id) b.classList.add('active');
+    if (['p1','p2','p3','p4','p6','p8','p7'][i] === id) b.classList.add('active');
   });
   if (id==='p1') renderP1();
   else if (id==='p2') renderP2();
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
-  else if (id==='p5') renderP5();
   else if (id==='p8') renderP8();
   // p6, p7 are static — no render needed
 }
@@ -7100,7 +7062,6 @@ function onPtypeChange(page) {
   if (page==='p1') { renderP1(); }  // P1 always uses latest period, no select to update
   else if (page==='p3') { populatePeriodSelect('p3_period', ptype, true); renderP3(); }
   else if (page==='p4') { populatePeriodSelect('p4_period', ptype, true); renderP4(); }
-  else if (page==='p5') { populatePeriodSelect('p5_period', ptype, true); renderP5(); }
   else if (page==='p2') { renderP2(); }
 }
 
