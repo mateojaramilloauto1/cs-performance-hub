@@ -20,7 +20,7 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 .page{display:none;padding:16px}
 .page.active{display:block}
 /* Executive Overview: flex-fill so all 6 panels fit in one viewport */
-#p1.active{display:flex;flex-direction:column;height:calc(100vh - 128px);overflow:hidden;gap:8px;padding-bottom:8px}
+#p1.active{display:flex;flex-direction:column;overflow:hidden;gap:8px;padding-bottom:8px}
 #p1 .chart-row{flex:1;min-height:0;margin-bottom:0!important;gap:8px}
 #p1 .chart-row .chart-box{overflow:hidden;margin-bottom:0;display:flex;flex-direction:column;padding:10px 14px}
 #p1 .chart-row .chart-box h3{flex-shrink:0;margin-bottom:6px;font-size:14px}
@@ -783,7 +783,7 @@ tr:hover td{background:#f9fafb !important;}
   <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
     <div class="chart-box" style="margin-bottom:0">
       <h3>Lead Share by Cohort — EU</h3>
-      <div id="p1_ls_legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:6px;font-size:11px;color:#374151"></div>
+      <div id="p1_ls_legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:6px;font-size:13px;color:#374151"></div>
       <canvas id="p1_ls_chart"></canvas>
       <p style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:0">Source: CJ Dashboard · Lead Share By view · EU aggregate · CW06–CW23</p>
     </div>
@@ -4719,7 +4719,17 @@ function toggleP3EuAvg() {
   ch.update();
 }
 
+function setP1ViewportHeight() {
+  const el = document.getElementById('p1');
+  if (!el || !el.classList.contains('active')) return;
+  el.style.height = '';
+  const top = el.getBoundingClientRect().top;
+  el.style.height = (window.innerHeight - top - 8) + 'px';
+}
+window.addEventListener('resize', setP1ViewportHeight);
+
 function renderP1() {
+  setP1ViewportHeight();
   const {ptype, period, euMode, compMode} = getP1Filters();
   P1_PTYPE = ptype; P1_EUMODE = euMode;
   const compPeriods = getCompPeriods(ptype, period, compMode);
@@ -4995,8 +5005,8 @@ function renderP1AiAnalysis() {
   };
   const getAttempt = p => { const v = getBCAttemptedRate(ptype, p, useCountry); return v != null ? +(v*100) : null; };
   const getUtil = p => {
-    if (useCountry) return UTIL_COUNTRY_WEEKLY[useCountry]?.[p] ?? UTIL_COUNTRY_MONTHLY?.[useCountry]?.[p] ?? null;
-    return UTIL_EU_WEEKLY[p] ?? (UTIL_EU_MONTHLY?.[p] ?? null);
+    if (useCountry) return _getVal(UTIL_COUNTRY_WEEKLY[useCountry], UTIL_COUNTRY_MONTHLY?.[useCountry], p, ptype);
+    return _getVal(UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, p, ptype);
   };
   const getCancel = p => {
     if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.bc_cancel_rate != null ? +(m.bc_cancel_rate*100) : null; }
@@ -5275,9 +5285,9 @@ function renderP1LeadShareChart() {
   const lsData = ptype === 'week' ? LEAD_SHARE_WEEKLY : LEAD_SHARE_MONTHLY;
 
   const legend = document.getElementById('p1_ls_legend');
-  if (legend && !legend.children.length) {
+  if (legend) {
     legend.innerHTML = LEAD_SHARE_SEGMENTS.map((s, i) =>
-      `<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:${LEAD_SHARE_COLORS[i]};flex-shrink:0"></span>${s}</span>`
+      `<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:${LEAD_SHARE_COLORS[i]};flex-shrink:0"></span>${s}</span>`
     ).join('');
   }
 
@@ -5286,7 +5296,14 @@ function renderP1LeadShareChart() {
     data: periods.map(p => (lsData[p] ? +lsData[p][i].toFixed(1) : null)),
     backgroundColor: LEAD_SHARE_COLORS[i],
     borderWidth: 0,
-    datalabels: { display: false },
+    datalabels: {
+      display: ctx => (ctx.parsed.y ?? 0) >= 5,
+      formatter: v => v != null ? v.toFixed(1) + '%' : '',
+      color: '#fff',
+      font: { size: 10, weight: '600' },
+      anchor: 'center',
+      align: 'center',
+    },
   }));
 
   destroyChart('p1_ls_chart');
@@ -5299,7 +5316,7 @@ function renderP1LeadShareChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        datalabels: { display: false },
+        datalabels: {},
         tooltip: {
           mode: 'index',
           intersect: false,
