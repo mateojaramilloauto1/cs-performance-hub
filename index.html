@@ -5067,7 +5067,6 @@ function renderP1UtilChart() {
 function renderP8() {
   const isAll = GLOBAL_COUNTRY_SET.size === 0;
   const sel = { isAll, selected: GLOBAL_COUNTRY_SET, showEU: GLOBAL_SHOW_EU_AVG };
-  _renderTrendChart('p8_ac_chart', GLOBAL_PTYPE, APPTCONV_EU_WEEKLY, APPTCONV_EU_MONTHLY, APPTCONV_COUNTRY_WEEKLY, APPTCONV_COUNTRY_MONTHLY, sel);
   _renderTrendChart('p8_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel);
 }
 
@@ -7319,13 +7318,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <div id="p8" class="page">
   <div class="section-title" style="margin-bottom:16px">Branch Operations</div>
-
-  <!-- Appointment Conversion trend chart -->
-  <div class="chart-box" style="margin-bottom:16px">
-    <h3>Appointment Conversion — Trend per Market</h3>
-    <canvas id="p8_ac_chart"></canvas>
-    <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty. Source: Tableau Purchasing Report 2.1.</p>
-  </div>
 
   <!-- Branch Utilisation trend chart -->
   <div class="chart-box" style="margin-bottom:16px">
