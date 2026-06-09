@@ -180,6 +180,9 @@ canvas{max-height:320px}
 .cl-tag-fix{background:#fee2e2;color:#b91c1c}
 .cl-tag-change{background:#dbeafe;color:#1e40af}
 .cl-tag-note{background:#f1f5f9;color:#475569}
+.cl-tag-data{background:#fef3c7;color:#92400e}
+.cl-data-block{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px 20px;margin-bottom:14px}
+.cl-data-block .cl-version-header{margin-bottom:10px}
 .cl-items{list-style:none;display:flex;flex-direction:column;gap:7px;margin:0;padding:0}
 .cl-items li{font-size:13px;color:#374151;line-height:1.5;display:flex;align-items:baseline;gap:8px}
 /* ---- BC Analysis merged card ---- */
@@ -7209,6 +7212,20 @@ document.addEventListener('DOMContentLoaded', () => {
 <div id="p7" class="page">
   <div style="max-width:860px">
     <div class="section-title" style="margin-bottom:16px">Dashboard Changelog</div>
+
+    <!-- DATA UPDATE ENTRIES — add a new cl-data-block each time data is refreshed -->
+    <div class="cl-data-block">
+      <div class="cl-version-header">
+        <span class="cl-version-title" style="font-size:14px;font-weight:700;color:#92400e">Data Update — 2026-06-09</span>
+        <span class="cl-version-date">Mateo</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Performance metrics</strong> (Show Rate, Done Rate, Cancellation) — weekly: CW18–CW23; monthly: Jan–Jun 2026 (Jun partial, CW23 only). Source: Tableau BC Task Overview</li>
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Branch Utilisation</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Conversion</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Cancellation</strong> — weekly: CW18–CW23; monthly: Jan–Jun 2026. Source: Tableau</li>
+      </ul>
+    </div>
 
     <div class="cl-version">
       <div class="cl-version-header">
