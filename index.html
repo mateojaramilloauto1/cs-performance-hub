@@ -706,6 +706,13 @@ tr:hover td{background:#f9fafb !important;}
   <button class="gcb-btn" id="gcb_PT" onclick="setGlobalCountry('PT')">🇵🇹 PT</button>
   <button class="gcb-btn" id="gcb_SE" onclick="setGlobalCountry('SE')">🇸🇪 SE</button>
   <button class="gcb-btn" id="gcb_EU_AVG" onclick="setGlobalCountry('EU_AVG')" style="display:none;border-style:dashed;margin-left:8px">EU Avg</button>
+  <span style="margin-left:16px;margin-right:4px;color:#94a3b8;font-size:12px;font-weight:600;letter-spacing:.03em">LAST</span>
+  <button class="gcb-btn window-btn" id="gwb_4"  onclick="setGlobalWindow(4)">4</button>
+  <button class="gcb-btn window-btn" id="gwb_6"  onclick="setGlobalWindow(6)">6</button>
+  <button class="gcb-btn window-btn" id="gwb_8"  onclick="setGlobalWindow(8)">8</button>
+  <button class="gcb-btn window-btn" id="gwb_10" onclick="setGlobalWindow(10)">10</button>
+  <button class="gcb-btn window-btn" id="gwb_12" onclick="setGlobalWindow(12)">12</button>
+  <button class="gcb-btn window-btn active" id="gwb_all" onclick="setGlobalWindow(null)">All</button>
 </div>
 </div><!-- end #sticky-header -->
 <div class="help-panel" id="help_panel">
@@ -1824,6 +1831,7 @@ let GLOBAL_PTYPE = 'week';          // 'week' | 'month' — drives all tabs
 let GLOBAL_COUNTRY = 'EU';          // primary ISO code or 'EU' — for single-country pages (P2, P3, P4)
 let GLOBAL_COUNTRY_SET = new Set(); // multi-selection for P1 (empty = All/EU, max 2 entries)
 let GLOBAL_SHOW_EU_AVG = false;      // whether EU Avg line is shown when 1 country is selected on P1
+let GLOBAL_WINDOW = null;           // null = all periods, or integer = last N periods
 
 function setGlobalPtype(v) {
   GLOBAL_PTYPE = v;
@@ -1832,6 +1840,20 @@ function setGlobalPtype(v) {
   populatePeriodSelect('p4_period', v, true);
   populatePeriodSelect('p5_period', v, true);
   rerenderActivePage();
+}
+
+function setGlobalWindow(n) {
+  GLOBAL_WINDOW = n;
+  updateWindowBtnStyles();
+  rerenderActivePage();
+}
+
+function updateWindowBtnStyles() {
+  document.querySelectorAll('.window-btn').forEach(btn => {
+    const id = btn.id; // e.g. gwb_4, gwb_all
+    const val = id === 'gwb_all' ? null : parseInt(id.replace('gwb_', ''), 10);
+    btn.classList.toggle('active', val === GLOBAL_WINDOW);
+  });
 }
 
 function setGlobalCountry(c) {
@@ -1923,7 +1945,9 @@ function getRows(ptype, period, country) {
 
 function getPeriods(ptype) {
   const s = new Set(RAW_DATA.filter(r => r.period_type === ptype).map(r => r.period_name));
-  return [...s].sort();
+  const all = [...s].sort();
+  if (!GLOBAL_WINDOW || GLOBAL_WINDOW >= all.length) return all;
+  return all.slice(-GLOBAL_WINDOW);
 }
 
 function getLatestPeriod(ptype) {
@@ -4961,9 +4985,7 @@ function _getVal(weeklyArr, monthlyArr, period, ptype) {
 // slotWeekly/slotMonthly: optional {country: [values]} — adds stacked bars on secondary y-axis
 // slotEuWeekly/slotEuMonthly: optional EU-total arrays — adds a trend line on y2
 function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel, slotWeekly, slotMonthly, slotEuWeekly, slotEuMonthly) {
-  const periods = ptype === 'week'
-    ? Object.keys(CW18_WEEK_MAP).sort()
-    : Object.keys(MONTHLY_MAP).sort();
+  const periods = getPeriods(ptype);
   const isSingleSel = !sel.isAll;
   const hasSlots = !!slotWeekly;
 
