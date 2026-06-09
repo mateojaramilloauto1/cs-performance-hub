@@ -5064,6 +5064,54 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
   // All-countries: bars fill ~65% of height (stacked, individual segments smaller).
   const y2SuggestedMax = maxStackedSlots > 0 ? maxStackedSlots * (isSingleSel ? 2.5 : 1.55) : undefined;
 
+  // Primary utilisation data for period-over-period delta annotations
+  const primaryDataForDelta = periods.map(p => {
+    if (isSingleSel && sel.selected.size === 1) {
+      const sc = [...sel.selected][0];
+      return _getVal(countryWeekly[sc], countryMonthly ? countryMonthly[sc] : null, p, ptype);
+    }
+    return _getVal(euWeekly, euMonthly, p, ptype);
+  });
+
+  // Plugin: draws ▲/▼ % change badges between consecutive x-axis ticks
+  const deltaPlugin = {
+    id: 'dpl_' + canvasId,
+    afterDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      if (!scales.x) return;
+      ctx.save();
+      ctx.font = '600 9px system-ui,-apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const yCenter = chartArea.bottom - 11;
+      for (let i = 1; i < primaryDataForDelta.length; i++) {
+        const prev = primaryDataForDelta[i - 1];
+        const curr = primaryDataForDelta[i];
+        if (prev == null || curr == null) continue;
+        const delta = +(curr - prev).toFixed(1);
+        const arrow = delta >= 0 ? '▲' : '▼';
+        const sign = delta >= 0 ? '+' : '';
+        const color = delta >= 0 ? '#16a34a' : '#dc2626';
+        const text = `${arrow} ${sign}${Math.abs(delta).toFixed(1)}pp`;
+        const x0 = scales.x.getPixelForTick(i - 1);
+        const x1 = scales.x.getPixelForTick(i);
+        const xMid = (x0 + x1) / 2;
+        const w = ctx.measureText(text).width;
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(xMid - w / 2 - 3, yCenter - 7, w + 6, 14, 3);
+        } else {
+          ctx.rect(xMid - w / 2 - 3, yCenter - 7, w + 6, 14);
+        }
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.fillText(text, xMid, yCenter);
+      }
+      ctx.restore();
+    }
+  };
+
   const datasets = [];
 
   // Stacked slot bars (drawn first so lines render on top)
@@ -5077,6 +5125,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
         backgroundColor: COUNTRY_COLORS[c] + '38',
         borderColor: COUNTRY_COLORS[c] + '88',
         borderWidth: 0.5,
+        categoryPercentage: 0.85, barPercentage: 0.9,
         stack: 'slots', yAxisID: 'y2', hidden: !visible,
         datalabels: {
           display: 'auto',
@@ -5152,10 +5201,10 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   CHARTS[canvasId] = new Chart(canvas, {
-    type: 'line', plugins: [ChartDataLabels],
+    type: 'line', plugins: [ChartDataLabels, deltaPlugin],
     data: { labels: periods, datasets },
     options: {
-      responsive: true, maintainAspectRatio: true,
+      responsive: true, maintainAspectRatio: true, aspectRatio: 1.7,
       plugins: {
         legend: { display: false },
         datalabels: { display: 'auto' },
