@@ -766,25 +766,25 @@ tr:hover td{background:#f9fafb !important;}
   </div>
   <div class="kpi-row" id="p1_kpis"></div>
 
-  <!-- 3 separate trend charts -->
-  <div class="chart-box" style="margin-bottom:16px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-      <button class="toggle-btn appts-toggle-btn" id="appts_toggle_p1" onclick="toggleShowAppts()" title="Show/hide appointment volume bars">📅 # Appts</button>
-      <button class="toggle-btn purchases-toggle-btn" id="purchases_toggle_p1" onclick="toggleShowPurchases()" title="Show/hide purchase volume bars">🛒 # Purchases</button>
-      <h3 style="margin:0;flex:1">Show Rate — Weekly Trend per Market</h3>
+  <!-- Show Rate + Branch Utilisation side by side (50/50) -->
+  <div class="chart-row" style="margin-bottom:16px;align-items:stretch">
+    <div class="chart-box" style="margin-bottom:0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <button class="toggle-btn appts-toggle-btn" id="appts_toggle_p1" onclick="toggleShowAppts()" title="Show/hide appointment volume bars">📅 # Appts</button>
+        <button class="toggle-btn purchases-toggle-btn" id="purchases_toggle_p1" onclick="toggleShowPurchases()" title="Show/hide purchase volume bars">🛒 # Purchases</button>
+        <h3 style="margin:0;flex:1">Show Rate — Weekly Trend per Market</h3>
+      </div>
+      <canvas id="p1_sr_chart"></canvas>
     </div>
-    <canvas id="p1_sr_chart"></canvas>
-  </div>
-
-  <!-- Branch Utilisation chart -->
-  <div class="chart-box" style="margin-bottom:16px">
-    <h3>Branch Utilisation — Trend per Market</h3>
-    <div id="p1_util_empty" style="display:none;color:#94a3b8;font-size:13px;padding:12px 0">No data available.</div>
-    <canvas id="p1_util_chart"></canvas>
-    <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty.</p>
+    <div class="chart-box" style="margin-bottom:0">
+      <h3>Branch Utilisation — Trend per Market</h3>
+      <div id="p1_util_empty" style="display:none;color:#94a3b8;font-size:13px;padding:12px 0">No data available.</div>
+      <canvas id="p1_util_chart"></canvas>
+      <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty.</p>
+    </div>
   </div>
   <div class="chart-row">
-    <div class="chart-box"><h3>% BC Tasks Done — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
+    <div class="chart-box"><h3>% BC Tasks Done &amp; Attempted — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
     <div class="chart-box">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <h3 style="margin:0;flex:1">Cancelled Appointments — Timing Breakdown</h3>
@@ -813,8 +813,6 @@ tr:hover td{background:#f9fafb !important;}
     </table>
   </div>
 
-  <div class="section-title">Executive Insight</div>
-  <div class="ic-cards" id="p1_insight_cards"></div>
 </div>
 
 <!-- PAGE 2 -->
@@ -4776,7 +4774,7 @@ function renderP1() {
       display: false,
       formatter: v => v != null ? v.toFixed(1) + '%' : '',
       anchor: 'end', align: 'top',
-      font: { size: 11, weight: '700' },
+      font: { size: 13, weight: '700' },
       color: '#6366f1',
       padding: { bottom: 2 }
     }
@@ -4795,7 +4793,7 @@ function renderP1() {
         display: false,
         formatter: v => v != null ? v.toFixed(1) + '%' : '',
         anchor: 'end', align: 'top',
-        font: { size: 11, weight: '600' },
+        font: { size: 13, weight: '600' },
         color: COUNTRY_COLORS[c],
         padding: { bottom: 2 }
       }
@@ -4831,7 +4829,7 @@ function renderP1() {
     borderColor: 'rgba(99,102,241,0.5)',
     borderWidth: 1,
     hidden: !SHOW_APPTS || !P1_IS_ALL,
-    datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 12 }, color: 'rgba(99,102,241,0.8)' },
+    datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 13 }, color: 'rgba(99,102,241,0.8)' },
     order: 10
   };
   const apptBarDatasets = [euApptBar, ...COUNTRIES.map(c => {
@@ -4849,7 +4847,7 @@ function renderP1() {
       borderColor: COUNTRY_COLORS[c] + '66',
       borderWidth: 1,
       hidden: !SHOW_APPTS || !countryVisible,
-      datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 12 }, color: COUNTRY_COLORS[c] + 'cc' },
+      datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 13 }, color: COUNTRY_COLORS[c] + 'cc' },
       order: 10
     };
   })];
@@ -4864,7 +4862,7 @@ function renderP1() {
     borderColor: 'rgba(16,185,129,0.5)',
     borderWidth: 1,
     hidden: !SHOW_PURCHASES || !P1_IS_ALL,
-    datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 12 }, color: 'rgba(5,150,105,0.85)' },
+    datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 13 }, color: 'rgba(5,150,105,0.85)' },
     order: 11
   };
   const purchaseBarDatasets = [euPurchaseBar, ...COUNTRIES.map(c => {
@@ -4879,7 +4877,7 @@ function renderP1() {
       borderWidth: 2,
       borderDash: [3, 3],
       hidden: !SHOW_PURCHASES || !countryVisible,
-      datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 12 }, color: COUNTRY_COLORS[c] + 'bb' },
+      datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 13 }, color: COUNTRY_COLORS[c] + 'bb' },
       order: 11
     };
   })];
@@ -4930,8 +4928,8 @@ function renderP1() {
         data: periods.map(p => { const v = getBCAttemptedRate(ptype, p); return v!=null ? +(v*100).toFixed(2) : null; }),
         borderColor: '#f59e0b', borderWidth: 2, borderDash: [4,4],
         tension: .3, pointRadius: 2, fill: false,
-        hidden: !SHOW_BC_ATTEMPTED,
-        datalabels: { display: 'auto', formatter: v => v!=null ? v.toFixed(1)+'%' : '', anchor:'end', align:'top', font:{size:9,weight:'700'}, color:'#d97706', padding:{bottom:2} } }
+        hidden: false,
+        datalabels: { display: 'auto', formatter: v => v!=null ? v.toFixed(1)+'%' : '', anchor:'end', align:'top', font:{size:11,weight:'700'}, color:'#d97706', padding:{bottom:2} } }
     ]},
     options: chartOpts()
   });
@@ -4979,13 +4977,13 @@ function renderP1() {
       labels: periods,
       datasets: [
         { label: 'BC Confirmations Created',   data: getVolData('bc_created'),   backgroundColor: 'rgba(59,130,246,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#1d4ed8' } },
+          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#1d4ed8' } },
         { label: 'BC Confirmations Done',      data: getVolData('bc_done'),      backgroundColor: 'rgba(34,197,94,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#15803d' } },
+          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#15803d' } },
         { label: 'BC Confirmations Cancelled', data: getVolData('bc_cancelled'), backgroundColor: 'rgba(239,68,68,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#b91c1c' } },
+          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#b91c1c' } },
         { label: 'BC Confirmations Attempted', data: getVolData('bc_attempted'), backgroundColor: 'rgba(251,146,60,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#c2410c' } }
+          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 11, weight: '600' }, color: '#c2410c' } }
       ]
     },
     options: {
@@ -5017,7 +5015,6 @@ function renderP1() {
   renderP1TableHeaders(period, compLabel);
   renderP1TableBody(ptype, period, euMode, compMode, compLabel, euWeightedSR);
 
-  buildP1InsightCards(ptype, period, compMode, euMode, euWeightedSR, euWeightedSR_prev);
   document.getElementById('p1_exec_summary_text').innerHTML = generateExecutiveSummary(ptype, period, compMode, euMode);
 
   // Apply country selection visibility AFTER charts are fully built
@@ -5083,7 +5080,6 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
       ctx.font = '600 9px system-ui,-apple-system,sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const yCenter = chartArea.bottom - 11;
       for (let i = 1; i < primaryDataForDelta.length; i++) {
         const prev = primaryDataForDelta[i - 1];
         const curr = primaryDataForDelta[i];
@@ -5096,6 +5092,10 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
         const x0 = scales.x.getPixelForTick(i - 1);
         const x1 = scales.x.getPixelForTick(i);
         const xMid = (x0 + x1) / 2;
+        // Position badge just below the midpoint of the two adjacent trend data points
+        const yA = scales.y.getPixelForValue(prev);
+        const yB = scales.y.getPixelForValue(curr);
+        const yCenter = (yA + yB) / 2 + 14;
         const w = ctx.measureText(text).width;
         ctx.fillStyle = 'rgba(255,255,255,0.88)';
         ctx.beginPath();
@@ -5139,7 +5139,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
             return isSingleSel ? `${num} eval slots` : `${c} ${num}`;
           },
           color: COUNTRY_COLORS[c],
-          font: { size: 9, weight: '600' }
+          font: { size: 11, weight: '600' }
         }
       });
     });
@@ -5165,7 +5165,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
         datalabels: {
           display: isSingleSel ? 'auto' : false,
           formatter: v => v != null ? (v >= 1000 ? (v/1000).toFixed(0)+'k' : String(v)) + ' slots' : null,
-          color: '#334155', font: { size: 9, weight: '600' }, anchor: 'end', align: 'top', offset: 4
+          color: '#334155', font: { size: 11, weight: '600' }, anchor: 'end', align: 'top', offset: 4
         }
       });
     }
@@ -5179,7 +5179,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
       datalabels: {
         display: isSingleSel,
         formatter: v => v != null ? v.toFixed(1)+'%' : '',
-        color: '#6366f1', font: {size:10, weight:'bold'}, anchor:'end', align:'top', offset:4
+        color: '#6366f1', font: {size:12, weight:'bold'}, anchor:'end', align:'top', offset:4
       }
     });
   }
@@ -5193,7 +5193,7 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
       datalabels: {
         display: isSingleSel && visible,
         formatter: v => v != null ? v.toFixed(1)+'%' : '',
-        color: COUNTRY_COLORS[c], font: {size:10, weight:'bold'}, anchor:'end', align:'top', offset:4
+        color: COUNTRY_COLORS[c], font: {size:12, weight:'bold'}, anchor:'end', align:'top', offset:4
       }
     });
   });
