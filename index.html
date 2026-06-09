@@ -739,32 +739,12 @@ tr:hover td{background:#f9fafb !important;}
 
 <!-- PAGE 1 -->
 <div id="p1" class="page active">
-  <div class="filter-bar" style="flex-wrap:wrap;gap:16px;align-items:center">
-    <span style="display:flex;align-items:center;gap:8px">
-      <label>EU Show Rate:</label>
-      <span class="radio-group">
-        <input type="radio" name="p1_eumode" id="p1_weighted" value="weighted" checked onchange="renderP1()"><label for="p1_weighted">Weighted</label>
-        <input type="radio" name="p1_eumode" id="p1_unweighted" value="unweighted" onchange="renderP1()"><label for="p1_unweighted">Unweighted</label>
-      </span>
-    </span>
-    <span style="color:#e2e8f0;font-size:16px;line-height:1">|</span>
-    <span style="display:flex;align-items:center;gap:8px">
-      <label>Compare Δ vs:</label>
-      <span class="radio-group">
-        <input type="radio" name="p1_compmode" id="p1_prev1" value="prev1" checked onchange="renderP1()"><label for="p1_prev1">Prev period</label>
-        <input type="radio" name="p1_compmode" id="p1_prev4" value="prev4" onchange="renderP1()"><label for="p1_prev4">4-period avg</label>
-      </span>
-    </span>
+  <div style="display:none">
+    <input type="radio" name="p1_eumode" id="p1_weighted" value="weighted" checked>
+    <input type="radio" name="p1_eumode" id="p1_unweighted" value="unweighted">
+    <input type="radio" name="p1_compmode" id="p1_prev1" value="prev1" checked>
+    <input type="radio" name="p1_compmode" id="p1_prev4" value="prev4">
   </div>
-  <div class="selection-summary" id="p1_selection_summary"></div>
-  <div class="exec-summary" id="p1_exec_summary">
-    <div class="exec-summary-title">
-      <span>Executive Summary</span>
-      <button class="export-btn" onclick="copyExecSummary()" title="Copy summary to clipboard">Copy summary</button>
-    </div>
-    <div class="exec-summary-body" id="p1_exec_summary_text">Loading...</div>
-  </div>
-  <div class="kpi-row" id="p1_kpis"></div>
 
   <!-- Show Rate + Branch Utilisation side by side (50/50) -->
   <div class="chart-row" style="margin-bottom:16px;align-items:stretch">
@@ -801,17 +781,6 @@ tr:hover td{background:#f9fafb !important;}
     <canvas id="p1_vol_chart"></canvas>
   </div>
 
-  <!-- Country Rankings table -->
-  <div class="table-header-row" style="margin-top:4px">
-    <div class="section-title" id="p1_table_title">Country Rankings</div>
-    <button class="export-btn" onclick="exportTableToCSV('p1_tbody','country-rankings')">Export CSV</button>
-  </div>
-  <div class="tbl-scroll" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px">
-    <table id="p1_table">
-      <thead id="p1_thead"></thead>
-      <tbody id="p1_tbody"></tbody>
-    </table>
-  </div>
 
 </div>
 
@@ -4668,6 +4637,7 @@ function toggleShowAppts() {
     _applyVolumeBarVisibility(id, ch);
     ch.update();
   });
+  syncP1Y2Axes();
 }
 
 function toggleShowPurchases() {
@@ -4678,6 +4648,7 @@ function toggleShowPurchases() {
     _applyVolumeBarVisibility(id, ch);
     ch.update();
   });
+  syncP1Y2Axes();
 }
 
 function toggleBCAttempted() {
@@ -4704,39 +4675,7 @@ function renderP1() {
   const compPeriods = getCompPeriods(ptype, period, compMode);
   const compLabel = getCompLabel(compMode, compPeriods);
 
-  // KPI context: use selected country when exactly one is selected, otherwise EU aggregate
   const kpiCountry = GLOBAL_COUNTRY_SET.size === 1 ? [...GLOBAL_COUNTRY_SET][0] : 'EU';
-  const cur = countryMetrics(ptype, period, kpiCountry, euMode);
-  const comp = getCompMetrics(ptype, period, kpiCountry, euMode, compMode);
-  if (!cur) { document.getElementById('p1_kpis').innerHTML = '<div>No data for this period.</div>'; return; }
-
-  updateSelectionSummary('p1', ptype, period, 'EU', compMode, euMode);
-  const srDelta = (cur.sr != null && comp && comp.sr != null) ? cur.sr - comp.sr : null;
-  const doneDelta = (cur.bc_done_rate != null && comp && comp.bc_done_rate != null) ? cur.bc_done_rate - comp.bc_done_rate : null;
-  const cancelVolDelta = comp ? cur.appts_cancelled - comp.appts_cancelled : null;
-  // "2026_21 vs 2026_20" style label; "prev" vs "avg" prefix depending on mode
-  const deltaLabel = compPeriods.length ? `${period} vs ${compLabel}` : period;
-  const compPrefix = compMode === 'prev4' ? 'avg' : 'prev';
-  const srLabel = kpiCountry === 'EU' ? 'Europe Show Rate' : `${kpiCountry} Show Rate`;
-  const srTip = kpiCountry === 'EU' ? 'BC-volume-weighted proxy across 9 countries' : `Show Rate for ${kpiCountry}`;
-  const cancelTip = kpiCountry === 'EU' ? 'appts_cancelled — Europe total' : `appts_cancelled — ${kpiCountry}`;
-
-  const kpis = [
-    { label: srLabel, tip: srTip, value: fPct(cur.sr),
-      extra: `${cur.sr != null ? fDelta(srDelta) : ''}<div class="sub">${compPrefix} ${(comp && comp.sr != null) ? fPct(comp.sr) : '—'} · ${deltaLabel}</div>` },
-    { label:'% BC Tasks Done', tip:'bc_done / (bc_created - bc_cancelled)', value: fPct(cur.bc_done_rate),
-      extra: `${fDelta(doneDelta)}<div class="sub">${compPrefix} ${comp ? fPct(comp.bc_done_rate) : '—'} · ${deltaLabel}</div>` },
-    { label:'Cancelled Appt Vol', tip: cancelTip, value: fVol(cur.appts_cancelled),
-      extra: `${fVolDelta(cancelVolDelta)}<div class="sub">${compPrefix} ${comp ? fVol(comp.appts_cancelled) : '—'} · ${deltaLabel}</div>` },
-  ];
-
-  document.getElementById('p1_kpis').innerHTML = kpis.map((k, i) =>
-    `<div class="kpi-card${i === 0 ? ' kpi-card-primary' : ''}" title="${k.tip}">
-      <div class="label">${k.label}</div>
-      <div class="value">${k.value}</div>
-      ${k.extra || ''}
-    </div>`
-  ).join('');
 
   // Sync P1 chart visibility from global country selection
   const gSize = GLOBAL_COUNTRY_SET.size;
@@ -5002,24 +4941,10 @@ function renderP1() {
     }
   });
 
-  // Country ranking table
-  const euWeightedSR = euSR(RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===period), 'weighted');
-  const euWeightedSR_prev = compPeriods.length ? (() => {
-    const vals = compPeriods.map(p => euSR(RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p), 'weighted')).filter(v=>!isNaN(v));
-    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
-  })() : null;
-
-  const titleEl = document.getElementById('p1_table_title');
-  if (titleEl) titleEl.textContent = `Country Rankings — ${period}`;
-
-  renderP1TableHeaders(period, compLabel);
-  renderP1TableBody(ptype, period, euMode, compMode, compLabel, euWeightedSR);
-
-  document.getElementById('p1_exec_summary_text').innerHTML = generateExecutiveSummary(ptype, period, compMode, euMode);
-
   // Apply country selection visibility AFTER charts are fully built
   updateP1ChartVisibility();
   renderP1UtilChart();
+  syncP1Y2Axes();
 }
 
 // Converts a period name to a value from weekly/monthly arrays (null if no data for that period)
@@ -5245,6 +5170,21 @@ function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, 
 function renderP1UtilChart() {
   const sel = { isAll: P1_IS_ALL, selected: P1_SELECTED, showEU: P1_SELECTED.has('EU_AVG') };
   _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY);
+}
+
+function syncP1Y2Axes() {
+  const srChart = CHARTS['p1_sr_chart'];
+  const utilChart = CHARTS['p1_util_chart'];
+  if (!srChart || !utilChart) return;
+  const srY2 = srChart.scales['y2'];
+  const utilY2 = utilChart.scales['y2'];
+  if (!srY2 || !utilY2) return;
+  const sharedMax = Math.max(srY2.max || 0, utilY2.max || 0);
+  if (sharedMax <= 0) return;
+  srChart.options.scales.y2.max = sharedMax;
+  utilChart.options.scales.y2.max = sharedMax;
+  srChart.update('none');
+  utilChart.update('none');
 }
 
 // ========== PAGE 8 — Branch Operations ==========
