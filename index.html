@@ -20,7 +20,7 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 .page{display:none;padding:16px}
 .page.active{display:block}
 /* Executive Overview: flex-fill so all 6 panels fit in one viewport */
-#p1.active{display:flex;flex-direction:column;overflow:hidden;gap:8px;padding-bottom:8px}
+#p1.active{display:flex;flex-direction:column;overflow-y:auto;gap:8px;padding-bottom:8px}
 #p1 .chart-row{flex:1;min-height:0;margin-bottom:0!important;gap:8px}
 #p1 .chart-row .chart-box{overflow:hidden;margin-bottom:0;display:flex;flex-direction:column;padding:10px 14px}
 #p1 .chart-row .chart-box h3{flex-shrink:0;margin-bottom:6px;font-size:14px}
@@ -756,22 +756,22 @@ tr:hover td{background:#f9fafb !important;}
   </div>
 
   <!-- Row 1: AI Analysis (left) + Show Rate (right) -->
-  <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
-    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column">
+  <div class="chart-row" style="margin-bottom:12px;align-items:flex-start">
+    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column;overflow:visible">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <h3 style="margin:0;flex:1">AI Analysis — Key Show Rate Drivers</h3>
         <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:600">✨ Generate with AI</button>
       </div>
       <div id="p1_ai_analysis" style="color:#374151"></div>
-      <div id="p1_chat_container" style="display:block;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px;min-height:0">
-        <div id="p1_chat_suggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
-        <div id="p1_chat_history" style="height:200px;overflow-y:scroll;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px;scroll-behavior:smooth"></div>
-        <div style="display:flex;gap:6px">
+      <div id="p1_chat_container" style="display:block;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px">
+        <div id="p1_chat_history" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px"></div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="p1_chat_input" type="text" placeholder="Ask a follow-up question…" onkeydown="if(event.key==='Enter')sendChatMessage()"
-            style="flex:1;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;outline:none">
+            style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;outline:none">
           <button onclick="sendChatMessage()" id="p1_chat_send_btn"
-            style="padding:5px 12px;background:#6366f1;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">Send</button>
+            style="padding:6px 14px;background:#6366f1;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">Send</button>
         </div>
+        <div id="p1_chat_suggestions" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
     </div>
     <div class="chart-box" style="margin-bottom:0">
