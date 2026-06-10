@@ -675,14 +675,7 @@ tr:hover td{background:#f9fafb !important;}
 
 <div id="section-sr">
 
-<div class="header">
-  <div class="header-top">
-    <div style="font-size:15px;color:#64748b;white-space:nowrap;line-height:1.5;flex-shrink:0">
-      Showing data for week <strong id="ds_latest_week" style="color:#1d4ed8;font-size:15px;">—</strong> (latest available)
-      &nbsp;·&nbsp; last updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;font-size:15px;">—</span>
-    </div>
-  </div>
-</div>
+<div class="header"></div>
 
 <div id="sticky-header">
 <div class="sticky-nav">
@@ -719,6 +712,9 @@ tr:hover td{background:#f9fafb !important;}
   <button class="gcb-btn window-btn" id="gwb_12" onclick="setGlobalWindow(12)">12</button>
   <button class="gcb-btn window-btn" id="gwb_all" onclick="setGlobalWindow(null)">All</button>
   <span id="window_label" style="margin-left:10px;font-size:12px;font-weight:600;color:#1e293b;white-space:nowrap;opacity:0.7">Last 6 weeks</span>
+  <span style="margin-left:16px;border-left:1px solid #e2e8f0;padding-left:16px;font-size:14px;color:#64748b;white-space:nowrap">
+    Data: week <strong id="ds_latest_week" style="color:#1d4ed8;">—</strong> (latest available) &nbsp;·&nbsp; updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;">—</span>
+  </span>
 </div>
 </div><!-- end #sticky-header -->
 <div class="help-panel" id="help_panel">
