@@ -2096,23 +2096,15 @@ function setGlobalCountry(c) {
     GLOBAL_COUNTRY = 'EU';
     GLOBAL_SHOW_EU_AVG = false;
   } else if (GLOBAL_COUNTRY_SET.has(c)) {
-    // Deselect this country
-    GLOBAL_COUNTRY_SET.delete(c);
-    GLOBAL_COUNTRY = GLOBAL_COUNTRY_SET.size === 0 ? 'EU' : [...GLOBAL_COUNTRY_SET][0];
-    if (GLOBAL_COUNTRY_SET.size === 0) GLOBAL_SHOW_EU_AVG = false;
-  } else if (GLOBAL_SHOW_EU_AVG && GLOBAL_COUNTRY_SET.size >= 1) {
-    // EU AVG is active: replace current country with this one (single-country vs EU mode)
+    // Clicking the active country again → back to All
+    GLOBAL_COUNTRY_SET = new Set();
+    GLOBAL_COUNTRY = 'EU';
+    GLOBAL_SHOW_EU_AVG = false;
+  } else {
+    // Single-select: always replace any current selection with just this country
     GLOBAL_COUNTRY_SET = new Set([c]);
     GLOBAL_COUNTRY = c;
-  } else if (GLOBAL_COUNTRY_SET.size < 2) {
-    // Multi-select mode (EU AVG off): add to selection (max 2 countries)
-    GLOBAL_COUNTRY_SET.add(c);
-    if (GLOBAL_COUNTRY_SET.size === 1) {
-      GLOBAL_COUNTRY = c;
-      GLOBAL_SHOW_EU_AVG = false;
-    }
   }
-  // If already 2 selected (no EU AVG) and user clicks a 3rd: ignore
 
   updateCountryBarStyles();
   rerenderActivePage();
@@ -5539,23 +5531,23 @@ STYLE
   ];
 
   try {
-    // Typewriter effect: 2 chars every 55ms ≈ 36 chars/sec — clearly visible typing pace
+    // Typewriter effect: 3 chars every 35ms ≈ 85 chars/sec — visible but not slow
     let twShown = '', twQueue = '', twTimer = null;
     const twTick = () => {
       if (!twQueue) { twTimer = null; return; }
-      const take = Math.min(2, twQueue.length);
+      const take = Math.min(3, twQueue.length);
       twShown += twQueue.slice(0, take);
       twQueue = twQueue.slice(take);
       el.innerHTML = _renderAnalysis(twShown);
-      twTimer = setTimeout(twTick, 55);
+      twTimer = setTimeout(twTick, 35);
     };
     const text = await _streamGroq(P1_CHAT_MESSAGES, 600, fullText => {
       twQueue += fullText.slice(twShown.length + twQueue.length);
-      if (!twTimer) twTimer = setTimeout(twTick, 55);
+      if (!twTimer) twTimer = setTimeout(twTick, 35);
     });
     // Stream done — wait for the typewriter queue to fully drain before proceeding
     await new Promise(resolve => {
-      const check = () => twTimer ? setTimeout(check, 55) : resolve();
+      const check = () => twTimer ? setTimeout(check, 35) : resolve();
       check();
     });
     if (!text.trim()) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>'; }
