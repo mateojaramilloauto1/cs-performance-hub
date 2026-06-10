@@ -26,8 +26,8 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 #p1 .chart-row .chart-box h3{flex-shrink:0;margin-bottom:6px;font-size:14px}
 #p1 .chart-row .chart-box canvas{flex:1;min-height:0;width:100%!important}
 #p1 .chart-row .chart-box>p{flex-shrink:0;margin:3px 0 0}
-#p1 .chart-row.fixed-h{height:300px}
-#p1 .chart-row.ai-row{min-height:320px}
+#p1 .chart-row.fixed-h{height:400px}
+#p1 .chart-row.ai-row{min-height:380px}
 .filter-bar{position:sticky;top:var(--filter-bar-top,116px);z-index:50;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .filter-bar label{font-size:12px;color:#64748b;font-weight:600;margin-right:4px}
 .filter-bar select{border:1px solid #e2e8f0;border-radius:4px;padding:4px 8px;font-size:13px;background:#fff;color:#1e293b}
@@ -5553,8 +5553,11 @@ STYLE
       twQueue += fullText.slice(twShown.length + twQueue.length);
       if (!twTimer) twTimer = setTimeout(twTick, 55);
     });
-    clearTimeout(twTimer);
-    el.innerHTML = _renderAnalysis(text); // flush any remainder
+    // Stream done — wait for the typewriter queue to fully drain before proceeding
+    await new Promise(resolve => {
+      const check = () => twTimer ? setTimeout(check, 55) : resolve();
+      check();
+    });
     if (!text.trim()) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>'; }
     P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
     document.getElementById('p1_chat_input').focus({ preventScroll: true });
