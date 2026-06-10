@@ -20,12 +20,14 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 .page{display:none;padding:16px}
 .page.active{display:block}
 /* Executive Overview: flex-fill so all 6 panels fit in one viewport */
-#p1.active{display:flex;flex-direction:column;overflow-y:auto;gap:8px;padding-bottom:8px}
-#p1 .chart-row{flex:1;min-height:0;margin-bottom:0!important;gap:8px}
-#p1 .chart-row .chart-box{overflow:hidden;margin-bottom:0;display:flex;flex-direction:column;padding:10px 14px}
+#p1.active{display:block;padding-bottom:24px}
+#p1 .chart-row{display:flex;gap:12px;margin-bottom:12px;align-items:stretch}
+#p1 .chart-row .chart-box{flex:1;min-width:0;overflow:hidden;margin-bottom:0;display:flex;flex-direction:column;padding:12px 14px}
 #p1 .chart-row .chart-box h3{flex-shrink:0;margin-bottom:6px;font-size:14px}
 #p1 .chart-row .chart-box canvas{flex:1;min-height:0;width:100%!important}
 #p1 .chart-row .chart-box>p{flex-shrink:0;margin:3px 0 0}
+#p1 .chart-row.fixed-h{height:300px}
+#p1 .chart-row.ai-row{min-height:320px}
 .filter-bar{position:sticky;top:var(--filter-bar-top,116px);z-index:50;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .filter-bar label{font-size:12px;color:#64748b;font-weight:600;margin-right:4px}
 .filter-bar select{border:1px solid #e2e8f0;border-radius:4px;padding:4px 8px;font-size:13px;background:#fff;color:#1e293b}
@@ -756,8 +758,8 @@ tr:hover td{background:#f9fafb !important;}
   </div>
 
   <!-- Row 1: AI Analysis (left) + Show Rate (right) -->
-  <div class="chart-row" style="margin-bottom:12px;align-items:flex-start">
-    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column;overflow:visible">
+  <div class="chart-row ai-row">
+    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column;overflow:visible;flex:1">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <h3 style="margin:0;flex:1">AI Analysis — Key Show Rate Drivers</h3>
         <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:600">✨ Generate with AI</button>
@@ -786,7 +788,7 @@ tr:hover td{background:#f9fafb !important;}
   </div>
 
   <!-- Row 2: Lead Share (left) + Branch Utilisation (right) -->
-  <div class="chart-row" style="margin-bottom:12px;align-items:stretch">
+  <div class="chart-row fixed-h">
     <div class="chart-box" style="margin-bottom:0">
       <h3 id="p1_ls_title">Lead Share by Cohort — EU</h3>
       <p id="p1_ls_country_note" style="display:none;font-size:11px;color:#f59e0b;margin:0 0 4px">⚠ Country-level lead share not yet available — showing EU aggregate</p>
@@ -803,7 +805,7 @@ tr:hover td{background:#f9fafb !important;}
   </div>
 
   <!-- Row 3: BC Tasks Done (left) + Cancelled Appointments (right) -->
-  <div class="chart-row" style="margin-bottom:0;align-items:stretch">
+  <div class="chart-row fixed-h">
     <div class="chart-box" style="margin-bottom:0"><h3>% BC Tasks Done &amp; Attempted — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
     <div class="chart-box" style="margin-bottom:0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
