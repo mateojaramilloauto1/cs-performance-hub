@@ -767,10 +767,6 @@ tr:hover td{background:#f9fafb !important;}
         <h3 style="margin:0;flex:1">AI Analysis — Key Show Rate Drivers</h3>
         <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:11px;padding:4px 10px;border:1px solid #6366f1;border-radius:6px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0">✨ Generate with AI</button>
       </div>
-      <div id="p1_ai_key_row" style="display:none;margin-bottom:8px">
-        <input type="password" id="p1_ai_key_input" placeholder="sk-ant-... (stored in localStorage)" style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:11px;font-family:inherit">
-        <p style="margin:3px 0 0;font-size:10px;color:#94a3b8">Press Enter or click Generate again · key is saved locally in your browser</p>
-      </div>
       <div id="p1_ai_analysis" style="flex:1;overflow-y:auto;color:#374151;padding-right:2px"></div>
     </div>
     <div class="chart-box" style="margin-bottom:0">
@@ -5387,21 +5383,6 @@ function renderP1AiAnalysis() {
 async function generateAiAnalysis() {
   const btn = document.getElementById('p1_ai_generate_btn');
   const el = document.getElementById('p1_ai_analysis');
-  const keyRow = document.getElementById('p1_ai_key_row');
-  const keyInput = document.getElementById('p1_ai_key_input');
-
-  // API key: check input first, then localStorage
-  let apiKey = keyInput?.value?.trim() || localStorage.getItem('anthropic_api_key');
-  if (!apiKey) {
-    keyRow.style.display = 'block';
-    keyInput.focus();
-    keyInput.onkeydown = e => { if (e.key === 'Enter') generateAiAnalysis(); };
-    return;
-  }
-  if (keyInput?.value?.trim()) {
-    localStorage.setItem('anthropic_api_key', keyInput.value.trim());
-    keyRow.style.display = 'none';
-  }
 
   const ptype = GLOBAL_PTYPE;
   const euMode = document.querySelector('input[name=p1_eumode]:checked')?.value || 'weighted';
@@ -5488,14 +5469,9 @@ Keep it under 130 words. Be direct and data-driven.`;
   el.innerHTML = '<p style="color:#94a3b8;font-size:12px;font-style:italic;margin:0">Generating analysis with Claude…</p>';
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://ai-proxy.mateo-jaramillo.workers.dev/', {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-opus-4-7',
         max_tokens: 512,
@@ -5548,10 +5524,6 @@ Keep it under 130 words. Be direct and data-driven.`;
     btn.textContent = '✨ Regenerate';
   } catch (err) {
     el.innerHTML = `<p style="color:#dc2626;font-size:12px;margin:0">Error: ${err.message}</p>`;
-    if (err.message.includes('401') || err.message.toLowerCase().includes('auth')) {
-      localStorage.removeItem('anthropic_api_key');
-      keyRow.style.display = 'block';
-    }
     btn.textContent = '✨ Generate with AI';
   } finally {
     btn.disabled = false;
