@@ -759,14 +759,21 @@ tr:hover td{background:#f9fafb !important;}
 
   <!-- Row 1: AI Analysis (left) + Show Rate (right) -->
   <div class="chart-row ai-row">
-    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column;overflow:visible;flex:1">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column;overflow:hidden;flex:1">
+      <!-- Header: always visible -->
+      <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
         <h3 style="margin:0;flex:1;font-size:18px;font-weight:700">AI Analysis — Key Show Rate Drivers</h3>
-        <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:600">✨ Generate with AI</button>
+        <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;font-weight:600">✨ Generate with AI</button>
+        <button id="p1_ai_finish_btn" onclick="finishAiGeneration()" style="display:none;font-size:12px;padding:5px 12px;border:1px solid #10b981;border-radius:8px;background:#10b981;color:#fff;cursor:pointer;white-space:nowrap">⏩ Finish now</button>
+        <button id="p1_ai_stop_btn" onclick="stopAiGeneration()" style="display:none;font-size:12px;padding:5px 12px;border:1px solid #ef4444;border-radius:8px;background:#ef4444;color:#fff;cursor:pointer;white-space:nowrap">⏹ Stop</button>
       </div>
-      <div id="p1_ai_analysis" style="color:#374151"></div>
-      <div id="p1_chat_container" style="display:block;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px">
-        <div id="p1_chat_history" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px"></div>
+      <!-- Scrollable content: analysis text + chat history -->
+      <div id="p1_ai_scroll" style="flex:1;overflow-y:auto;min-height:0;padding-right:4px">
+        <div id="p1_ai_analysis" style="color:#374151"></div>
+        <div id="p1_chat_history" style="display:flex;flex-direction:column;gap:6px;margin-top:8px"></div>
+      </div>
+      <!-- Pinned bottom: input + suggestions -->
+      <div style="flex-shrink:0;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px">
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <input id="p1_chat_input" type="text" placeholder="Ask a follow-up question…" onkeydown="if(event.key==='Enter')sendChatMessage()"
             style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;outline:none">
@@ -5490,7 +5497,6 @@ function _renderAnalysis(text) {
 async function generateAiAnalysis() {
   const btn = document.getElementById('p1_ai_generate_btn');
   const el = document.getElementById('p1_ai_analysis');
-  const chatContainer = document.getElementById('p1_chat_container');
   const chatHistory = document.getElementById('p1_chat_history');
 
   const ptype = GLOBAL_PTYPE;
@@ -5594,7 +5600,6 @@ STYLE
   btn.disabled = true;
   btn.textContent = '⏳ Generating…';
   el.innerHTML = '<p style="color:#94a3b8;font-size:12px;font-style:italic;margin:0">Generating analysis…</p>';
-  // Keep chat container visible but reset history and suggestions for the new analysis
   chatHistory.innerHTML = '';
   document.getElementById('p1_chat_suggestions').innerHTML = '';
   P1_CHAT_MESSAGES = [
@@ -5602,37 +5607,88 @@ STYLE
     { role: 'user',   content: dataMessage },
   ];
 
+  // Show stop / finish-now controls
+  document.getElementById('p1_ai_stop_btn').style.display = 'inline-block';
+  document.getElementById('p1_ai_finish_btn').style.display = 'inline-block';
+  _aiCtrl = { abort: false, finish: false, reader: null, timer: null };
+
   try {
-    // Typewriter effect: 3 chars every 35ms ≈ 85 chars/sec — visible but not slow
-    let twShown = '', twQueue = '', twTimer = null;
+    let twShown = '', twQueue = '';
     const twTick = () => {
-      if (!twQueue) { twTimer = null; return; }
+      if (_aiCtrl.abort) { _aiCtrl.timer = null; return; }
+      if (_aiCtrl.finish) {
+        twShown += twQueue; twQueue = '';
+        el.innerHTML = _renderAnalysis(twShown);
+        _aiCtrl.timer = null; return;
+      }
+      if (!twQueue) { _aiCtrl.timer = null; return; }
       const take = Math.min(3, twQueue.length);
       twShown += twQueue.slice(0, take);
       twQueue = twQueue.slice(take);
       el.innerHTML = _renderAnalysis(twShown);
-      twTimer = setTimeout(twTick, 35);
+      const sc = document.getElementById('p1_ai_scroll'); if (sc) sc.scrollTop = sc.scrollHeight;
+      _aiCtrl.timer = setTimeout(twTick, 35);
     };
-    const text = await _streamGroq(P1_CHAT_MESSAGES, 600, fullText => {
-      twQueue += fullText.slice(twShown.length + twQueue.length);
-      if (!twTimer) twTimer = setTimeout(twTick, 35);
+
+    const resp = await fetch('https://ai-proxy.mateo-jaramillo.workers.dev/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 600, stream: true, messages: P1_CHAT_MESSAGES }),
     });
-    // Stream done — wait for the typewriter queue to fully drain before proceeding
+    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || `HTTP ${resp.status}`); }
+
+    _aiCtrl.reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', text = '';
+    while (true) {
+      if (_aiCtrl.abort) { await _aiCtrl.reader.cancel(); break; }
+      const { done, value } = await _aiCtrl.reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') continue;
+        try { const d = JSON.parse(raw).choices?.[0]?.delta?.content; if (d) { text += d; twQueue += d; if (!_aiCtrl.timer) _aiCtrl.timer = setTimeout(twTick, 35); } } catch(_) {}
+      }
+    }
+    _aiCtrl.reader = null;
+
+    if (_aiCtrl.abort) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px;font-style:italic">Generation stopped.</p>'; return; }
+
+    // Wait for typewriter to drain
     await new Promise(resolve => {
-      const check = () => twTimer ? setTimeout(check, 35) : resolve();
+      const check = () => _aiCtrl.timer ? setTimeout(check, 35) : resolve();
       check();
     });
+
     if (!text.trim()) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>'; }
     P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
     document.getElementById('p1_chat_input').focus({ preventScroll: true });
     btn.textContent = '✨ Regenerate';
     generateChatSuggestions();
   } catch (err) {
-    el.innerHTML = `<p style="color:#dc2626;font-size:12px;margin:0">Error: ${err.message}</p>`;
+    if (!_aiCtrl.abort) el.innerHTML = `<p style="color:#dc2626;font-size:12px;margin:0">Error: ${err.message}</p>`;
     btn.textContent = '✨ Generate with AI';
   } finally {
     btn.disabled = false;
+    document.getElementById('p1_ai_stop_btn').style.display = 'none';
+    document.getElementById('p1_ai_finish_btn').style.display = 'none';
+    _aiCtrl.finish = false;
   }
+}
+
+let _aiCtrl = { abort: false, finish: false, reader: null, timer: null };
+
+function stopAiGeneration() {
+  _aiCtrl.abort = true;
+  if (_aiCtrl.reader) { _aiCtrl.reader.cancel(); _aiCtrl.reader = null; }
+  if (_aiCtrl.timer) { clearTimeout(_aiCtrl.timer); _aiCtrl.timer = null; }
+}
+
+function finishAiGeneration() {
+  _aiCtrl.finish = true;
 }
 
 async function generateChatSuggestions() {
