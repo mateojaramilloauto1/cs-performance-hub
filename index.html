@@ -689,8 +689,11 @@ tr:hover td{background:#f9fafb !important;}
   <button class="update-nav-btn" onclick="toggleUpdatePanel()">↻ Update Data</button>
 </div>
 <div class="global-country-bar" id="global_country_bar">
-  <span class="nav-ptype-toggle" style="margin-right:12px">
+  <span class="nav-ptype-toggle" style="margin-right:8px">
     <input type="radio" name="global_ptype" id="gpt_week" value="week" checked onchange="setGlobalPtype('week')"><label for="gpt_week">Weekly</label><input type="radio" name="global_ptype" id="gpt_month" value="month" onchange="setGlobalPtype('month')"><label for="gpt_month">Monthly</label>
+  </span>
+  <span style="font-size:13px;color:#64748b;white-space:nowrap;margin-right:16px;padding-right:16px;border-right:1px solid #e2e8f0">
+    Data: week <strong id="ds_latest_week" style="color:#1d4ed8;">—</strong> (latest available) &nbsp;·&nbsp; updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;">—</span>
   </span>
   <span class="gcb-label">Country:</span>
   <button class="gcb-btn active" id="gcb_EU" onclick="setGlobalCountry('EU')">🇪🇺 EU</button>
@@ -712,9 +715,6 @@ tr:hover td{background:#f9fafb !important;}
   <button class="gcb-btn window-btn" id="gwb_12" onclick="setGlobalWindow(12)">12</button>
   <button class="gcb-btn window-btn" id="gwb_all" onclick="setGlobalWindow(null)">All</button>
   <span id="window_label" style="margin-left:10px;font-size:12px;font-weight:600;color:#1e293b;white-space:nowrap;opacity:0.7">Last 6 weeks</span>
-  <span style="margin-left:16px;border-left:1px solid #e2e8f0;padding-left:16px;font-size:14px;color:#64748b;white-space:nowrap">
-    Data: week <strong id="ds_latest_week" style="color:#1d4ed8;">—</strong> (latest available) &nbsp;·&nbsp; updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;">—</span>
-  </span>
 </div>
 </div><!-- end #sticky-header -->
 <div class="help-panel" id="help_panel">
@@ -760,11 +760,11 @@ tr:hover td{background:#f9fafb !important;}
     <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <h3 style="margin:0;flex:1">AI Analysis — Key Show Rate Drivers</h3>
-        <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:11px;padding:4px 10px;border:1px solid #6366f1;border-radius:6px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0">✨ Generate with AI</button>
+        <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:600">✨ Generate with AI</button>
       </div>
       <div id="p1_ai_analysis" style="color:#374151"></div>
       <div id="p1_chat_container" style="display:none;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px">
-        <div id="p1_chat_history" style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+        <div id="p1_chat_history" style="height:200px;overflow-y:scroll;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px;scroll-behavior:smooth"></div>
         <div style="display:flex;gap:6px">
           <input id="p1_chat_input" type="text" placeholder="Ask a follow-up question…" onkeydown="if(event.key==='Enter')sendChatMessage()"
             style="flex:1;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;outline:none">
@@ -5522,7 +5522,8 @@ STYLE
 - Business English. Always cite the specific period and country when stating a figure.
 - Use percentage points (pp) for rate changes, % for volume changes.
 - Emojis: 📊 headline, 🔑 drivers, 🔗 correlation, 💡 action. 📈 increases, 📉 decreases, ➡️ stable. ⚠️ caveats, ✅ positive, 🚨 for show rate drop >2pp.
-- Never more than one emoji per sentence. Emojis support text, never replace numbers.`;
+- Never more than one emoji per sentence. Emojis support text, never replace numbers.
+- BOLD USAGE (critical): Use **bold** (markdown double asterisks) for: every KPI value you cite (e.g. **74.3%**), every period label (e.g. **CW23**), every country name when mentioned (e.g. **DE**), and every key phrase that summarises a finding (e.g. **declining trend**, **strongest driver**, **immediate priority**). Aim for 3–5 bold items per section so the reader can scan the output at a glance.`;
 
   btn.disabled = true;
   btn.textContent = '⏳ Generating…';
