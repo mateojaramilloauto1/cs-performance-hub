@@ -5536,7 +5536,22 @@ STYLE
   ];
 
   try {
-    const text = await _streamGroq(P1_CHAT_MESSAGES, 600, t => { el.innerHTML = _renderAnalysis(t); });
+    // Typewriter effect: buffer incoming chars and display 4 chars every 25ms
+    let twShown = '', twQueue = '', twTimer = null;
+    const twTick = () => {
+      if (!twQueue) { twTimer = null; return; }
+      const take = Math.min(4, twQueue.length);
+      twShown += twQueue.slice(0, take);
+      twQueue = twQueue.slice(take);
+      el.innerHTML = _renderAnalysis(twShown);
+      twTimer = setTimeout(twTick, 25);
+    };
+    const text = await _streamGroq(P1_CHAT_MESSAGES, 600, fullText => {
+      twQueue += fullText.slice(twShown.length + twQueue.length);
+      if (!twTimer) twTimer = setTimeout(twTick, 25);
+    });
+    clearTimeout(twTimer);
+    el.innerHTML = _renderAnalysis(text); // flush any remainder
     if (!text.trim()) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>'; }
     P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
     chatContainer.style.display = 'block';
@@ -7840,10 +7855,15 @@ function updateFilterBarTop() {
 document.addEventListener('DOMContentLoaded', () => {
   initSelects();
   buildDataStatus();
+  // Always start in EU / All-countries view regardless of any prior state
+  P1_IS_ALL = true;
+  P1_SELECTED = new Set();
   updateCountryBarStyles();
   updateWindowBtnStyles();
   renderP1();
   requestAnimationFrame(updateFilterBarTop);
+  // Auto-generate AI analysis on load after a short delay so charts render first
+  setTimeout(() => generateAiAnalysis(), 600);
   window.addEventListener('resize', updateFilterBarTop);
   updateGapBanner();
   // Render emoji flags as images (cross-platform — flag emojis are unsupported on Windows natively)
