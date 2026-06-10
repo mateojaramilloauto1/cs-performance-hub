@@ -4582,6 +4582,12 @@ function buildP1CancelledChart() {
     }
   };
 
+  // Precompute top-2 segment indices per period for data labels
+  const top2ByPeriodIdx = periods.map((_, pi) => {
+    const vals = TIMING_KEYS.map((_, ti) => ({ ti, v: allTimingData[ti][pi] || 0 }));
+    return new Set(vals.sort((a, b) => b.v - a.v).slice(0, 2).map(r => r.ti));
+  });
+
   const datasets = TIMING_KEYS.map((t, ti) => ({
     label: t.label,
     data: allTimingData[ti],
@@ -4589,7 +4595,6 @@ function buildP1CancelledChart() {
     borderColor: t.color,
     borderWidth: 1,
     stack: 'cancel',
-    datalabels: { display: false }
   }));
 
   // % delta between consecutive period totals
@@ -4635,7 +4640,21 @@ function buildP1CancelledChart() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
-        datalabels: { display: false },
+        datalabels: {
+          display: ctx => {
+            const val = ctx.dataset.data[ctx.dataIndex];
+            return !!(val && top2ByPeriodIdx[ctx.dataIndex]?.has(ctx.datasetIndex));
+          },
+          formatter: (v, ctx) => {
+            const val = ctx.dataset.data[ctx.dataIndex];
+            const total = totals[ctx.dataIndex] || 0;
+            return (val && total > 0) ? (val / total * 100).toFixed(1) + '%' : '';
+          },
+          color: '#fff',
+          font: { size: 9, weight: '600' },
+          anchor: 'center',
+          align: 'center',
+        },
         tooltip: {
           mode: 'index', intersect: false,
           callbacks: {
@@ -5241,6 +5260,14 @@ function renderP1() {
 
   destroyChart('p1_done_chart');
   // Per-country attempted datasets (dashed, same color as country, hidden unless that country is selected)
+  const attemptedDatalabels = color => ({
+    display: (ctx) => ctx.dataset.data[ctx.dataIndex] != null,
+    formatter: (v, ctx) => { const val = ctx.dataset.data[ctx.dataIndex]; return val != null ? (+val).toFixed(1)+'%' : ''; },
+    anchor: 'end', align: 'top',
+    font: { size: 9, weight: '600' },
+    color,
+    padding: { bottom: 2 },
+  });
   const countryAttemptedDatasets = COUNTRIES.map(c => {
     const visible = !P1_IS_ALL && P1_SELECTED.has(c);
     return {
@@ -5249,7 +5276,7 @@ function renderP1() {
       borderColor: COUNTRY_COLORS[c], borderWidth: 1.5, borderDash: [4,4],
       tension: .3, pointRadius: 2, fill: false,
       hidden: !visible,
-      datalabels: { display: false }
+      datalabels: attemptedDatalabels(COUNTRY_COLORS[c])
     };
   });
   CHARTS['p1_done_chart'] = new Chart(document.getElementById('p1_done_chart'), {
@@ -5262,7 +5289,7 @@ function renderP1() {
         borderColor: '#f59e0b', borderWidth: 2, borderDash: [4,4],
         tension: .3, pointRadius: 2, fill: false,
         hidden: false,
-        datalabels: { display: false } },
+        datalabels: attemptedDatalabels('#d97706') },
       ...countryAttemptedDatasets
     ]},
     options: { ...chartOpts(), maintainAspectRatio: false }
