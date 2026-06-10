@@ -778,7 +778,7 @@ tr:hover td{background:#f9fafb !important;}
     </div>
     <div class="chart-box" style="margin-bottom:0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-        <button class="toggle-btn appts-toggle-btn active" id="appts_toggle_p1" onclick="toggleShowAppts()" title="Show/hide appointment volume bars">📅 # Appts</button>
+        <button class="toggle-btn appts-toggle-btn" id="appts_toggle_p1" onclick="toggleShowAppts()" title="Show/hide appointment volume bars">📅 # Appts</button>
         <button class="toggle-btn purchases-toggle-btn" id="purchases_toggle_p1" onclick="toggleShowPurchases()" title="Show/hide purchase volume bars">🛒 # Purchases</button>
         <button class="toggle-btn vol-only-btn" id="vol_only_toggle_p1" onclick="toggleVolOnlyMode()" title="Show only appointment & purchase volume with % deltas between periods">📊 # Apps &amp; Purchases</button>
         <h3 style="margin:0;flex:1">Show Rate — Trend per Market</h3>
@@ -6952,7 +6952,7 @@ function rankAsc(vals) {
 let p4PctMode = false;
 let P4_SELECTED_BUCKET = null; // index into TIMING_KEYS; null = no segment highlighted
 let P4_SHOW_EU_AVG = false;   // whether EU Avg line is shown on the SR trend chart
-let SHOW_APPTS = true;         // appointment volume bars on by default
+let SHOW_APPTS = false;        // appointment volume bars off by default
 let SHOW_PURCHASES = false;    // toggle purchase volume bars
 let VOL_ONLY_MODE = false;     // when true: hide SR lines, show both appt+purchase bars + delta trend
 let SHOW_BC_ATTEMPTED = false; // toggle % BC Tasks Attempted line on P1/P2 trend charts
