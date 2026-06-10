@@ -763,7 +763,7 @@ tr:hover td{background:#f9fafb !important;}
         <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:600">✨ Generate with AI</button>
       </div>
       <div id="p1_ai_analysis" style="color:#374151"></div>
-      <div id="p1_chat_container" style="display:none;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px">
+      <div id="p1_chat_container" style="display:none;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px;min-height:0">
         <div id="p1_chat_suggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
         <div id="p1_chat_history" style="height:200px;overflow-y:scroll;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px;scroll-behavior:smooth"></div>
         <div style="display:flex;gap:6px">
@@ -5556,7 +5556,7 @@ STYLE
     if (!text.trim()) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>'; }
     P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
     chatContainer.style.display = 'block';
-    document.getElementById('p1_chat_input').focus();
+    document.getElementById('p1_chat_input').focus({ preventScroll: true });
     btn.textContent = '✨ Regenerate';
     generateChatSuggestions();
   } catch (err) {
@@ -5642,7 +5642,7 @@ async function sendChatMessage() {
   } finally {
     input.disabled = false;
     sendBtn.disabled = false;
-    input.focus();
+    input.focus({ preventScroll: true });
   }
 }
 
