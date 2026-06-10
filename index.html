@@ -5444,7 +5444,7 @@ async function generateAiAnalysis() {
 
   const fmt = v => v != null ? String(v) : 'n/a';
 
-  const getSR      = p => { if (useCountry) { const m = countryMetrics(ptype,p,useCountry,euMode); return m?.sr!=null?+(m.sr*100).toFixed(1):null; } const rows=RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p); return rows.length?+(euSR(rows,euMode)*100).toFixed(1):null; };
+  const getSR      = p => { let v; if (useCountry) { const m = countryMetrics(ptype,p,useCountry,euMode); v=m?.sr!=null?+(m.sr*100).toFixed(1):null; } else { const rows=RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p); v=rows.length?+(euSR(rows,euMode)*100).toFixed(1):null; } return (v===0||v==='0.0')?null:v; }; // 0% = data error
   const getAppts   = p => { if (useCountry) { const m=countryMetrics(ptype,p,useCountry,euMode); return m?.nb_appointments??null; } return COUNTRIES.reduce((s,c)=>{const m=countryMetrics(ptype,p,c,euMode);return s+(m?.nb_appointments||0);},0)||null; };
   const getPurch   = p => { const v=getPurchases(ptype,p,useCountry||'EU'); return v>0?v:null; };
   const getDone    = p => { if (useCountry) { const m=countryMetrics(ptype,p,useCountry,euMode); return m?.bc_done_rate!=null?+(m.bc_done_rate*100).toFixed(1):null; } const rows=RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p); if(!rows.length)return null; const agg=aggRows(rows); const ex=agg.bc_created-agg.bc_cancelled; return ex?+(agg.bc_done/ex*100).toFixed(1):null; };
@@ -5524,6 +5524,7 @@ STYLE
 - Use percentage points (pp) for rate changes, % for volume changes.
 - Emojis: 📊 headline, 🔑 drivers, 🔗 correlation, 💡 action. 📈 increases, 📉 decreases, ➡️ stable. ⚠️ caveats, ✅ positive, 🚨 for show rate drop >2pp.
 - Never more than one emoji per sentence. Emojis support text, never replace numbers.
+- DATA QUALITY: A Show Rate of 0% is always a data error — ignore it completely. Use the most recent non-zero, non-null value as the "latest" figure. If the most recent valid period is not the last one in the table, note which period you are using.
 - BOLD USAGE (critical): Use **bold** (markdown double asterisks) for: every KPI value you cite (e.g. **74.3%**), every period label (e.g. **CW23**), every country name when mentioned (e.g. **DE**), and every key phrase that summarises a finding (e.g. **declining trend**, **strongest driver**, **immediate priority**). Aim for 3–5 bold items per section so the reader can scan the output at a glance.`;
 
   btn.disabled = true;
@@ -5537,19 +5538,19 @@ STYLE
   ];
 
   try {
-    // Typewriter effect: buffer incoming chars and display 4 chars every 25ms
+    // Typewriter effect: 2 chars every 55ms ≈ 36 chars/sec — clearly visible typing pace
     let twShown = '', twQueue = '', twTimer = null;
     const twTick = () => {
       if (!twQueue) { twTimer = null; return; }
-      const take = Math.min(4, twQueue.length);
+      const take = Math.min(2, twQueue.length);
       twShown += twQueue.slice(0, take);
       twQueue = twQueue.slice(take);
       el.innerHTML = _renderAnalysis(twShown);
-      twTimer = setTimeout(twTick, 25);
+      twTimer = setTimeout(twTick, 55);
     };
     const text = await _streamGroq(P1_CHAT_MESSAGES, 600, fullText => {
       twQueue += fullText.slice(twShown.length + twQueue.length);
-      if (!twTimer) twTimer = setTimeout(twTick, 25);
+      if (!twTimer) twTimer = setTimeout(twTick, 55);
     });
     clearTimeout(twTimer);
     el.innerHTML = _renderAnalysis(text); // flush any remainder
