@@ -763,7 +763,7 @@ tr:hover td{background:#f9fafb !important;}
         <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:600">✨ Generate with AI</button>
       </div>
       <div id="p1_ai_analysis" style="color:#374151"></div>
-      <div id="p1_chat_container" style="display:none;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px;min-height:0">
+      <div id="p1_chat_container" style="display:block;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px;min-height:0">
         <div id="p1_chat_suggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
         <div id="p1_chat_history" style="height:200px;overflow-y:scroll;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px;scroll-behavior:smooth"></div>
         <div style="display:flex;gap:6px">
@@ -5530,8 +5530,9 @@ STYLE
   btn.disabled = true;
   btn.textContent = '⏳ Generating…';
   el.innerHTML = '<p style="color:#94a3b8;font-size:12px;font-style:italic;margin:0">Generating analysis…</p>';
-  chatContainer.style.display = 'none';
+  // Keep chat container visible but reset history and suggestions for the new analysis
   chatHistory.innerHTML = '';
+  document.getElementById('p1_chat_suggestions').innerHTML = '';
   P1_CHAT_MESSAGES = [
     { role: 'system', content: systemPrompt },
     { role: 'user',   content: dataMessage },
@@ -5556,7 +5557,6 @@ STYLE
     el.innerHTML = _renderAnalysis(text); // flush any remainder
     if (!text.trim()) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>'; }
     P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
-    chatContainer.style.display = 'block';
     document.getElementById('p1_chat_input').focus({ preventScroll: true });
     btn.textContent = '✨ Regenerate';
     generateChatSuggestions();
@@ -5571,6 +5571,9 @@ STYLE
 async function generateChatSuggestions() {
   const el = document.getElementById('p1_chat_suggestions');
   if (!el || !P1_CHAT_MESSAGES.length) return;
+  // Extract the last AI message shown so suggestions reference specific findings
+  const lastAI = [...P1_CHAT_MESSAGES].reverse().find(m => m.role === 'assistant')?.content || '';
+  if (!lastAI) return;
   el.innerHTML = '<span style="font-size:11px;color:#94a3b8;align-self:center">Suggested questions…</span>';
   try {
     const resp = await fetch('https://ai-proxy.mateo-jaramillo.workers.dev/', {
@@ -5578,10 +5581,10 @@ async function generateChatSuggestions() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 120,
+        max_tokens: 150,
         messages: [
-          ...P1_CHAT_MESSAGES,
-          { role: 'user', content: 'Based on this analysis, suggest exactly 3 short follow-up questions a CS manager might want to ask. Return ONLY a JSON array of 3 strings. Each question must be under 10 words. No other text.' }
+          { role: 'system', content: 'You generate follow-up questions for a CS dashboard. Always reference specific numbers, countries, KPIs, or periods from the analysis text provided. Never ask generic questions.' },
+          { role: 'user', content: `Based on this analysis:\n\n"${lastAI.slice(0, 600)}"\n\nWrite exactly 3 follow-up questions a CS manager would ask that reference specific figures or findings mentioned above. Return ONLY a JSON array of 3 strings. Each question under 12 words. No other text.` }
         ]
       })
     });
