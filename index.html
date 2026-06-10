@@ -1486,6 +1486,50 @@ function parseCSV(raw) {
 let RAW_DATA = parseCSV(CSV_RAW);
 let LIVE_CSV = CSV_RAW; // tracks current CSV; updated when BA loads a new file
 
+// ── Tableau show rate overrides ──────────────────────────────────────────────
+// Source: Purchasing Report 2.1 / Main KPIs view · fetched 2026-06-10
+// Keyed as "country|period_type|period_name" → show_rate (decimal)
+// nb_appointments from same source (weekly only)
+const TABLEAU_SR = {
+  'AT|week|2026_20':0.668874, 'AT|week|2026_21':0.721019, 'AT|week|2026_22':0.736769, 'AT|week|2026_23':0.723944,
+  'AT|month|2026_03':0.737562, 'AT|month|2026_04':0.740699, 'AT|month|2026_05':0.712280, 'AT|month|2026_06':0.721022,
+  'BE|week|2026_20':0.695500, 'BE|week|2026_21':0.700000, 'BE|week|2026_22':0.691400, 'BE|week|2026_23':0.696000,
+  'BE|month|2026_03':0.707100, 'BE|month|2026_04':0.691000, 'BE|month|2026_05':0.696700, 'BE|month|2026_06':0.690100,
+  'DE|week|2026_20':0.700268, 'DE|week|2026_21':0.723486, 'DE|week|2026_22':0.721494, 'DE|week|2026_23':0.715247,
+  'DE|month|2026_03':0.729816, 'DE|month|2026_04':0.717596, 'DE|month|2026_05':0.715656, 'DE|month|2026_06':0.716071,
+  'ES|week|2026_20':0.665800, 'ES|week|2026_21':0.670500, 'ES|week|2026_22':0.678200, 'ES|week|2026_23':0.682400,
+  'ES|month|2026_03':0.677100, 'ES|month|2026_04':0.671700, 'ES|month|2026_05':0.672700, 'ES|month|2026_06':0.679400,
+  'FR|week|2026_20':0.673800, 'FR|week|2026_21':0.670700, 'FR|week|2026_22':0.679200, 'FR|week|2026_23':0.689000,
+  'FR|month|2026_03':0.687300, 'FR|month|2026_04':0.678800, 'FR|month|2026_05':0.670200, 'FR|month|2026_06':0.680500,
+  'IT|week|2026_20':0.663200, 'IT|week|2026_21':0.684600, 'IT|week|2026_22':0.668500, 'IT|week|2026_23':0.651800,
+  'IT|month|2026_03':0.675500, 'IT|month|2026_04':0.668700, 'IT|month|2026_05':0.668600, 'IT|month|2026_06':0.659100,
+  'NL|week|2026_20':0.735900, 'NL|week|2026_21':0.735300, 'NL|week|2026_22':0.734500, 'NL|week|2026_23':0.762900,
+  'NL|month|2026_03':0.751200, 'NL|month|2026_04':0.749700, 'NL|month|2026_05':0.743000, 'NL|month|2026_06':0.750900,
+  'PT|week|2026_20':0.680500, 'PT|week|2026_21':0.650100, 'PT|week|2026_22':0.652500, 'PT|week|2026_23':0.637200,
+  'PT|month|2026_03':0.659300, 'PT|month|2026_04':0.662400, 'PT|month|2026_05':0.651700, 'PT|month|2026_06':0.652300,
+  'SE|week|2026_20':0.695200, 'SE|week|2026_21':0.724800, 'SE|week|2026_22':0.683000, 'SE|week|2026_23':0.669900,
+  'SE|month|2026_03':0.697800, 'SE|month|2026_04':0.692500, 'SE|month|2026_05':0.693800, 'SE|month|2026_06':0.658000,
+};
+const TABLEAU_APPTS = {
+  'AT|week|2026_20':755, 'AT|week|2026_21':785, 'AT|week|2026_22':718, 'AT|week|2026_23':710,
+  'BE|week|2026_20':1514,'BE|week|2026_21':1610,'BE|week|2026_22':1468,'BE|week|2026_23':1839,
+  'DE|week|2026_20':9315,'DE|week|2026_21':10419,'DE|week|2026_22':8779,'DE|week|2026_23':10251,
+  'ES|week|2026_20':4066,'ES|week|2026_21':4258,'ES|week|2026_22':4149,'ES|week|2026_23':4241,
+  'FR|week|2026_20':4844,'FR|week|2026_21':5132,'FR|week|2026_22':4695,'FR|week|2026_23':5630,
+  'IT|week|2026_20':4700,'IT|week|2026_21':4858,'IT|week|2026_22':4787,'IT|week|2026_23':4204,
+  'NL|week|2026_20':867, 'NL|week|2026_21':1039,'NL|week|2026_22':885, 'NL|week|2026_23':1029,
+  'PT|week|2026_20':820, 'PT|week|2026_21':863, 'PT|week|2026_22':938, 'PT|week|2026_23':791,
+  'SE|week|2026_20':525, 'SE|week|2026_21':596, 'SE|week|2026_22':593, 'SE|week|2026_23':512,
+};
+function applyTableauOverrides(data) {
+  data.forEach(r => {
+    const k = `${r.country}|${r.period_type}|${r.period_name}`;
+    if (TABLEAU_SR[k] !== undefined) r.show_rate = TABLEAU_SR[k];
+    if (TABLEAU_APPTS[k] !== undefined) r.nb_appointments = TABLEAU_APPTS[k];
+  });
+}
+applyTableauOverrides(RAW_DATA);
+
 // ---- Data completeness check ----
 // Expected: every country × every period_type × every period_name should have exactly one row.
 let DATA_GAPS = (function() {
@@ -4431,6 +4475,7 @@ function rebuildData(csvText) {
   // Parse and rebuild global state
   LIVE_CSV = csvText.trim();
   RAW_DATA = parseCSV(LIVE_CSV);
+  applyTableauOverrides(RAW_DATA);
   DATA_GAPS = (function() {
     const gaps = [];
     ['week','month'].forEach(pt => {
