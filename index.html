@@ -5508,7 +5508,7 @@ You are an AI Data Analyst embedded in the Customer Service — Show Rate Dashbo
 TASK — ON "GENERATE"
 Produce a concise analysis (max 150 words) covering ALL five metric groups in order. Use this structure:
 1. 📊 HEADLINE INSIGHT: Latest show rate, change vs. previous period (pp), position within the recent min–max range. Also note # appointments and # purchases trend (rising, falling, stable).
-2. 🔑 KEY DRIVER(S): Reference ALL of the following — % BC Tasks Done & Attempted, Branch Utilisation, Lead Share cohort mix (especially Dealer Now vs Private Now vs Not Planned), and Cancelled Appointments timing breakdown. Identify the 1–2 that most explain the show rate movement and quantify them. Do not skip any metric group — if data is available, mention it.
+2. 🔑 KEY DRIVER(S): Reference ALL of the following — % BC Tasks Done & Attempted, Branch Utilisation (including # EVA/evaluation slots available: fewer slots = capacity constraint that can suppress show rate by limiting bookable appointments), Lead Share cohort mix (especially Dealer Now vs Private Now vs Not Planned), and Cancelled Appointments timing breakdown. Identify the 1–2 that most explain the show rate movement and quantify them. Do not skip any metric group — if data is available, mention it.
 3. 🔗 CORRELATION: Strongest Pearson correlation with show rate. State coefficient, direction, plain-language interpretation. Flag correlation ≠ causation and small-sample caveat when fewer than 8 periods.
 4. 💡 SUGGESTED ACTION: One concrete recommendation tied to the metric group with the most impact.
 
@@ -5913,14 +5913,6 @@ function renderP1LeadShareChart() {
     data: periods.map(p => (lsData[p] ? +lsData[p][i].toFixed(1) : null)),
     backgroundColor: LEAD_SHARE_COLORS[i],
     borderWidth: 0,
-    datalabels: {
-      display: ctx => ctx.parsed?.y != null && top3ByPeriodIdx[ctx.dataIndex]?.has(i),
-      formatter: v => v != null ? v.toFixed(1) + '%' : '',
-      color: '#fff',
-      font: { size: 10, weight: '600' },
-      anchor: 'center',
-      align: 'center',
-    },
   }));
 
   destroyChart('p1_ls_chart');
@@ -5933,7 +5925,17 @@ function renderP1LeadShareChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        datalabels: {},
+        datalabels: {
+          display: ctx => {
+            const top3 = top3ByPeriodIdx[ctx.dataIndex];
+            return !!(top3 && top3.has(ctx.datasetIndex) && ctx.parsed?.y);
+          },
+          formatter: (v) => v != null ? v.toFixed(1) + '%' : '',
+          color: '#fff',
+          font: { size: 10, weight: '600' },
+          anchor: 'center',
+          align: 'center',
+        },
         tooltip: {
           mode: 'index',
           intersect: false,
