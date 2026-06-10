@@ -764,6 +764,7 @@ tr:hover td{background:#f9fafb !important;}
       </div>
       <div id="p1_ai_analysis" style="color:#374151"></div>
       <div id="p1_chat_container" style="display:none;margin-top:10px;border-top:1px solid #e5e7eb;padding-top:8px">
+        <div id="p1_chat_suggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
         <div id="p1_chat_history" style="height:200px;overflow-y:scroll;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;padding-right:4px;scroll-behavior:smooth"></div>
         <div style="display:flex;gap:6px">
           <input id="p1_chat_input" type="text" placeholder="Ask a follow-up question…" onkeydown="if(event.key==='Enter')sendChatMessage()"
@@ -5557,12 +5558,51 @@ STYLE
     chatContainer.style.display = 'block';
     document.getElementById('p1_chat_input').focus();
     btn.textContent = '✨ Regenerate';
+    generateChatSuggestions();
   } catch (err) {
     el.innerHTML = `<p style="color:#dc2626;font-size:12px;margin:0">Error: ${err.message}</p>`;
     btn.textContent = '✨ Generate with AI';
   } finally {
     btn.disabled = false;
   }
+}
+
+async function generateChatSuggestions() {
+  const el = document.getElementById('p1_chat_suggestions');
+  if (!el || !P1_CHAT_MESSAGES.length) return;
+  el.innerHTML = '<span style="font-size:11px;color:#94a3b8;align-self:center">Suggested questions…</span>';
+  try {
+    const resp = await fetch('https://ai-proxy.mateo-jaramillo.workers.dev/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 120,
+        messages: [
+          ...P1_CHAT_MESSAGES,
+          { role: 'user', content: 'Based on this analysis, suggest exactly 3 short follow-up questions a CS manager might want to ask. Return ONLY a JSON array of 3 strings. Each question must be under 10 words. No other text.' }
+        ]
+      })
+    });
+    if (!resp.ok) { el.innerHTML = ''; return; }
+    const data = await resp.json();
+    const raw = data.choices?.[0]?.message?.content || '';
+    const match = raw.match(/\[[\s\S]*?\]/);
+    if (!match) { el.innerHTML = ''; return; }
+    const questions = JSON.parse(match[0]).slice(0, 3);
+    el.innerHTML = questions.map(q =>
+      `<button onclick="sendSuggestedQuestion(this)" data-q="${q.replace(/"/g,'&quot;')}"
+        style="font-size:11.5px;padding:5px 10px;border:1px solid #6366f1;border-radius:20px;background:#f0f0ff;color:#4338ca;cursor:pointer;font-family:inherit;transition:background .15s;white-space:normal;text-align:left;line-height:1.4"
+        onmouseover="this.style.background='#e0e0ff'" onmouseout="this.style.background='#f0f0ff'">${q}</button>`
+    ).join('');
+  } catch (_) { el.innerHTML = ''; }
+}
+
+function sendSuggestedQuestion(btn) {
+  const q = btn.getAttribute('data-q');
+  document.getElementById('p1_chat_input').value = q;
+  document.getElementById('p1_chat_suggestions').innerHTML = '';
+  sendChatMessage();
 }
 
 async function sendChatMessage() {
@@ -5596,6 +5636,7 @@ async function sendChatMessage() {
       chatHistory.scrollTop = chatHistory.scrollHeight;
     });
     P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
+    generateChatSuggestions();
   } catch (err) {
     document.getElementById(aiId).innerHTML = `<span style="color:#dc2626">Error: ${err.message}</span>`;
   } finally {
