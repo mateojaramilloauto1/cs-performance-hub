@@ -4674,24 +4674,22 @@ function toggleP1Country(c) {
   if (c === 'ALL') {
     P1_IS_ALL = true;
     P1_SELECTED = new Set();
-  } else if (P1_IS_ALL) {
-    // First click from All mode: isolate that country + EU Avg by default
-    P1_IS_ALL = false;
-    P1_SELECTED = new Set([c, 'EU_AVG']);
-  } else if (P1_SELECTED.has(c)) {
-    // Deselect this item (country or EU_AVG)
-    P1_SELECTED.delete(c);
-    const hasCountry = [...P1_SELECTED].some(x => x !== 'EU_AVG');
-    if (!hasCountry) { P1_IS_ALL = true; P1_SELECTED = new Set(); }
-  } else if (c !== 'EU_AVG' && P1_SELECTED.has('EU_AVG')) {
-    // EU AVG is active: replace current country with this one (single-country vs EU mode)
-    const countries = [...P1_SELECTED].filter(x => x !== 'EU_AVG');
-    P1_SELECTED = new Set([c, 'EU_AVG']);
+  } else if (c === 'EU_AVG') {
+    // Toggle EU AVG line on/off while keeping current country
+    if (P1_IS_ALL) return;
+    P1_SELECTED.has('EU_AVG') ? P1_SELECTED.delete('EU_AVG') : P1_SELECTED.add('EU_AVG');
+    if (![...P1_SELECTED].some(x => x !== 'EU_AVG')) { P1_IS_ALL = true; P1_SELECTED = new Set(); }
   } else {
-    // Multi-select mode (EU AVG off) or adding EU_AVG: just add
-    P1_SELECTED.add(c);
+    // Single-select: clicking a country replaces any previous selection
+    if (!P1_IS_ALL && P1_SELECTED.has(c) && P1_SELECTED.size <= 2) {
+      // Clicking the already-selected country → back to All
+      P1_IS_ALL = true;
+      P1_SELECTED = new Set();
+    } else {
+      P1_IS_ALL = false;
+      P1_SELECTED = new Set([c, 'EU_AVG']);
+    }
   }
-  // Sync button styles
   document.querySelectorAll('.p1-ctog').forEach(btn => {
     const bc = btn.dataset.country;
     btn.classList.toggle('active', P1_IS_ALL ? bc === 'ALL' : P1_SELECTED.has(bc));
@@ -5508,11 +5506,11 @@ ${corrTable}`;
 You are an AI Data Analyst embedded in the Customer Service — Show Rate Dashboard at Auto1. Your audience is the CS Project Manager and the CS HQ Director. The dashboard tracks the show rate of customers with appointments to sell their cars at our branches.
 
 TASK — ON "GENERATE"
-Produce a concise analysis (max 120 words) with this structure:
-1. 📊 HEADLINE INSIGHT: State the latest show rate for the selected period and country, the change vs. the previous period (in pp), and whether it is within, above, or below the recent range (min–max over the window).
-2. 🔑 KEY DRIVER(S): Identify the 1–2 KPIs most likely explaining the latest movement. Quantify each driver.
-3. 🔗 CORRELATION: Report the strongest correlation with show rate (state the coefficient, direction, and plain-language interpretation). Flag correlation ≠ causation and small-sample limitations when fewer than 8 periods.
-4. 💡 SUGGESTED ACTION: One actionable recommendation for the CS team.
+Produce a concise analysis (max 150 words) covering ALL five metric groups in order. Use this structure:
+1. 📊 HEADLINE INSIGHT: Latest show rate, change vs. previous period (pp), position within the recent min–max range. Also note # appointments and # purchases trend (rising, falling, stable).
+2. 🔑 KEY DRIVER(S): Reference ALL of the following — % BC Tasks Done & Attempted, Branch Utilisation, Lead Share cohort mix (especially Dealer Now vs Private Now vs Not Planned), and Cancelled Appointments timing breakdown. Identify the 1–2 that most explain the show rate movement and quantify them. Do not skip any metric group — if data is available, mention it.
+3. 🔗 CORRELATION: Strongest Pearson correlation with show rate. State coefficient, direction, plain-language interpretation. Flag correlation ≠ causation and small-sample caveat when fewer than 8 periods.
+4. 💡 SUGGESTED ACTION: One concrete recommendation tied to the metric group with the most impact.
 
 TASK — FOLLOW-UP CHAT
 - Answer only using the dashboard data in scope; if asked about data you don't have, say so — never invent numbers.
