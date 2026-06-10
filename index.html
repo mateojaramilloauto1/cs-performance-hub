@@ -8037,7 +8037,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderP1();
   requestAnimationFrame(updateFilterBarTop);
   // Auto-generate AI analysis on load after a short delay so charts render first
-  setTimeout(() => generateAiAnalysis(), 600);
+  document.getElementById('p1_ai_analysis').innerHTML =
+    '<p style="color:#94a3b8;font-size:12.5px;margin:0">Click <strong>✨ Generate with AI</strong> to analyse the current view.</p>';
   window.addEventListener('resize', updateFilterBarTop);
   updateGapBanner();
   // Render emoji flags as images (cross-platform — flag emojis are unsupported on Windows natively)
