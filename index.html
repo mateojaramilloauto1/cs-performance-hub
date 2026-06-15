@@ -19,6 +19,15 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 .banner-gap{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
 .page{display:none;padding:16px}
 .page.active{display:block}
+/* Executive Overview: flex-fill so all 6 panels fit in one viewport */
+#p1.active{display:block;padding-bottom:24px}
+#p1 .chart-row{display:flex;gap:12px;margin-bottom:12px;align-items:stretch}
+#p1 .chart-row .chart-box{flex:1;min-width:0;overflow:hidden;margin-bottom:0;display:flex;flex-direction:column;padding:12px 14px}
+#p1 .chart-row .chart-box h3{flex-shrink:0;margin-bottom:6px;font-size:14px}
+#p1 .chart-row .chart-box canvas{flex:1;min-height:0;width:100%!important}
+#p1 .chart-row .chart-box>p{flex-shrink:0;margin:3px 0 0}
+#p1 .chart-row.fixed-h{height:400px}
+#p1 .chart-row.ai-row{min-height:380px}
 .filter-bar{position:sticky;top:var(--filter-bar-top,116px);z-index:50;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .filter-bar label{font-size:12px;color:#64748b;font-weight:600;margin-right:4px}
 .filter-bar select{border:1px solid #e2e8f0;border-radius:4px;padding:4px 8px;font-size:13px;background:#fff;color:#1e293b}
@@ -35,7 +44,7 @@ body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;font-size
 .delta-neg{color:#b91c1c}
 .delta-neu{color:#64748b}
 .chart-box{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin-bottom:16px}
-.chart-box h3{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px}
+.chart-box h3{font-size:15px;font-weight:600;color:#374151;margin-bottom:12px}
 .chart-row{display:flex;gap:16px;margin-bottom:16px}
 .chart-row .chart-box{flex:1;min-width:0}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -180,6 +189,9 @@ canvas{max-height:320px}
 .cl-tag-fix{background:#fee2e2;color:#b91c1c}
 .cl-tag-change{background:#dbeafe;color:#1e40af}
 .cl-tag-note{background:#f1f5f9;color:#475569}
+.cl-tag-data{background:#fef3c7;color:#92400e}
+.cl-data-block{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px 20px;margin-bottom:14px}
+.cl-data-block .cl-version-header{margin-bottom:10px}
 .cl-items{list-style:none;display:flex;flex-direction:column;gap:7px;margin:0;padding:0}
 .cl-items li{font-size:13px;color:#374151;line-height:1.5;display:flex;align-items:baseline;gap:8px}
 /* ---- BC Analysis merged card ---- */
@@ -665,33 +677,25 @@ tr:hover td{background:#f9fafb !important;}
 
 <div id="section-sr">
 
-<div class="header">
-  <div class="header-top">
-    <div>
-      <h1>Customer Service — Show Rate Dashboard</h1>
-      <div class="subtitle">Ada · Senior Experience Business Analyst &nbsp;|&nbsp; Audience: Mateo (PM) &amp; CS HQ Director</div>
-    </div>
-  </div>
-</div>
+<div class="header"></div>
 
 <div id="sticky-header">
 <div class="sticky-nav">
   <button class="tab-btn active" onclick="showTab('p1')">Executive Overview</button>
-  <button class="tab-btn" onclick="showTab('p2')">Country Deep Dive</button>
   <button class="tab-btn" onclick="showTab('p3')">Customer Service Tasks Overview</button>
   <button class="tab-btn" onclick="showTab('p4')">Appointment Cancellation Overview</button>
-  <button class="tab-btn" onclick="showTab('p5')">Priority Actions</button>
+  <button class="tab-btn" onclick="showTab('p8')">Branch Operations</button>
   <button class="tab-btn" onclick="showTab('p6')">KPI Definitions</button>
   <button class="tab-btn" onclick="showTab('p7')">Changelog</button>
+  <button class="help-toggle" style="margin-left:auto;font-size:12px;padding:0 8px" onclick="toggleHelp()">? Help</button>
   <button class="update-nav-btn" onclick="toggleUpdatePanel()">↻ Update Data</button>
 </div>
-<div class="data-status-bar" id="data_status_bar" style="font-size:13px;">
-  Showing data for week <strong id="ds_latest_week" style="color:#1d4ed8;">—</strong> (latest available) &nbsp;·&nbsp; last updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;">—</span>
-  <button class="help-toggle" style="margin-left:auto" onclick="toggleHelp()">? How to read this dashboard</button>
-</div>
 <div class="global-country-bar" id="global_country_bar">
-  <span class="nav-ptype-toggle" style="margin-right:12px">
+  <span class="nav-ptype-toggle" style="margin-right:8px">
     <input type="radio" name="global_ptype" id="gpt_week" value="week" checked onchange="setGlobalPtype('week')"><label for="gpt_week">Weekly</label><input type="radio" name="global_ptype" id="gpt_month" value="month" onchange="setGlobalPtype('month')"><label for="gpt_month">Monthly</label>
+  </span>
+  <span style="font-size:13px;color:#64748b;white-space:nowrap;margin-right:16px;padding-right:16px;border-right:1px solid #e2e8f0">
+    Data: week <strong id="ds_latest_week" style="color:#1d4ed8;">—</strong> (latest available) &nbsp;·&nbsp; updated <span id="ds_as_of" style="color:#1d4ed8;font-weight:600;">—</span>
   </span>
   <span class="gcb-label">Country:</span>
   <button class="gcb-btn active" id="gcb_EU" onclick="setGlobalCountry('EU')">🇪🇺 EU</button>
@@ -705,6 +709,14 @@ tr:hover td{background:#f9fafb !important;}
   <button class="gcb-btn" id="gcb_PT" onclick="setGlobalCountry('PT')">🇵🇹 PT</button>
   <button class="gcb-btn" id="gcb_SE" onclick="setGlobalCountry('SE')">🇸🇪 SE</button>
   <button class="gcb-btn" id="gcb_EU_AVG" onclick="setGlobalCountry('EU_AVG')" style="display:none;border-style:dashed;margin-left:8px">EU Avg</button>
+  <span style="margin-left:16px;margin-right:4px;color:#94a3b8;font-size:12px;font-weight:600;letter-spacing:.03em">LAST</span>
+  <button class="gcb-btn window-btn" id="gwb_4"  onclick="setGlobalWindow(4)">4</button>
+  <button class="gcb-btn window-btn" id="gwb_6"  onclick="setGlobalWindow(6)">6</button>
+  <button class="gcb-btn window-btn" id="gwb_8"  onclick="setGlobalWindow(8)">8</button>
+  <button class="gcb-btn window-btn" id="gwb_10" onclick="setGlobalWindow(10)">10</button>
+  <button class="gcb-btn window-btn" id="gwb_12" onclick="setGlobalWindow(12)">12</button>
+  <button class="gcb-btn window-btn" id="gwb_all" onclick="setGlobalWindow(null)">All</button>
+  <span id="window_label" style="margin-left:10px;font-size:12px;font-weight:600;color:#1e293b;white-space:nowrap;opacity:0.7">Last 6 weeks</span>
 </div>
 </div><!-- end #sticky-header -->
 <div class="help-panel" id="help_panel">
@@ -738,45 +750,71 @@ tr:hover td{background:#f9fafb !important;}
 
 <!-- PAGE 1 -->
 <div id="p1" class="page active">
-  <div class="filter-bar" style="flex-wrap:wrap;gap:16px;align-items:center">
-    <span style="display:flex;align-items:center;gap:8px">
-      <label>EU Show Rate:</label>
-      <span class="radio-group">
-        <input type="radio" name="p1_eumode" id="p1_weighted" value="weighted" checked onchange="renderP1()"><label for="p1_weighted">Weighted</label>
-        <input type="radio" name="p1_eumode" id="p1_unweighted" value="unweighted" onchange="renderP1()"><label for="p1_unweighted">Unweighted</label>
-      </span>
-    </span>
-    <span style="color:#e2e8f0;font-size:16px;line-height:1">|</span>
-    <span style="display:flex;align-items:center;gap:8px">
-      <label>Compare Δ vs:</label>
-      <span class="radio-group">
-        <input type="radio" name="p1_compmode" id="p1_prev1" value="prev1" checked onchange="renderP1()"><label for="p1_prev1">Prev period</label>
-        <input type="radio" name="p1_compmode" id="p1_prev4" value="prev4" onchange="renderP1()"><label for="p1_prev4">4-period avg</label>
-      </span>
-    </span>
+  <div style="display:none">
+    <input type="radio" name="p1_eumode" id="p1_weighted" value="weighted" checked>
+    <input type="radio" name="p1_eumode" id="p1_unweighted" value="unweighted">
+    <input type="radio" name="p1_compmode" id="p1_prev1" value="prev1" checked>
+    <input type="radio" name="p1_compmode" id="p1_prev4" value="prev4">
   </div>
-  <div class="selection-summary" id="p1_selection_summary"></div>
-  <div class="exec-summary" id="p1_exec_summary">
-    <div class="exec-summary-title">
-      <span>Executive Summary</span>
-      <button class="export-btn" onclick="copyExecSummary()" title="Copy summary to clipboard">Copy summary</button>
-    </div>
-    <div class="exec-summary-body" id="p1_exec_summary_text">Loading...</div>
-  </div>
-  <div class="kpi-row" id="p1_kpis"></div>
 
-  <!-- 3 separate trend charts -->
-  <div class="chart-box" style="margin-bottom:16px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-      <button class="toggle-btn appts-toggle-btn" id="appts_toggle_p1" onclick="toggleShowAppts()" title="Show/hide appointment volume bars">📅 # Appts</button>
-      <button class="toggle-btn purchases-toggle-btn" id="purchases_toggle_p1" onclick="toggleShowPurchases()" title="Show/hide purchase volume bars">🛒 # Purchases</button>
-      <h3 style="margin:0;flex:1">Show Rate — Weekly Trend per Market</h3>
+  <!-- Row 1: AI Analysis (left) + Show Rate (right) -->
+  <div class="chart-row ai-row">
+    <div class="chart-box" style="margin-bottom:0;display:flex;flex-direction:column;overflow:hidden;flex:1">
+      <!-- Header: always visible -->
+      <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <h3 style="margin:0;flex:1;font-size:18px;font-weight:700">AI Analysis — Key Show Rate Drivers</h3>
+        <button id="p1_ai_generate_btn" onclick="generateAiAnalysis()" style="font-size:13px;padding:7px 16px;border:1px solid #6366f1;border-radius:8px;background:#6366f1;color:#fff;cursor:pointer;white-space:nowrap;font-weight:600">✨ Generate with AI</button>
+        <button id="p1_ai_finish_btn" onclick="finishAiGeneration()" style="display:none;font-size:12px;padding:5px 12px;border:1px solid #10b981;border-radius:8px;background:#10b981;color:#fff;cursor:pointer;white-space:nowrap">⏩ Finish now</button>
+        <button id="p1_ai_stop_btn" onclick="stopAiGeneration()" style="display:none;font-size:12px;padding:5px 12px;border:1px solid #ef4444;border-radius:8px;background:#ef4444;color:#fff;cursor:pointer;white-space:nowrap">⏹ Stop</button>
+      </div>
+      <!-- Scrollable content: analysis text + chat history -->
+      <div id="p1_ai_scroll" style="flex:1;overflow-y:auto;min-height:0;padding-right:4px">
+        <div id="p1_ai_analysis" style="color:#374151"></div>
+        <div id="p1_chat_history" style="display:flex;flex-direction:column;gap:6px;margin-top:8px"></div>
+      </div>
+      <!-- Pinned bottom: input + suggestions -->
+      <div style="flex-shrink:0;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input id="p1_chat_input" type="text" placeholder="Ask a follow-up question…" onkeydown="if(event.key==='Enter')sendChatMessage()"
+            style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;font-family:inherit;outline:none">
+          <button onclick="sendChatMessage()" id="p1_chat_send_btn"
+            style="padding:6px 14px;background:#6366f1;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">Send</button>
+        </div>
+        <div id="p1_chat_suggestions" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
     </div>
-    <canvas id="p1_sr_chart"></canvas>
+    <div class="chart-box" style="margin-bottom:0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <button class="toggle-btn appts-toggle-btn" id="appts_toggle_p1" onclick="toggleShowAppts()" title="Show/hide appointment volume bars">📅 # Appts</button>
+        <button class="toggle-btn purchases-toggle-btn" id="purchases_toggle_p1" onclick="toggleShowPurchases()" title="Show/hide purchase volume bars">🛒 # Purchases</button>
+        <button class="toggle-btn vol-only-btn" id="vol_only_toggle_p1" onclick="toggleVolOnlyMode()" title="Show only appointment & purchase volume with % deltas between periods">📊 # Apps &amp; Purchases</button>
+        <h3 style="margin:0;flex:1">Show Rate — Trend per Market</h3>
+      </div>
+      <canvas id="p1_sr_chart"></canvas>
+    </div>
   </div>
-  <div class="chart-row">
-    <div class="chart-box"><h3>% BC Tasks Done — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
-    <div class="chart-box">
+
+  <!-- Row 2: Lead Share (left) + Branch Utilisation (right) -->
+  <div class="chart-row fixed-h">
+    <div class="chart-box" style="margin-bottom:0">
+      <h3 id="p1_ls_title">Lead Share by Cohort — EU</h3>
+      <p id="p1_ls_country_note" style="display:none;font-size:11px;color:#f59e0b;margin:0 0 4px">⚠ Country-level lead share not yet available — showing EU aggregate</p>
+      <div id="p1_ls_legend" style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-bottom:6px;font-size:13px;color:#374151"></div>
+      <canvas id="p1_ls_chart"></canvas>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:0">Source: CJ Dashboard · Lead Share By view · AT/DE/ES/FR/IT/NL/PT/SE per-country data · BE shows EU aggregate · CW06–CW23</p>
+    </div>
+    <div class="chart-box" style="margin-bottom:0">
+      <h3>Branch Utilisation — Trend per Market</h3>
+      <div id="p1_util_empty" style="display:none;color:#94a3b8;font-size:13px;padding:12px 0">No data available.</div>
+      <canvas id="p1_util_chart"></canvas>
+      <p style="font-size:11px;color:#94a3b8;margin-top:4px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty.</p>
+    </div>
+  </div>
+
+  <!-- Row 3: BC Tasks Done (left) + Cancelled Appointments (right) -->
+  <div class="chart-row fixed-h">
+    <div class="chart-box" style="margin-bottom:0"><h3>% BC Tasks Done &amp; Attempted — Trend per Market</h3><canvas id="p1_done_chart"></canvas></div>
+    <div class="chart-box" style="margin-bottom:0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
         <h3 style="margin:0;flex:1">Cancelled Appointments — Timing Breakdown</h3>
         <button class="toggle-btn active cancel-mode-btn" data-mode="last" onclick="setCancelMode('last')" title="Count only the last appointment per slot (columns M–R)" style="flex-shrink:0">Last Appt</button>
@@ -786,56 +824,9 @@ tr:hover td{background:#f9fafb !important;}
     </div>
   </div>
 
-  <!-- BC Task Volume bar chart -->
-  <div class="chart-box" style="margin-bottom:16px">
-    <h3 id="p1_vol_title">Booking Confirmation Task Volume — EU Aggregate</h3>
-    <canvas id="p1_vol_chart"></canvas>
-  </div>
-
-  <!-- Country Rankings table -->
-  <div class="table-header-row" style="margin-top:4px">
-    <div class="section-title" id="p1_table_title">Country Rankings</div>
-    <button class="export-btn" onclick="exportTableToCSV('p1_tbody','country-rankings')">Export CSV</button>
-  </div>
-  <div class="tbl-scroll" style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px">
-    <table id="p1_table">
-      <thead id="p1_thead"></thead>
-      <tbody id="p1_tbody"></tbody>
-    </table>
-  </div>
-
-  <div class="section-title">Executive Insight</div>
-  <div class="ic-cards" id="p1_insight_cards"></div>
 </div>
 
 <!-- PAGE 2 -->
-<div id="p2" class="page">
-  <div class="filter-bar">
-    <span><label>Compare vs:</label>
-      <span class="radio-group">
-        <input type="radio" name="p2_compmode" id="p2_prev1" value="prev1" checked onchange="renderP2()"><label for="p2_prev1">Prev period</label>
-        <input type="radio" name="p2_compmode" id="p2_prev4" value="prev4" onchange="renderP2()"><label for="p2_prev4">4-period avg</label>
-      </span>
-    </span>
-  </div>
-  <div class="selection-summary" id="p2_selection_summary"></div>
-  <div class="kpi-row" id="p2_kpis"></div>
-  <div id="p2_insight_cards" style="margin-bottom:16px"></div>
-  <div class="chart-row">
-    <div class="chart-box"><h3>Show Rate</h3><canvas id="p2_sr_chart"></canvas></div>
-    <div class="chart-box"><h3>% BC Tasks Done</h3><canvas id="p2_done_chart"></canvas></div>
-    <div class="chart-box"><h3>BC Task Cancellation Rate</h3><canvas id="p2_cancel_chart"></canvas></div>
-  </div>
-  <div class="note" style="margin-bottom:12px">Europe benchmark uses BC-volume-weighted Show Rate proxy.</div>
-  <div class="table-header-row">
-    <div class="section-title">Period History</div>
-    <button class="export-btn" onclick="exportTableToCSV('p2_tbody','country-history')">Export CSV</button>
-  </div>
-  <div class="chart-box tbl-scroll" style="padding:0"><table><thead><tr>
-    <th>Period</th><th>Show Rate</th><th>SR Δ</th><th>BC Created</th><th>% BC Tasks Done</th><th>BC Cancel Rate</th><th>BC Pending</th><th>Cancelled Vol</th>
-  </tr></thead><tbody id="p2_tbody"></tbody></table></div>
-</div>
-
 <!-- PAGE 3 -->
 <div id="p3" class="page">
   <div class="filter-bar">
@@ -920,39 +911,6 @@ tr:hover td{background:#f9fafb !important;}
     <canvas id="p4_stack"></canvas>
   </div>
   <div class="chart-box"><h3>Cancelled Volume vs Show Rate — by Country</h3><canvas id="p4_scatter"></canvas></div>
-</div>
-
-<!-- PAGE 5 -->
-<div id="p5" class="page">
-  <div class="filter-bar">
-    <span><label for="p5_period">Period:</label><select id="p5_period" onchange="renderP5()"></select></span>
-    <span><label>Compare vs:</label>
-      <span class="radio-group">
-        <input type="radio" name="p5_compmode" id="p5_prev1" value="prev1" checked onchange="renderP5()"><label for="p5_prev1">Prev period</label>
-        <input type="radio" name="p5_compmode" id="p5_prev4" value="prev4" onchange="renderP5()"><label for="p5_prev4">4-period avg</label>
-      </span>
-    </span>
-  </div>
-  <div class="selection-summary" id="p5_selection_summary"></div>
-  <div class="table-header-row" style="margin-bottom:8px">
-    <div class="section-title">Priority Ranking</div>
-    <button class="export-btn" onclick="exportTableToCSV('p5_tbody','priority-actions')">Export CSV</button>
-  </div>
-  <div class="priority-legend">
-    <span style="font-size:12px;color:#64748b;font-weight:600">Category:</span>
-    <span class="badge badge-critical">Critical ≥75</span>
-    <span class="badge badge-high">High 50–74</span>
-    <span class="badge badge-medium">Medium 25–49</span>
-    <span class="badge badge-low">Low &lt;25</span>
-  </div>
-  <div class="note" style="margin-bottom:8px">Score 0–100 — management prioritization tool, not a statistical model. Scoring: BC volume (25) + SR gap vs EU (25) + SR decline (20) + BC Done decline (15) + Cancelled vol increase (10) + BC pending (5).</div>
-  <div class="chart-box tbl-scroll" style="padding:0"><table><thead><tr>
-    <th>Rank</th><th>Country</th><th>Score</th><th>Category</th><th>Show Rate</th><th>SR Δ</th>
-    <th>BC Created</th><th>% BC Tasks Done</th><th>Done Δ</th><th>BC Pending</th>
-    <th>Cancelled Vol</th><th>Cancel Δ</th><th>Main Drivers</th>
-  </tr></thead><tbody id="p5_tbody"></tbody></table></div>
-  <div class="section-title">Priority Narratives</div>
-  <div class="ic-cards" id="p5_narratives"></div>
 </div>
 
 <!-- PAGE 6 -->
@@ -1076,9 +1034,79 @@ tr:hover td{background:#f9fafb !important;}
 // ║            YYYY_MM), show_rate, nb_appointments, BC task counts,            ║
 // ║            cancellation timing columns                                      ║
 // ║  Location: const CSV_RAW = `country,period_type,period_name,nb_booking_confirmation_created,nb_booking_confirmation_cancelled,nb_booking_confirmation_done,appts_nu_cancelled,appts_nu_cancelled_before_appt_more_30m,appts_nu_cancelled_before_appt_less_30m,appts_nu_cancelled_after_appt_less_30m,appts_nu_cancelled_after_appt_more_30m_sameday,appts_nu_cancelled_after_appt_from_1day,appts_cancelled,appts_cancelled_before_appt_more_30m,appts_cancelled_before_appt_less_30m,appts_cancelled_after_appt_less_30m,appts_cancelled_after_appt_more_30m_sameday,appts_cancelled_after_appt_from_1day,show_rate,nb_appointments`;                                   ║
+// ║    4. Deploy the file (see DEPLOY section below)                            ║
+// ║                                                                              ║
+// ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
+// ║  ② PURCHASE VOLUME DATA                                                     ║
+// ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
+// ║  Source  : Tableau — Customer Service Report 2.0                            ║
+// ║            View: KPI dashboard  |  Measure: "# purchases" / "Purchases"    ║
+// ║  Format  : PURCHASES_W { "YYYY_WW": { "AT": 123, … } }  (weekly)           ║
+// ║            PURCHASES_M { "YYYY_MM": { "AT": 456, … } }  (monthly)          ║
+// ║  Location: const PURCHASES_W / PURCHASES_M (search "const PURCHASES_W")    ║
+// ║                                                                              ║
+// ║  AI AGENT — how to update:                                                  ║
+// ║    1. Call mcp__tableau__list-datasources to find datasource LUID for       ║
+// ║       "Customer Service Report 2.0"                                         ║
+// ║    2. Call mcp__tableau__query-datasource with fields:                      ║
 // ║         { fieldCaption: "Week" } (or "Month"), { fieldCaption: "Country" }, ║
+// ║         { fieldCaption: "Purchases", function: "SUM" }                      ║
+// ║    3. Build the two JS objects (PURCHASES_W, PURCHASES_M) from the results  ║
+// ║       converting period → "YYYY_WW" / "YYYY_MM" keys, country → ISO codes  ║
+// ║    4. Replace the existing objects in this file (search "const PURCHASES_W")║
+// ║    5. Deploy the file (see DEPLOY section below)                            ║
+// ║                                                                              ║
+// ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
+// ║  ADDING A NEW DATA SOURCE — template for future agents                      ║
+// ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
+// ║  When you add a new data source, do ALL of the following:                   ║
 // ║    A. Add a numbered block (③, ④, …) to THIS comment with:                 ║
 // ║         Source  : where the data lives (Sheet name/tab, Tableau view, etc.) ║
+// ║         Format  : the JS constant name and structure                        ║
+// ║         Location: search token and approximate line number                  ║
+// ║         AI AGENT — how to update: step-by-step tool calls                  ║
+// ║    B. Above the new JS constant in the code, add an inline comment block:   ║
+// ║         // ── DATA SOURCE: <name> ──────────────────────────────────────── ║
+// ║         // AI AGENT UPDATE: <exact steps / tool calls to refresh this data> ║
+// ║         // Last updated: YYYY-MM-DD                                         ║
+// ║    C. Add a changelog entry (Page 7 → Changelog) and bump the version.      ║
+// ║    D. Deploy the file (see DEPLOY section below).                           ║
+// ║                                                                              ║
+// ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
+// ║  DEPLOY — always replace the SAME file (same link, same ID)                 ║
+// ║  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ║
+// ║  CRITICAL: never upload a new file. Always replace the existing one so      ║
+// ║  the sharing link stays the same for everyone who bookmarked it.            ║
+// ║                                                                              ║
+// ║  Google Drive file ID : 1mleCFCRm8GSr8ltna__FXZy4uoYCIEDe                  ║
+// ║  Sharing link         : https://drive.google.com/file/d/                   ║
+// ║                          1mleCFCRm8GSr8ltna__FXZy4uoYCIEDe/view            ║
+// ║                                                                              ║
+// ║  AI AGENT — deploy steps:                                                   ║
+// ║    1. Save the modified HTML to a local file, e.g.                          ║
+// ║         context/CS_Performance_Hub_modified.html                            ║
+// ║    2. Call mcp__google-workspace__replace_google_drive_file with:           ║
+// ║         localPath : "context/CS_Performance_Hub_modified.html"              ║
+// ║         fileId    : "1mleCFCRm8GSr8ltna__FXZy4uoYCIEDe"                    ║
+// ║         fileName  : "CS Performance Hub.html"                               ║
+// ║    3. Confirm the same URL still works (Drive replace keeps the file ID).   ║
+// ║                                                                              ║
+// ╚══════════════════════════════════════════════════════════════════════════════╝
+
+// ── DATA SOURCE ①: Show Rate / BC / Appointments ─────────────────────────────
+// AI AGENT UPDATE:
+//   1. mcp__google-workspace__read_google_sheet on spreadsheet
+//              fileId="1io-bhBMvG97ZDMuuGtaFekrsqdy1Yg0lq1NTjsSKRq4"
+//              sheetName="BC_tasks and show_rate"
+//   2. Strip the Timestamp column (last column); keep columns 1–19
+//   3. Add nb_appointments as column 20 for weekly rows:
+//              source: context/appts_weekly_raw.json (lookup by country + period_name)
+//              monthly rows: leave nb_appointments blank
+//   4. Replace everything between the backticks below with the new CSV text
+//   5. Deploy: mcp__google-workspace__replace_google_drive_file
+//              fileId="1mleCFCRm8GSr8ltna__FXZy4uoYCIEDe" fileName="CS Performance Hub.html"
+// Last updated: 2026-06-08
+// ─────────────────────────────────────────────────────────────────────────────
 const CSV_RAW = `country,period_type,period_name,nb_booking_confirmation_created,nb_booking_confirmation_cancelled,nb_booking_confirmation_done,appts_nu_cancelled,appts_nu_cancelled_before_appt_more_30m,appts_nu_cancelled_before_appt_less_30m,appts_nu_cancelled_after_appt_less_30m,appts_nu_cancelled_after_appt_more_30m_sameday,appts_nu_cancelled_after_appt_from_1day,appts_cancelled,appts_cancelled_before_appt_more_30m,appts_cancelled_before_appt_less_30m,appts_cancelled_after_appt_less_30m,appts_cancelled_after_appt_more_30m_sameday,appts_cancelled_after_appt_from_1day,show_rate,nb_appointments
 AT,month,2026_06,215,5,164,244,186,4,2,5,47,174,121,3,2,5,43,,
 AT,month,2026_05,945,28,703,1188,824,18,6,20,320,834,530,14,6,14,270,0.7035739313,
@@ -1474,6 +1502,50 @@ function parseCSV(raw) {
 let RAW_DATA = parseCSV(CSV_RAW);
 let LIVE_CSV = CSV_RAW; // tracks current CSV; updated when BA loads a new file
 
+// ── Tableau show rate overrides ──────────────────────────────────────────────
+// Source: Purchasing Report 2.1 / Main KPIs view · fetched 2026-06-10
+// Keyed as "country|period_type|period_name" → show_rate (decimal)
+// nb_appointments from same source (weekly only)
+const TABLEAU_SR = {
+  'AT|week|2026_20':0.668874, 'AT|week|2026_21':0.721019, 'AT|week|2026_22':0.736769, 'AT|week|2026_23':0.723944,
+  'AT|month|2026_03':0.737562, 'AT|month|2026_04':0.740699, 'AT|month|2026_05':0.712280, 'AT|month|2026_06':0.721022,
+  'BE|week|2026_20':0.695500, 'BE|week|2026_21':0.700000, 'BE|week|2026_22':0.691400, 'BE|week|2026_23':0.696000,
+  'BE|month|2026_03':0.707100, 'BE|month|2026_04':0.691000, 'BE|month|2026_05':0.696700, 'BE|month|2026_06':0.690100,
+  'DE|week|2026_20':0.700268, 'DE|week|2026_21':0.723486, 'DE|week|2026_22':0.721494, 'DE|week|2026_23':0.715247,
+  'DE|month|2026_03':0.729816, 'DE|month|2026_04':0.717596, 'DE|month|2026_05':0.715656, 'DE|month|2026_06':0.716071,
+  'ES|week|2026_20':0.665800, 'ES|week|2026_21':0.670500, 'ES|week|2026_22':0.678200, 'ES|week|2026_23':0.682400,
+  'ES|month|2026_03':0.677100, 'ES|month|2026_04':0.671700, 'ES|month|2026_05':0.672700, 'ES|month|2026_06':0.679400,
+  'FR|week|2026_20':0.673800, 'FR|week|2026_21':0.670700, 'FR|week|2026_22':0.679200, 'FR|week|2026_23':0.689000,
+  'FR|month|2026_03':0.687300, 'FR|month|2026_04':0.678800, 'FR|month|2026_05':0.670200, 'FR|month|2026_06':0.680500,
+  'IT|week|2026_20':0.663200, 'IT|week|2026_21':0.684600, 'IT|week|2026_22':0.668500, 'IT|week|2026_23':0.651800,
+  'IT|month|2026_03':0.675500, 'IT|month|2026_04':0.668700, 'IT|month|2026_05':0.668600, 'IT|month|2026_06':0.659100,
+  'NL|week|2026_20':0.735900, 'NL|week|2026_21':0.735300, 'NL|week|2026_22':0.734500, 'NL|week|2026_23':0.762900,
+  'NL|month|2026_03':0.751200, 'NL|month|2026_04':0.749700, 'NL|month|2026_05':0.743000, 'NL|month|2026_06':0.750900,
+  'PT|week|2026_20':0.680500, 'PT|week|2026_21':0.650100, 'PT|week|2026_22':0.652500, 'PT|week|2026_23':0.637200,
+  'PT|month|2026_03':0.659300, 'PT|month|2026_04':0.662400, 'PT|month|2026_05':0.651700, 'PT|month|2026_06':0.652300,
+  'SE|week|2026_20':0.695200, 'SE|week|2026_21':0.724800, 'SE|week|2026_22':0.683000, 'SE|week|2026_23':0.669900,
+  'SE|month|2026_03':0.697800, 'SE|month|2026_04':0.692500, 'SE|month|2026_05':0.693800, 'SE|month|2026_06':0.658000,
+};
+const TABLEAU_APPTS = {
+  'AT|week|2026_20':755, 'AT|week|2026_21':785, 'AT|week|2026_22':718, 'AT|week|2026_23':710,
+  'BE|week|2026_20':1514,'BE|week|2026_21':1610,'BE|week|2026_22':1468,'BE|week|2026_23':1839,
+  'DE|week|2026_20':9315,'DE|week|2026_21':10419,'DE|week|2026_22':8779,'DE|week|2026_23':10251,
+  'ES|week|2026_20':4066,'ES|week|2026_21':4258,'ES|week|2026_22':4149,'ES|week|2026_23':4241,
+  'FR|week|2026_20':4844,'FR|week|2026_21':5132,'FR|week|2026_22':4695,'FR|week|2026_23':5630,
+  'IT|week|2026_20':4700,'IT|week|2026_21':4858,'IT|week|2026_22':4787,'IT|week|2026_23':4204,
+  'NL|week|2026_20':867, 'NL|week|2026_21':1039,'NL|week|2026_22':885, 'NL|week|2026_23':1029,
+  'PT|week|2026_20':820, 'PT|week|2026_21':863, 'PT|week|2026_22':938, 'PT|week|2026_23':791,
+  'SE|week|2026_20':525, 'SE|week|2026_21':596, 'SE|week|2026_22':593, 'SE|week|2026_23':512,
+};
+function applyTableauOverrides(data) {
+  data.forEach(r => {
+    const k = `${r.country}|${r.period_type}|${r.period_name}`;
+    if (TABLEAU_SR[k] !== undefined) r.show_rate = TABLEAU_SR[k];
+    if (TABLEAU_APPTS[k] !== undefined) r.nb_appointments = TABLEAU_APPTS[k];
+  });
+}
+applyTableauOverrides(RAW_DATA);
+
 // ---- Data completeness check ----
 // Expected: every country × every period_type × every period_name should have exactly one row.
 let DATA_GAPS = (function() {
@@ -1531,6 +1603,341 @@ const COUNTRY_COLORS = {
   FR:'#84CC16', IT:'#06B6D4', NL:'#F59E0B', PT:'#EF4444', SE:'#10B981'
 };
 const COUNTRIES = ['AT','BE','DE','ES','FR','IT','NL','PT','SE'];
+
+// Lead Share by Cohort — source: Tableau CJ Dashboard, LEAD SHARE BY view (EU aggregate, all countries)
+// Array order per period: [Dealer_Now, Private_Now, Dealer_4W, Private_4W, Dealer_3M, Private_3M, Not_Planned]
+const LEAD_SHARE_SEGMENTS = ['Dealer Now','Private Now','Dealer 4W','Private 4W','Dealer 3M','Private 3M','Not Planned'];
+const LEAD_SHARE_COLORS   = ['#0d9488','#2dd4bf','#f97316','#fbbf24','#3b82f6','#818cf8','#94a3b8'];
+const LEAD_SHARE_WEEKLY = {
+  '2026_06':[36.54,19.06,19.96,11.46,7.16,4.39,1.45],
+  '2026_07':[36.49,19.07,19.98,11.37,7.15,4.40,1.53],
+  '2026_08':[36.65,19.03,19.95,11.33,7.12,4.40,1.52],
+  '2026_09':[37.19,19.09,19.76,11.30,6.88,4.29,1.50],
+  '2026_10':[37.14,19.15,20.20,11.47,6.55,4.06,1.44],
+  '2026_11':[37.11,18.93,20.44,11.36,6.72,4.09,1.35],
+  '2026_12':[37.25,19.17,20.06,11.46,6.59,4.10,1.38],
+  '2026_13':[37.18,19.12,19.95,11.59,6.67,4.08,1.41],
+  '2026_14':[36.15,18.98,20.45,11.60,6.98,4.31,1.53],
+  '2026_15':[36.78,18.51,20.47,11.67,6.88,4.24,1.45],
+  '2026_16':[37.84,19.04,19.82,11.22,6.62,4.05,1.40],
+  '2026_17':[37.98,19.19,19.73,11.15,6.57,3.95,1.42],
+  '2026_18':[37.48,19.26,19.89,11.21,6.61,4.05,1.50],
+  '2026_19':[38.67,19.35,19.47,10.99,6.22,3.85,1.46],
+  '2026_20':[38.88,19.39,19.54,11.00,6.02,3.70,1.47],
+  '2026_21':[40.32,19.59,19.08,10.37,5.67,3.55,1.42],
+  '2026_22':[40.48,19.37,19.42,10.35,5.61,3.44,1.34],
+  '2026_23':[40.57,19.31,19.47,10.11,5.68,3.46,1.40],
+};
+// Monthly: avg of constituent CWs. Jan has no data.
+const LEAD_SHARE_MONTHLY = {
+  '2026_01':null,
+  '2026_02':[36.56,19.05,19.96,11.39,7.14,4.40,1.50],
+  '2026_03':[37.17,19.09,20.08,11.44,6.68,4.12,1.42],
+  '2026_04':[37.19,18.93,20.12,11.41,6.76,4.14,1.45],
+  '2026_05':[38.84,19.40,19.50,10.89,6.13,3.79,1.46],
+  '2026_06':[40.53,19.34,19.44,10.23,5.64,3.45,1.37],
+};
+
+// Lead Share per country — source: Tableau CJ Dashboard, LEAD SHARE BY view, filtered by country code
+// Array order: [Dealer_Now, Private_Now, Dealer_4W, Private_4W, Dealer_3M, Private_3M, Not_Planned]
+// BE has no data in this view and falls back to EU aggregate.
+const LEAD_SHARE_COUNTRY_WEEKLY = {
+  'AT': {
+    '2026_06':[33.1,21.89,18.13,14.44,6.24,4.95,1.25],
+    '2026_07':[31.55,22.2,19.58,14.1,5.75,5.05,1.77],
+    '2026_08':[32.7,22.01,18.77,14.09,6.01,5.04,1.39],
+    '2026_09':[33.93,21.89,18.67,12.85,6.29,5.06,1.31],
+    '2026_10':[30.93,22.39,18.93,15.53,5.86,4.62,1.74],
+    '2026_11':[32.69,22.26,19.2,13.88,6.22,4.57,1.18],
+    '2026_12':[32.11,22.67,19.12,14.88,5.51,4.42,1.29],
+    '2026_13':[31.55,23.32,19.67,13.87,5.72,4.59,1.29],
+    '2026_14':[35.46,22.56,17.93,12.5,5.77,4.56,1.23],
+    '2026_15':[31.29,23.26,18.18,14.69,5.99,4.99,1.59],
+    '2026_16':[32.57,24.15,18.33,13.21,5.92,4.58,1.24],
+    '2026_17':[32.98,24.18,18.45,13.45,5.38,4.4,1.16],
+    '2026_18':[31.47,25.37,18.27,13.1,5.88,4.61,1.31],
+    '2026_19':[33.63,24.74,18.16,12.81,5.07,4.27,1.33],
+    '2026_20':[33.94,24.24,18.35,13.04,5.15,3.99,1.29],
+    '2026_21':[37.27,25.06,17.58,11.08,4.78,3.21,1.02],
+    '2026_22':[38.51,23.44,18.23,11.02,4.31,3.46,1.03],
+    '2026_23':[38.47,23.68,17.7,11.57,4.13,3.48,0.96],
+  },
+  'DE': {
+    '2026_06':[34.95,14.66,25.07,11.55,8.54,4.44,0.79],
+    '2026_07':[34.85,14.73,25.16,11.48,8.55,4.42,0.81],
+    '2026_08':[34.78,14.69,25.31,11.59,8.34,4.41,0.88],
+    '2026_09':[35.54,15.14,25.18,11.39,7.79,4.15,0.82],
+    '2026_10':[35.82,15.2,25.55,11.54,7.35,3.78,0.76],
+    '2026_11':[36.01,15.07,25.39,11.58,7.37,3.83,0.76],
+    '2026_12':[35.86,15.28,25.4,11.34,7.41,3.9,0.82],
+    '2026_13':[35.65,15.47,24.87,11.75,7.52,3.89,0.84],
+    '2026_14':[34.14,15.08,25.8,11.92,7.93,4.19,0.94],
+    '2026_15':[35.29,14.78,25.7,11.52,7.91,3.88,0.91],
+    '2026_16':[36.38,15.03,25.04,11.48,7.38,3.83,0.87],
+    '2026_17':[36.99,15.4,24.39,11.44,7.2,3.68,0.9],
+    '2026_18':[36.69,15.95,24.22,11.53,7.03,3.69,0.89],
+    '2026_19':[38.39,15.83,24.06,10.95,6.58,3.33,0.86],
+    '2026_20':[38.06,15.73,24.23,11.22,6.46,3.37,0.93],
+    '2026_21':[39.52,16.17,23.5,10.62,6.15,3.1,0.93],
+    '2026_22':[39.2,16.03,23.9,10.8,5.99,3.17,0.9],
+    '2026_23':[39.48,16.22,23.79,10.61,5.82,3.14,0.93],
+  },
+  'ES': {
+    '2026_06':[45.95,14.07,22.38,7.22,5.59,2.63,2.16],
+    '2026_07':[46.38,14.06,22.31,6.76,5.7,2.51,2.28],
+    '2026_08':[47.07,13.95,21.68,6.87,5.69,2.63,2.12],
+    '2026_09':[46.98,14.3,21.3,6.8,5.6,2.61,2.41],
+    '2026_10':[46.51,14.38,21.42,7.06,5.5,2.7,2.43],
+    '2026_11':[46.18,14.19,22.14,7.03,5.63,2.62,2.21],
+    '2026_12':[46.98,13.85,22.04,7.05,5.49,2.54,2.05],
+    '2026_13':[47.11,13.95,21.81,6.95,5.37,2.69,2.13],
+    '2026_14':[43.63,14.22,22.65,7.37,6.42,3.13,2.58],
+    '2026_15':[46.66,13.6,22.15,6.82,5.98,2.65,2.15],
+    '2026_16':[47.4,14.03,21.35,6.88,5.7,2.52,2.12],
+    '2026_17':[47.8,13.61,21.73,6.75,5.54,2.47,2.1],
+    '2026_18':[47.49,13.61,21.79,6.81,5.68,2.44,2.17],
+    '2026_19':[48.96,13.39,21.21,6.62,5.55,2.26,2.0],
+    '2026_20':[49.08,13.56,21.49,6.56,5.21,2.17,1.93],
+    '2026_21':[50.57,13.42,20.63,6.43,4.89,2.11,1.94],
+    '2026_22':[50.16,13.36,21.71,6.3,4.83,1.93,1.72],
+    '2026_23':[50.72,13.58,21.14,5.93,4.79,2.0,1.86],
+  },
+  'FR': {
+    '2026_06':[41.1,14.82,21.73,9.09,8.69,3.22,1.36],
+    '2026_07':[41.05,15.01,21.56,9.0,8.61,3.35,1.43],
+    '2026_08':[40.92,15.01,21.69,8.92,8.69,3.33,1.44],
+    '2026_09':[41.51,14.7,21.5,9.05,8.6,3.26,1.38],
+    '2026_10':[41.13,14.98,22.2,9.21,8.14,3.09,1.26],
+    '2026_11':[40.8,14.62,22.47,9.08,8.67,3.1,1.25],
+    '2026_12':[40.79,15.36,21.57,9.36,8.31,3.29,1.32],
+    '2026_13':[40.12,15.61,21.47,9.61,8.45,3.35,1.38],
+    '2026_14':[39.15,15.43,22.1,9.6,8.77,3.46,1.5],
+    '2026_15':[40.6,14.57,21.98,9.31,8.76,3.43,1.35],
+    '2026_16':[41.13,15.22,21.35,8.95,8.59,3.35,1.4],
+    '2026_17':[40.82,15.44,21.59,8.89,8.58,3.34,1.35],
+    '2026_18':[39.79,15.62,21.67,9.15,8.81,3.49,1.47],
+    '2026_19':[40.37,15.85,21.49,8.96,8.41,3.38,1.54],
+    '2026_20':[41.17,15.67,21.25,8.91,8.17,3.33,1.5],
+    '2026_21':[43.39,15.56,21.1,8.04,7.45,3.11,1.35],
+    '2026_22':[43.24,15.55,21.07,8.22,7.46,3.09,1.37],
+    '2026_23':[42.75,15.93,20.92,8.13,7.53,3.23,1.51],
+  },
+  'IT': {
+    '2026_06':[26.92,27.75,14.34,15.84,6.62,6.89,1.63],
+    '2026_07':[27.1,27.47,14.01,15.98,6.75,6.88,1.81],
+    '2026_08':[27.02,28.16,13.87,15.69,6.54,6.88,1.82],
+    '2026_09':[27.95,27.63,13.88,15.86,6.25,6.74,1.68],
+    '2026_10':[28.06,27.45,14.17,16.0,6.09,6.54,1.69],
+    '2026_11':[28.17,27.69,14.29,15.62,6.02,6.67,1.54],
+    '2026_12':[28.19,28.13,13.66,15.94,5.98,6.56,1.55],
+    '2026_13':[28.53,27.51,13.86,15.8,6.13,6.6,1.57],
+    '2026_14':[28.04,27.44,13.93,15.65,6.33,6.86,1.74],
+    '2026_15':[27.61,26.57,14.43,16.38,6.23,7.03,1.75],
+    '2026_16':[29.07,27.67,13.88,15.57,5.78,6.5,1.54],
+    '2026_17':[29.53,27.61,13.44,15.44,5.98,6.38,1.63],
+    '2026_18':[28.36,27.11,14.46,15.73,5.97,6.62,1.75],
+    '2026_19':[29.8,27.18,13.85,15.59,5.61,6.35,1.62],
+    '2026_20':[30.02,27.78,13.75,15.44,5.39,5.94,1.67],
+    '2026_21':[30.09,28.73,13.45,14.89,5.23,5.95,1.65],
+    '2026_22':[31.06,28.39,13.52,14.51,5.25,5.74,1.54],
+    '2026_23':[30.68,28.01,13.96,14.55,5.4,5.81,1.58],
+  },
+  'NL': {
+    '2026_06':[43.04,20.82,18.4,10.11,4.05,2.26,1.32],
+    '2026_07':[42.35,21.78,18.08,10.4,3.78,2.28,1.32],
+    '2026_08':[42.89,21.02,18.18,10.46,3.75,2.37,1.33],
+    '2026_09':[43.17,21.65,17.31,10.33,4.04,2.18,1.33],
+    '2026_10':[42.52,22.19,17.39,10.43,3.78,2.36,1.33],
+    '2026_11':[41.86,21.84,17.87,10.78,3.89,2.44,1.32],
+    '2026_12':[42.4,21.54,17.75,10.95,3.64,2.45,1.27],
+    '2026_13':[42.95,21.23,17.8,11.34,3.47,2.14,1.08],
+    '2026_14':[42.18,20.97,17.8,11.35,3.71,2.71,1.29],
+    '2026_15':[42.38,21.24,18.0,10.86,3.67,2.62,1.23],
+    '2026_16':[41.64,23.38,16.64,11.0,3.46,2.63,1.25],
+    '2026_17':[41.46,22.89,16.98,11.09,3.62,2.61,1.35],
+    '2026_18':[40.85,22.23,17.77,11.14,3.64,2.93,1.45],
+    '2026_19':[43.24,22.03,16.09,11.15,3.53,2.65,1.3],
+    '2026_20':[42.33,22.09,17.4,10.85,3.59,2.35,1.38],
+    '2026_21':[43.32,22.2,17.11,10.52,3.35,2.37,1.13],
+    '2026_22':[42.22,22.3,17.6,10.93,3.44,2.24,1.28],
+    '2026_23':[42.92,23.37,16.68,10.61,3.19,2.11,1.11],
+  },
+  'PT': {
+    '2026_06':[27.61,25.0,17.71,16.06,5.87,5.28,2.46],
+    '2026_07':[29.11,22.8,19.04,15.83,5.72,5.1,2.4],
+    '2026_08':[27.93,23.02,18.75,16.6,6.04,5.37,2.28],
+    '2026_09':[27.68,23.22,18.91,17.06,5.49,5.42,2.22],
+    '2026_10':[28.96,22.35,19.68,16.8,5.33,5.1,1.8],
+    '2026_11':[28.42,22.82,18.82,16.9,5.46,5.61,1.97],
+    '2026_12':[28.4,22.63,17.91,17.29,5.89,5.79,2.08],
+    '2026_13':[28.14,23.14,17.64,17.8,5.62,5.11,2.56],
+    '2026_14':[27.27,24.2,18.04,17.93,4.82,5.6,2.15],
+    '2026_15':[27.6,22.57,18.75,19.08,4.8,5.11,2.1],
+    '2026_16':[29.12,23.28,17.3,18.42,4.81,5.11,1.96],
+    '2026_17':[28.76,24.4,17.19,17.59,5.02,4.99,2.05],
+    '2026_18':[29.15,24.98,16.73,17.04,4.92,5.12,2.06],
+    '2026_19':[30.27,23.91,17.57,16.22,4.75,5.15,2.14],
+    '2026_20':[30.6,23.72,17.49,16.73,4.38,5.24,1.85],
+    '2026_21':[32.78,24.12,16.27,15.78,4.25,4.93,1.87],
+    '2026_22':[33.3,23.85,16.34,15.49,4.41,4.63,1.97],
+    '2026_23':[32.11,23.38,16.95,15.76,4.77,4.78,2.25],
+  },
+  'SE': {
+    '2026_06':[50.7,18.87,15.29,6.04,5.56,2.09,1.45],
+    '2026_07':[48.91,19.67,16.19,6.25,4.93,2.49,1.57],
+    '2026_08':[49.58,20.07,14.83,6.54,5.2,2.22,1.57],
+    '2026_09':[47.37,21.27,15.46,6.23,5.39,2.44,1.83],
+    '2026_10':[48.06,21.41,15.01,6.19,5.22,2.34,1.77],
+    '2026_11':[47.58,21.72,16.12,6.23,4.86,2.1,1.39],
+    '2026_12':[48.29,20.61,15.7,6.78,5.17,1.86,1.58],
+    '2026_13':[49.47,20.8,15.24,6.65,4.8,1.64,1.4],
+    '2026_14':[49.17,21.49,14.71,6.39,4.97,1.76,1.51],
+    '2026_15':[49.13,19.83,16.28,6.7,5.07,1.58,1.39],
+    '2026_16':[49.59,20.4,15.51,6.27,5.0,1.82,1.41],
+    '2026_17':[49.08,20.27,15.88,6.6,5.11,1.8,1.26],
+    '2026_18':[48.69,21.29,15.92,6.21,4.83,1.76,1.29],
+    '2026_19':[49.22,21.51,15.36,6.14,4.64,1.7,1.43],
+    '2026_20':[49.35,21.9,14.46,6.39,4.68,1.71,1.51],
+    '2026_21':[50.89,20.8,14.47,6.14,4.33,1.61,1.75],
+    '2026_22':[51.95,21.03,14.17,5.92,4.22,1.56,1.14],
+    '2026_23':[52.16,20.54,14.29,6.37,3.81,1.73,1.1],
+  },
+};
+const LEAD_SHARE_COUNTRY_MONTHLY = {
+  'AT': {
+    '2026_02':[32.82,22.0,18.79,13.87,6.07,5.02,1.43],
+    '2026_03':[31.82,22.66,19.23,14.54,5.83,4.55,1.38],
+    '2026_04':[33.07,23.54,18.22,13.46,5.76,4.63,1.31],
+    '2026_05':[34.96,24.57,18.12,12.21,5.04,3.91,1.2],
+    '2026_06':[38.47,23.68,17.7,11.57,4.13,3.48,0.96],
+  },
+  'DE': {
+    '2026_02':[35.03,14.8,25.18,11.5,8.3,4.36,0.82],
+    '2026_03':[35.84,15.25,25.3,11.55,7.41,3.85,0.79],
+    '2026_04':[35.7,15.07,25.23,11.59,7.6,3.9,0.91],
+    '2026_05':[38.37,15.94,23.98,11.02,6.44,3.33,0.9],
+    '2026_06':[39.48,16.22,23.79,10.61,5.82,3.14,0.93],
+  },
+  'ES': {
+    '2026_02':[46.59,14.09,21.92,6.91,5.64,2.59,2.24],
+    '2026_03':[46.69,14.09,21.85,7.02,5.5,2.64,2.21],
+    '2026_04':[46.37,13.87,21.97,6.96,5.91,2.69,2.24],
+    '2026_05':[49.25,13.47,21.37,6.54,5.23,2.18,1.95],
+    '2026_06':[50.72,13.58,21.14,5.93,4.79,2.0,1.86],
+  },
+  'FR': {
+    '2026_02':[41.15,14.88,21.62,9.02,8.65,3.29,1.4],
+    '2026_03':[40.71,15.14,21.93,9.31,8.39,3.21,1.3],
+    '2026_04':[40.42,15.16,21.76,9.19,8.68,3.4,1.4],
+    '2026_05':[41.59,15.65,21.32,8.66,8.06,3.28,1.45],
+    '2026_06':[42.75,15.93,20.92,8.13,7.53,3.23,1.51],
+  },
+  'IT': {
+    '2026_02':[27.25,27.75,14.03,15.84,6.54,6.85,1.73],
+    '2026_03':[28.24,27.7,14.0,15.84,6.05,6.59,1.59],
+    '2026_04':[28.56,27.32,13.92,15.76,6.08,6.69,1.67],
+    '2026_05':[29.87,27.84,13.81,15.23,5.49,6.12,1.65],
+    '2026_06':[30.68,28.01,13.96,14.55,5.4,5.81,1.58],
+  },
+  'NL': {
+    '2026_02':[42.86,21.32,17.99,10.32,3.91,2.27,1.33],
+    '2026_03':[42.43,21.7,17.7,10.88,3.7,2.35,1.25],
+    '2026_04':[41.91,22.12,17.36,11.07,3.62,2.64,1.28],
+    '2026_05':[42.39,22.17,17.19,10.92,3.51,2.51,1.31],
+    '2026_06':[42.92,23.37,16.68,10.61,3.19,2.11,1.11],
+  },
+  'PT': {
+    '2026_02':[28.08,23.51,18.6,16.39,5.78,5.29,2.34],
+    '2026_03':[28.48,22.73,18.51,17.2,5.58,5.4,2.1],
+    '2026_04':[28.19,23.61,17.82,18.25,4.86,5.2,2.06],
+    '2026_05':[31.22,24.12,16.88,16.25,4.54,5.01,1.98],
+    '2026_06':[32.11,23.38,16.95,15.76,4.77,4.78,2.25],
+  },
+  'SE': {
+    '2026_02':[49.14,19.97,15.44,6.26,5.27,2.31,1.6],
+    '2026_03':[48.35,21.13,15.52,6.46,5.01,1.98,1.54],
+    '2026_04':[49.24,20.5,15.6,6.49,5.04,1.74,1.39],
+    '2026_05':[50.02,21.31,14.88,6.16,4.54,1.67,1.42],
+    '2026_06':[52.16,20.54,14.29,6.37,3.81,1.73,1.1],
+  },
+};
+
+// Branch Utilisation data — source: Tableau Purchasing Report 2.1, Cockpit view, CW18-CW24 (2026)
+const UTIL_WEEKLY_LABELS = ['CW18','CW19','CW20','CW21','CW22','CW23','CW24'];
+const UTIL_EU_WEEKLY   = [61.4, 54.2, 56.7, 53.0, 54.3, 55.5, 51.7];
+const UTIL_COUNTRY_WEEKLY = {
+  AT:[62.4,48.9,62.8,56.9,67.2,63.5,39.9], BE:[64.5,55.1,65.4,51.2,56.2,53.6,60.3],
+  DE:[86.3,75.9,85.2,71.7,80.6,82.2,63.7], ES:[49.2,45.0,45.9,47.6,47.5,48.1,48.3],
+  FR:[57.2,42.5,46.1,41.0,39.8,45.6,49.7], IT:[44.8,46.6,44.7,47.9,47.2,40.9,38.0],
+  NL:[59.5,60.9,65.4,60.5,63.8,57.5,67.7], PT:[64.7,54.4,49.9,49.8,56.0,59.6,52.2],
+  SE:[46.9,37.9,43.5,39.5,37.9,42.3,54.3]
+};
+// Period-to-index map for CW18–CW24 data (May–Jun 2026); CW24 is WTD (partial week)
+const CW18_WEEK_MAP = {'2026_18':0,'2026_19':1,'2026_20':2,'2026_21':3,'2026_22':4,'2026_23':5,'2026_24':6};
+
+// Appointment Conversion data — source: Tableau Purchasing Report 2.1, Cockpit, CW18-CW24
+const APPTCONV_EU_WEEKLY = [53.78, 53.84, 53.14, 53.56, 53.69, 50.59, 43.20]; // CW18–CW24
+const APPTCONV_COUNTRY_WEEKLY = {
+  AT:[60.36,59.53,55.36,58.65,62.41,58.43,46.30], BE:[55.96,60.48,57.85,58.26,58.83,52.30,45.10],
+  DE:[59.55,59.71,58.66,59.53,60.28,54.48,46.40], ES:[47.98,48.33,48.16,47.25,48.16,46.58,39.30],
+  FR:[50.30,49.34,50.86,49.41,51.62,48.04,36.10], IT:[46.32,46.20,46.71,47.61,46.01,44.99,44.90],
+  NL:[64.31,61.67,60.48,60.67,61.33,62.02,48.30], PT:[49.39,44.20,48.84,46.70,46.49,46.88,44.40],
+  SE:[53.29,51.53,50.10,56.64,49.75,46.00,37.00]
+};
+
+// Monthly period-to-index map: Dec 2025 → 0, Jan → 1, Feb → 2, Mar → 3, Apr → 4, May → 5, Jun → 6
+const MONTHLY_MAP = {'2025_12':0,'2026_01':1,'2026_02':2,'2026_03':3,'2026_04':4,'2026_05':5,'2026_06':6};
+
+// EU monthly Util — source: Tableau Cockpit monthly view (Dec 25 → Jun 26 MTD)
+const UTIL_EU_MONTHLY   = [57.1, 57.9, 59.4, 61.8, 57.7, 55.5, 54.9];
+const UTIL_COUNTRY_MONTHLY = {
+  AT:[53.1, 60.5, 60.8, 66.5, 59.2, 59.0, 58.1],
+  BE:[66.5, 73.4, 67.4, 62.3, 59.1, 57.5, 54.4],
+  DE:[76.9, 68.1, 75.3, 87.5, 84.1, 79.6, 78.8],
+  ES:[49.5, 45.3, 47.7, 48.2, 45.4, 46.9, 48.1],
+  FR:[47.8, 51.2, 51.2, 52.7, 48.4, 43.9, 46.2],
+  IT:[47.5, 58.7, 57.7, 53.0, 44.5, 47.0, 40.4],
+  NL:[63.3, 63.8, 61.8, 61.6, 59.3, 62.6, 58.8],
+  PT:[55.7, 57.4, 47.3, 51.9, 57.2, 53.7, 58.3],
+  SE:[54.7, 44.8, 42.8, 51.7, 51.8, 40.2, 44.6]
+};
+
+// EU monthly Appt Conversion — source: Tableau Cockpit monthly view (Dec 25 → Jun 26 MTD)
+const APPTCONV_EU_MONTHLY = [55.9, 54.6, 54.2, 54.3, 54.0, 53.5, 49.4];
+const APPTCONV_COUNTRY_MONTHLY = {
+  AT:[63.7, 63.5, 60.6, 60.7, 61.8, 58.8, 56.2],
+  BE:[59.8, 57.4, 57.9, 60.1, 58.2, 58.7, 51.3],
+  DE:[62.7, 62.0, 60.9, 60.6, 59.5, 59.4, 53.1],
+  ES:[50.4, 47.5, 48.5, 46.5, 47.4, 47.9, 45.4],
+  FR:[53.3, 54.0, 53.3, 52.3, 51.4, 50.2, 46.4],
+  IT:[47.4, 45.9, 45.7, 45.9, 46.1, 46.5, 46.1],
+  NL:[64.1, 62.4, 61.5, 61.9, 62.0, 61.4, 60.0],
+  PT:[47.4, 44.8, 45.0, 46.6, 46.5, 46.7, 46.5],
+  SE:[53.0, 54.7, 52.4, 52.1, 52.9, 52.1, 43.9]
+};
+
+// Evaluation slots available per country per week — source: Tableau Cockpit, CW18-CW24
+const EVAL_SLOTS_EU_WEEKLY = [44392, 53453, 47210, 53911, 48706, 51018, 9688];
+const EVAL_SLOTS_COUNTRY_WEEKLY = {
+  AT:[1128,1473,1140,1403,1023,1088,328], BE:[2386,2879,2239,3105,2523,3235,448],
+  DE:[11607,14322,10840,13671,10868,12231,2734], ES:[7203,8761,8684,8882,8514,8520,1541],
+  FR:[8695,11375,10057,12043,11580,11897,1767], IT:[9604,9973,10065,9989,9679,9939,2104],
+  NL:[1394,1623,1305,1700,1371,1714,248], PT:[1272,1592,1675,1644,1615,1239,251],
+  SE:[1103,1455,1205,1474,1533,1155,267]
+};
+// Monthly eval slots — source: Tableau Cockpit monthly view (Dec 25 → Jun 26 MTD)
+const EVAL_SLOTS_EU_MONTHLY    = [208167, 233845, 221346, 240123, 223477, 209657, 60706];
+const EVAL_SLOTS_COUNTRY_MONTHLY = {
+  AT:[5604, 6074, 5900, 6629, 5854, 5130, 1416],
+  BE:[12117, 14446, 12575, 13716, 12762, 11218, 3683],
+  DE:[49794, 58575, 55226, 61466, 56547, 50646, 14965],
+  ES:[33927, 38043, 37522, 39899, 35388, 35604, 10061],
+  FR:[46841, 52527, 48128, 51123, 48951, 47127, 13664],
+  IT:[42237, 44634, 42589, 46364, 45527, 40908, 12043],
+  NL:[7014, 7487, 6855, 7409, 6892, 6566, 1962],
+  PT:[5664, 6437, 6595, 7021, 6045, 6673, 1490],
+  SE:[4969, 5622, 5956, 6496, 5511, 5785, 1422]
+};
 
 // ========== PUBLIC HOLIDAYS (national, 2025-01-01 – 2026-05-31) ==========
 // Source: officeholidays.com per country. Easter 2025 = Apr 20, Easter 2026 = Apr 5.
@@ -1709,15 +2116,34 @@ function hexToRgba(hex, alpha) {
 let GLOBAL_PTYPE = 'week';          // 'week' | 'month' — drives all tabs
 let GLOBAL_COUNTRY = 'EU';          // primary ISO code or 'EU' — for single-country pages (P2, P3, P4)
 let GLOBAL_COUNTRY_SET = new Set(); // multi-selection for P1 (empty = All/EU, max 2 entries)
-let GLOBAL_SHOW_EU_AVG = true;      // whether EU Avg line is shown when 1 country is selected on P1
+let GLOBAL_SHOW_EU_AVG = false;      // whether EU Avg line is shown when 1 country is selected on P1
+let GLOBAL_WINDOW = 6;              // null = all periods, or integer = last N periods
 
 function setGlobalPtype(v) {
   GLOBAL_PTYPE = v;
-  // Repopulate period selects that depend on ptype
   populatePeriodSelect('p3_period', v, true);
   populatePeriodSelect('p4_period', v, true);
-  populatePeriodSelect('p5_period', v, true);
+  updateWindowBtnStyles();
   rerenderActivePage();
+}
+
+function setGlobalWindow(n) {
+  GLOBAL_WINDOW = n;
+  updateWindowBtnStyles();
+  rerenderActivePage();
+}
+
+function updateWindowBtnStyles() {
+  document.querySelectorAll('.window-btn').forEach(btn => {
+    const id = btn.id;
+    const val = id === 'gwb_all' ? null : parseInt(id.replace('gwb_', ''), 10);
+    btn.classList.toggle('active', val === GLOBAL_WINDOW);
+  });
+  const lbl = document.getElementById('window_label');
+  if (lbl) {
+    const unit = GLOBAL_PTYPE === 'week' ? 'weeks' : 'months';
+    lbl.textContent = GLOBAL_WINDOW ? `Last ${GLOBAL_WINDOW} ${unit}` : `All ${unit}`;
+  }
 }
 
 function setGlobalCountry(c) {
@@ -1728,25 +2154,17 @@ function setGlobalCountry(c) {
     // Reset to All countries
     GLOBAL_COUNTRY_SET = new Set();
     GLOBAL_COUNTRY = 'EU';
-    GLOBAL_SHOW_EU_AVG = true;
+    GLOBAL_SHOW_EU_AVG = false;
   } else if (GLOBAL_COUNTRY_SET.has(c)) {
-    // Deselect this country
-    GLOBAL_COUNTRY_SET.delete(c);
-    GLOBAL_COUNTRY = GLOBAL_COUNTRY_SET.size === 0 ? 'EU' : [...GLOBAL_COUNTRY_SET][0];
-    if (GLOBAL_COUNTRY_SET.size === 0) GLOBAL_SHOW_EU_AVG = true; // reset default
-  } else if (GLOBAL_SHOW_EU_AVG && GLOBAL_COUNTRY_SET.size >= 1) {
-    // EU AVG is active: replace current country with this one (single-country vs EU mode)
+    // Clicking the active country again → back to All
+    GLOBAL_COUNTRY_SET = new Set();
+    GLOBAL_COUNTRY = 'EU';
+    GLOBAL_SHOW_EU_AVG = false;
+  } else {
+    // Single-select: always replace any current selection with just this country
     GLOBAL_COUNTRY_SET = new Set([c]);
     GLOBAL_COUNTRY = c;
-  } else if (GLOBAL_COUNTRY_SET.size < 2) {
-    // Multi-select mode (EU AVG off): add to selection (max 2 countries)
-    GLOBAL_COUNTRY_SET.add(c);
-    if (GLOBAL_COUNTRY_SET.size === 1) {
-      GLOBAL_COUNTRY = c;
-      GLOBAL_SHOW_EU_AVG = true; // default: show EU Avg when 1st country is selected
-    }
   }
-  // If already 2 selected (no EU AVG) and user clicks a 3rd: ignore
 
   updateCountryBarStyles();
   rerenderActivePage();
@@ -1785,10 +2203,9 @@ function rerenderActivePage() {
   if (!active) return;
   const id = active.id;
   if (id==='p1') renderP1();
-  else if (id==='p2') renderP2();
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
-  else if (id==='p5') renderP5();
+  else if (id==='p8') renderP8();
 }
 
 // ---- Chart registry (destroy before recreate) ----
@@ -1808,7 +2225,9 @@ function getRows(ptype, period, country) {
 
 function getPeriods(ptype) {
   const s = new Set(RAW_DATA.filter(r => r.period_type === ptype).map(r => r.period_name));
-  return [...s].sort();
+  const all = [...s].sort();
+  if (!GLOBAL_WINDOW || GLOBAL_WINDOW >= all.length) return all;
+  return all.slice(-GLOBAL_WINDOW);
 }
 
 function getLatestPeriod(ptype) {
@@ -4072,6 +4491,7 @@ function rebuildData(csvText) {
   // Parse and rebuild global state
   LIVE_CSV = csvText.trim();
   RAW_DATA = parseCSV(LIVE_CSV);
+  applyTableauOverrides(RAW_DATA);
   DATA_GAPS = (function() {
     const gaps = [];
     ['week','month'].forEach(pt => {
@@ -4093,10 +4513,8 @@ function rebuildData(csvText) {
   if (activePage) {
     const pid = activePage.id;
     if (pid==='p1') renderP1();
-    else if (pid==='p2') renderP2();
     else if (pid==='p3') renderP3();
     else if (pid==='p4') renderP4();
-    else if (pid==='p5') renderP5();
   }
   const weeks = getPeriods('week');
   const latestWeek = weeks[weeks.length-1] || '—';
@@ -4169,13 +4587,12 @@ function showTab(id) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    if (['p1','p2','p3','p4','p5','p6','p7'][i] === id) b.classList.add('active');
+    if (['p1','p3','p4','p8','p6','p7'][i] === id) b.classList.add('active');
   });
   if (id==='p1') renderP1();
-  else if (id==='p2') renderP2();
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
-  else if (id==='p5') renderP5();
+  else if (id==='p8') renderP8();
   // p6, p7 are static — no render needed
 }
 
@@ -4226,6 +4643,12 @@ function buildP1CancelledChart() {
     }
   };
 
+  // Precompute top-2 segment indices per period for data labels
+  const top2ByPeriodIdx = periods.map((_, pi) => {
+    const vals = TIMING_KEYS.map((_, ti) => ({ ti, v: allTimingData[ti][pi] || 0 }));
+    return new Set(vals.sort((a, b) => b.v - a.v).slice(0, 2).map(r => r.ti));
+  });
+
   const datasets = TIMING_KEYS.map((t, ti) => ({
     label: t.label,
     data: allTimingData[ti],
@@ -4233,19 +4656,66 @@ function buildP1CancelledChart() {
     borderColor: t.color,
     borderWidth: 1,
     stack: 'cancel',
-    datalabels: { display: false }
   }));
+
+  // % delta between consecutive period totals
+  const cancelDeltaPlugin = {
+    id: 'cancelDeltaPlugin',
+    afterDraw(chart) {
+      const { ctx, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      ctx.save();
+      ctx.font = '600 10px system-ui,-apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 1; i < totals.length; i++) {
+        const prev = totals[i - 1];
+        const curr = totals[i];
+        if (!prev || !curr) continue;
+        const pct = +((curr - prev) / prev * 100).toFixed(1);
+        const arrow = pct >= 0 ? '▲' : '▼';
+        const sign  = pct >= 0 ? '+' : '';
+        const color = pct >= 0 ? '#dc2626' : '#16a34a'; // more cancellations = red, fewer = green
+        const text  = `${arrow} ${sign}${Math.abs(pct).toFixed(1)}%`;
+        const xPos = (scales.x.getPixelForTick(i - 1) + scales.x.getPixelForTick(i)) / 2;
+        const yPos = Math.min(scales.y.getPixelForValue(prev), scales.y.getPixelForValue(curr)) - 14;
+        const w = ctx.measureText(text).width;
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(xPos - w/2 - 3, yPos - 7, w + 6, 14, 3);
+        else ctx.rect(xPos - w/2 - 3, yPos - 7, w + 6, 14);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.fillText(text, xPos, yPos);
+      }
+      ctx.restore();
+    }
+  };
 
   destroyChart('p1_cancelled_chart');
   CHARTS['p1_cancelled_chart'] = new Chart(document.getElementById('p1_cancelled_chart'), {
     type: 'bar',
-    plugins: [ChartDataLabels, totalLabelsPlugin],
+    plugins: [ChartDataLabels, totalLabelsPlugin, cancelDeltaPlugin],
     data: { labels: periods, datasets },
     options: {
-      responsive: true, maintainAspectRatio: true,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } },
-        datalabels: { display: false },
+        datalabels: {
+          display: ctx => {
+            const val = ctx.dataset.data[ctx.dataIndex];
+            return !!(val && top2ByPeriodIdx[ctx.dataIndex]?.has(ctx.datasetIndex));
+          },
+          formatter: (v, ctx) => {
+            const val = ctx.dataset.data[ctx.dataIndex];
+            const total = totals[ctx.dataIndex] || 0;
+            return (val && total > 0) ? (val / total * 100).toFixed(1) + '%' : '';
+          },
+          color: '#fff',
+          font: { size: 9, weight: '600' },
+          anchor: 'center',
+          align: 'center',
+        },
         tooltip: {
           mode: 'index', intersect: false,
           callbacks: {
@@ -4278,24 +4748,22 @@ function toggleP1Country(c) {
   if (c === 'ALL') {
     P1_IS_ALL = true;
     P1_SELECTED = new Set();
-  } else if (P1_IS_ALL) {
-    // First click from All mode: isolate that country + EU Avg by default
-    P1_IS_ALL = false;
-    P1_SELECTED = new Set([c, 'EU_AVG']);
-  } else if (P1_SELECTED.has(c)) {
-    // Deselect this item (country or EU_AVG)
-    P1_SELECTED.delete(c);
-    const hasCountry = [...P1_SELECTED].some(x => x !== 'EU_AVG');
-    if (!hasCountry) { P1_IS_ALL = true; P1_SELECTED = new Set(); }
-  } else if (c !== 'EU_AVG' && P1_SELECTED.has('EU_AVG')) {
-    // EU AVG is active: replace current country with this one (single-country vs EU mode)
-    const countries = [...P1_SELECTED].filter(x => x !== 'EU_AVG');
-    P1_SELECTED = new Set([c, 'EU_AVG']);
+  } else if (c === 'EU_AVG') {
+    // Toggle EU AVG line on/off while keeping current country
+    if (P1_IS_ALL) return;
+    P1_SELECTED.has('EU_AVG') ? P1_SELECTED.delete('EU_AVG') : P1_SELECTED.add('EU_AVG');
+    if (![...P1_SELECTED].some(x => x !== 'EU_AVG')) { P1_IS_ALL = true; P1_SELECTED = new Set(); }
   } else {
-    // Multi-select mode (EU AVG off) or adding EU_AVG: just add
-    P1_SELECTED.add(c);
+    // Single-select: clicking a country replaces any previous selection
+    if (!P1_IS_ALL && P1_SELECTED.has(c) && P1_SELECTED.size <= 2) {
+      // Clicking the already-selected country → back to All
+      P1_IS_ALL = true;
+      P1_SELECTED = new Set();
+    } else {
+      P1_IS_ALL = false;
+      P1_SELECTED = new Set([c, 'EU_AVG']);
+    }
   }
-  // Sync button styles
   document.querySelectorAll('.p1-ctog').forEach(btn => {
     const bc = btn.dataset.country;
     btn.classList.toggle('active', P1_IS_ALL ? bc === 'ALL' : P1_SELECTED.has(bc));
@@ -4358,9 +4826,16 @@ function updateP1ChartVisibility() {
         return;
       }
       if (ds.label === 'EU Avg') {
-        const euVisible = !P1_IS_ALL && P1_SELECTED.has('EU_AVG');
-        ds.hidden = !P1_IS_ALL && !euVisible;
+        const euVisible = P1_SELECTED.has('EU_AVG');
+        ds.hidden = !euVisible;
         if (ds.datalabels) ds.datalabels.display = euVisible;
+      } else if (ds.bcAttempted && ds.attemptedCountry) {
+        // Per-country attempted dashed line: show only when that country is selected
+        const visible = !P1_IS_ALL && P1_SELECTED.has(ds.attemptedCountry);
+        ds.hidden = !visible;
+      } else if (ds.bcAttempted) {
+        // EU attempted: show in all-mode or when EU_AVG is selected
+        ds.hidden = !P1_IS_ALL && !P1_SELECTED.has('EU_AVG');
       } else {
         const visible = P1_IS_ALL || P1_SELECTED.has(ds.label);
         ds.hidden = !visible;
@@ -4371,7 +4846,11 @@ function updateP1ChartVisibility() {
   });
   // Cancelled chart: always rebuild — stacked bars depend on current country selection
   buildP1CancelledChart();
-  updateVolChart();
+  // Util chart: rebuild since it reads P1_IS_ALL / P1_SELECTED directly
+  renderP1UtilChart();
+  renderP1AiAnalysis();
+  // Lead Share: rebuild to update title/note for selected country
+  renderP1LeadShareChart();
 }
 
 function buildP1ToggleBar() {
@@ -4512,6 +4991,7 @@ function _applyVolumeBarVisibility(id, ch) {
 }
 
 function toggleShowAppts() {
+  if (VOL_ONLY_MODE) return; // appts always on in vol-only mode
   SHOW_APPTS = !SHOW_APPTS;
   document.querySelectorAll('.appts-toggle-btn').forEach(btn => btn.classList.toggle('active', SHOW_APPTS));
   ['p1_sr_chart', 'p4_sr_chart'].forEach(id => {
@@ -4522,6 +5002,7 @@ function toggleShowAppts() {
 }
 
 function toggleShowPurchases() {
+  if (VOL_ONLY_MODE) return; // purchases always on in vol-only mode
   SHOW_PURCHASES = !SHOW_PURCHASES;
   document.querySelectorAll('.purchases-toggle-btn').forEach(btn => btn.classList.toggle('active', SHOW_PURCHASES));
   ['p1_sr_chart', 'p4_sr_chart'].forEach(id => {
@@ -4529,6 +5010,19 @@ function toggleShowPurchases() {
     _applyVolumeBarVisibility(id, ch);
     ch.update();
   });
+}
+
+function toggleVolOnlyMode() {
+  VOL_ONLY_MODE = !VOL_ONLY_MODE;
+  document.querySelectorAll('.vol-only-btn').forEach(btn => btn.classList.toggle('active', VOL_ONLY_MODE));
+  if (VOL_ONLY_MODE) {
+    // force both volume toggles on while in vol-only mode
+    SHOW_APPTS = true;
+    SHOW_PURCHASES = true;
+    document.querySelectorAll('.appts-toggle-btn').forEach(btn => btn.classList.add('active'));
+    document.querySelectorAll('.purchases-toggle-btn').forEach(btn => btn.classList.add('active'));
+  }
+  renderP1();
 }
 
 function toggleBCAttempted() {
@@ -4549,45 +5043,23 @@ function toggleP3EuAvg() {
   ch.update();
 }
 
+function setP1ViewportHeight() {
+  const el = document.getElementById('p1');
+  if (!el || !el.classList.contains('active')) return;
+  el.style.height = '';
+  const top = el.getBoundingClientRect().top;
+  el.style.height = (window.innerHeight - top - 8) + 'px';
+}
+window.addEventListener('resize', setP1ViewportHeight);
+
 function renderP1() {
+  setP1ViewportHeight();
   const {ptype, period, euMode, compMode} = getP1Filters();
   P1_PTYPE = ptype; P1_EUMODE = euMode;
   const compPeriods = getCompPeriods(ptype, period, compMode);
   const compLabel = getCompLabel(compMode, compPeriods);
 
-  // KPI context: use selected country when exactly one is selected, otherwise EU aggregate
   const kpiCountry = GLOBAL_COUNTRY_SET.size === 1 ? [...GLOBAL_COUNTRY_SET][0] : 'EU';
-  const cur = countryMetrics(ptype, period, kpiCountry, euMode);
-  const comp = getCompMetrics(ptype, period, kpiCountry, euMode, compMode);
-  if (!cur) { document.getElementById('p1_kpis').innerHTML = '<div>No data for this period.</div>'; return; }
-
-  updateSelectionSummary('p1', ptype, period, 'EU', compMode, euMode);
-  const srDelta = (cur.sr != null && comp && comp.sr != null) ? cur.sr - comp.sr : null;
-  const doneDelta = (cur.bc_done_rate != null && comp && comp.bc_done_rate != null) ? cur.bc_done_rate - comp.bc_done_rate : null;
-  const cancelVolDelta = comp ? cur.appts_cancelled - comp.appts_cancelled : null;
-  // "2026_21 vs 2026_20" style label; "prev" vs "avg" prefix depending on mode
-  const deltaLabel = compPeriods.length ? `${period} vs ${compLabel}` : period;
-  const compPrefix = compMode === 'prev4' ? 'avg' : 'prev';
-  const srLabel = kpiCountry === 'EU' ? 'Europe Show Rate' : `${kpiCountry} Show Rate`;
-  const srTip = kpiCountry === 'EU' ? 'BC-volume-weighted proxy across 9 countries' : `Show Rate for ${kpiCountry}`;
-  const cancelTip = kpiCountry === 'EU' ? 'appts_cancelled — Europe total' : `appts_cancelled — ${kpiCountry}`;
-
-  const kpis = [
-    { label: srLabel, tip: srTip, value: fPct(cur.sr),
-      extra: `${cur.sr != null ? fDelta(srDelta) : ''}<div class="sub">${compPrefix} ${(comp && comp.sr != null) ? fPct(comp.sr) : '—'} · ${deltaLabel}</div>` },
-    { label:'% BC Tasks Done', tip:'bc_done / (bc_created - bc_cancelled)', value: fPct(cur.bc_done_rate),
-      extra: `${fDelta(doneDelta)}<div class="sub">${compPrefix} ${comp ? fPct(comp.bc_done_rate) : '—'} · ${deltaLabel}</div>` },
-    { label:'Cancelled Appt Vol', tip: cancelTip, value: fVol(cur.appts_cancelled),
-      extra: `${fVolDelta(cancelVolDelta)}<div class="sub">${compPrefix} ${comp ? fVol(comp.appts_cancelled) : '—'} · ${deltaLabel}</div>` },
-  ];
-
-  document.getElementById('p1_kpis').innerHTML = kpis.map((k, i) =>
-    `<div class="kpi-card${i === 0 ? ' kpi-card-primary' : ''}" title="${k.tip}">
-      <div class="label">${k.label}</div>
-      <div class="value">${k.value}</div>
-      ${k.extra || ''}
-    </div>`
-  ).join('');
 
   // Sync P1 chart visibility from global country selection
   const gSize = GLOBAL_COUNTRY_SET.size;
@@ -4617,6 +5089,15 @@ function renderP1() {
     euDoneData.push((m && m.bc_done_rate != null) ? +(m.bc_done_rate*100).toFixed(2) : null);
   });
 
+  // Primary data for delta badges: single-country selection uses that country; otherwise EU avg
+  const _p1PrimaryCountry = (!P1_IS_ALL && P1_SELECTED.size === 1) ? [...P1_SELECTED][0] : null;
+  const primarySRData = _p1PrimaryCountry
+    ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; })
+    : euSRData;
+  const primaryDoneData = _p1PrimaryCountry
+    ? periods.map(p => { const m = countryMetrics(ptype, p, _p1PrimaryCountry, euMode); return (m && m.bc_done_rate != null) ? +(m.bc_done_rate*100).toFixed(2) : null; })
+    : euDoneData;
+
   const euDataset = (data) => ({
     label: 'EU Avg', data,
     borderColor: '#6366f1', borderWidth: 2.5, borderDash: [6,3],
@@ -4625,7 +5106,7 @@ function renderP1() {
       display: false,
       formatter: v => v != null ? v.toFixed(1) + '%' : '',
       anchor: 'end', align: 'top',
-      font: { size: 11, weight: '700' },
+      font: { size: 13, weight: '700' },
       color: '#6366f1',
       padding: { bottom: 2 }
     }
@@ -4644,7 +5125,7 @@ function renderP1() {
         display: false,
         formatter: v => v != null ? v.toFixed(1) + '%' : '',
         anchor: 'end', align: 'top',
-        font: { size: 11, weight: '600' },
+        font: { size: 13, weight: '600' },
         color: COUNTRY_COLORS[c],
         padding: { bottom: 2 }
       }
@@ -4680,7 +5161,7 @@ function renderP1() {
     borderColor: 'rgba(99,102,241,0.5)',
     borderWidth: 1,
     hidden: !SHOW_APPTS || !P1_IS_ALL,
-    datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 12 }, color: 'rgba(99,102,241,0.8)' },
+    datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 13 }, color: 'rgba(99,102,241,0.8)' },
     order: 10
   };
   const apptBarDatasets = [euApptBar, ...COUNTRIES.map(c => {
@@ -4698,7 +5179,7 @@ function renderP1() {
       borderColor: COUNTRY_COLORS[c] + '66',
       borderWidth: 1,
       hidden: !SHOW_APPTS || !countryVisible,
-      datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 12 }, color: COUNTRY_COLORS[c] + 'cc' },
+      datalabels: { display: true, formatter: fmtAppt, anchor: 'end', align: 'end', font: { size: 13 }, color: COUNTRY_COLORS[c] + 'cc' },
       order: 10
     };
   })];
@@ -4713,7 +5194,7 @@ function renderP1() {
     borderColor: 'rgba(16,185,129,0.5)',
     borderWidth: 1,
     hidden: !SHOW_PURCHASES || !P1_IS_ALL,
-    datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 12 }, color: 'rgba(5,150,105,0.85)' },
+    datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 13 }, color: 'rgba(5,150,105,0.85)' },
     order: 11
   };
   const purchaseBarDatasets = [euPurchaseBar, ...COUNTRIES.map(c => {
@@ -4728,7 +5209,7 @@ function renderP1() {
       borderWidth: 2,
       borderDash: [3, 3],
       hidden: !SHOW_PURCHASES || !countryVisible,
-      datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 12 }, color: COUNTRY_COLORS[c] + 'bb' },
+      datalabels: { display: true, formatter: fmtVol, anchor: 'end', align: 'end', font: { size: 13 }, color: COUNTRY_COLORS[c] + 'bb' },
       order: 11
     };
   })];
@@ -4736,12 +5217,80 @@ function renderP1() {
   if (allNull(euSRData)) showChartEmpty('p1_sr_chart', 'No show rate data available for this period');
   else hideChartEmpty('p1_sr_chart');
 
+  // In VOL_ONLY_MODE: force all appt/purchase bars visible, hide SR lines, add trend line with % deltas
+  const volApptBarDatasets = VOL_ONLY_MODE
+    ? apptBarDatasets.map(ds => ({ ...ds, hidden: ds.apptCountry === 'EU' ? !P1_IS_ALL : (!P1_IS_ALL && !P1_SELECTED.has(ds.apptCountry)) }))
+    : apptBarDatasets;
+  const volPurchaseBarDatasets = VOL_ONLY_MODE
+    ? purchaseBarDatasets.map(ds => ({ ...ds, hidden: ds.purchaseCountry === 'EU' ? !P1_IS_ALL : (!P1_IS_ALL && !P1_SELECTED.has(ds.purchaseCountry)) }))
+    : purchaseBarDatasets;
+
+  // Trend line data for VOL_ONLY_MODE: total EU or selected-country appts
+  const volTrendData = periods.map(p => {
+    if (P1_IS_ALL) {
+      const tot = COUNTRIES.reduce((s, c) => { const m = countryMetrics(ptype, p, c, euMode); return s + (m ? m.nb_appointments : 0); }, 0);
+      return tot > 0 ? tot : null;
+    } else {
+      const selCountries = [...P1_SELECTED].filter(x => x !== 'EU_AVG');
+      const tot = selCountries.reduce((s, c) => { const m = countryMetrics(ptype, p, c, euMode); return s + (m ? m.nb_appointments : 0); }, 0);
+      return tot > 0 ? tot : null;
+    }
+  });
+
+  // % delta plugin for volume trend
+  const volDeltaPlugin = {
+    id: 'volDeltaPlugin',
+    afterDraw(chart) {
+      if (!VOL_ONLY_MODE) return;
+      const { ctx, scales } = chart;
+      if (!scales.x || !scales.y2) return;
+      ctx.save();
+      ctx.font = '600 11px system-ui,-apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 1; i < volTrendData.length; i++) {
+        const prev = volTrendData[i - 1];
+        const curr = volTrendData[i];
+        if (prev == null || curr == null || prev === 0) continue;
+        const pct = +((curr - prev) / prev * 100).toFixed(1);
+        const arrow = pct >= 0 ? '▲' : '▼';
+        const sign  = pct >= 0 ? '+' : '';
+        const color = pct >= 0 ? '#16a34a' : '#dc2626';
+        const text  = `${arrow} ${sign}${Math.abs(pct).toFixed(1)}%`;
+        const xPos = (scales.x.getPixelForTick(i - 1) + scales.x.getPixelForTick(i)) / 2;
+        const yA = scales.y2.getPixelForValue(prev);
+        const yB = scales.y2.getPixelForValue(curr);
+        const yCenter = (yA + yB) / 2 + 14;
+        const w = ctx.measureText(text).width;
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(xPos - w/2 - 3, yCenter - 8, w + 6, 16, 3);
+        else ctx.rect(xPos - w/2 - 3, yCenter - 8, w + 6, 16);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.fillText(text, xPos, yCenter);
+      }
+      ctx.restore();
+    }
+  };
+
+  const srLineDatasets = [euDataset(euSRData), ...countryDatasets('sr')].map(ds =>
+    VOL_ONLY_MODE ? { ...ds, hidden: true } : ds
+  );
+  const volTrendLineDataset = VOL_ONLY_MODE ? [{
+    type: 'line', label: 'Total Appts Trend',
+    data: volTrendData, yAxisID: 'y2',
+    borderColor: 'rgba(99,102,241,0.8)', borderWidth: 2,
+    tension: 0.3, pointRadius: 3, fill: false,
+    datalabels: { display: false }, order: 5
+  }] : [];
+
   destroyChart('p1_sr_chart');
   CHARTS['p1_sr_chart'] = new Chart(document.getElementById('p1_sr_chart'), {
-    type: 'line', plugins: [ChartDataLabels],
-    data: { labels: periods, datasets: [...apptBarDatasets, ...purchaseBarDatasets, euDataset(euSRData), ...countryDatasets('sr')] },
+    type: 'line', plugins: [ChartDataLabels, VOL_ONLY_MODE ? volDeltaPlugin : makeDeltaPlugin('p1_sr_chart', primarySRData)],
+    data: { labels: periods, datasets: [...volApptBarDatasets, ...volPurchaseBarDatasets, ...volTrendLineDataset, ...srLineDatasets] },
     options: {
-      responsive: true, maintainAspectRatio: true,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         ...chartOpts().plugins,
         tooltip: {
@@ -4750,6 +5299,7 @@ function renderP1() {
             label: ctx => {
               if (ctx.dataset.apptBar) return `${ctx.dataset.apptCountry} Appts: ${ctx.parsed.y != null ? Math.round(ctx.parsed.y).toLocaleString() : 'n/a'}`;
               if (ctx.dataset.purchaseBar) return `${ctx.dataset.purchaseCountry} Purchases: ${ctx.parsed.y != null ? Math.round(ctx.parsed.y).toLocaleString() : 'n/a'}`;
+              if (ctx.dataset.label === 'Total Appts Trend') return `Total Appts: ${ctx.parsed.y != null ? Math.round(ctx.parsed.y).toLocaleString() : 'n/a'}`;
               return `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : 'n/a'}`;
             },
             footer: items => items.length ? holidayFooter(items[0].label, ptype, kpiCountry) : []
@@ -4757,9 +5307,9 @@ function renderP1() {
         }
       },
       scales: {
-        y: { ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } },
-        y2: { type: 'linear', display: y2ShouldDisplay(), position: 'right',
-              title: { display: true, text: y2Title(), font: { size: 11 } },
+        y: { display: !VOL_ONLY_MODE, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } },
+        y2: { type: 'linear', display: y2ShouldDisplay() || VOL_ONLY_MODE, position: 'right',
+              title: { display: true, text: VOL_ONLY_MODE ? '# Appts / Purchases' : y2Title(), font: { size: 11 } },
               ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v },
               grid: { drawOnChartArea: false } }
       }
@@ -4770,8 +5320,28 @@ function renderP1() {
   else hideChartEmpty('p1_done_chart');
 
   destroyChart('p1_done_chart');
+  // Per-country attempted datasets (dashed, same color as country, hidden unless that country is selected)
+  const attemptedDatalabels = color => ({
+    display: (ctx) => ctx.dataset.data[ctx.dataIndex] != null,
+    formatter: (v, ctx) => { const val = ctx.dataset.data[ctx.dataIndex]; return val != null ? (+val).toFixed(1)+'%' : ''; },
+    anchor: 'end', align: 'top',
+    font: { size: 9, weight: '600' },
+    color,
+    padding: { bottom: 2 },
+  });
+  const countryAttemptedDatasets = COUNTRIES.map(c => {
+    const visible = !P1_IS_ALL && P1_SELECTED.has(c);
+    return {
+      label: `% Tasks Attempted (${c})`, bcAttempted: true, attemptedCountry: c,
+      data: periods.map(p => { const v = getBCAttemptedRate(ptype, p, c); return v != null ? +(v*100).toFixed(2) : null; }),
+      borderColor: COUNTRY_COLORS[c], borderWidth: 1.5, borderDash: [4,4],
+      tension: .3, pointRadius: 2, fill: false,
+      hidden: !visible,
+      datalabels: attemptedDatalabels(COUNTRY_COLORS[c])
+    };
+  });
   CHARTS['p1_done_chart'] = new Chart(document.getElementById('p1_done_chart'), {
-    type: 'line', plugins: [ChartDataLabels],
+    type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p1_done_chart', primaryDoneData)],
     data: { labels: periods, datasets: [
       euDataset(euDoneData),
       ...countryDatasets('bc_done_rate'),
@@ -4779,98 +5349,847 @@ function renderP1() {
         data: periods.map(p => { const v = getBCAttemptedRate(ptype, p); return v!=null ? +(v*100).toFixed(2) : null; }),
         borderColor: '#f59e0b', borderWidth: 2, borderDash: [4,4],
         tension: .3, pointRadius: 2, fill: false,
-        hidden: !SHOW_BC_ATTEMPTED,
-        datalabels: { display: 'auto', formatter: v => v!=null ? v.toFixed(1)+'%' : '', anchor:'end', align:'top', font:{size:9,weight:'700'}, color:'#d97706', padding:{bottom:2} } }
+        hidden: false,
+        datalabels: attemptedDatalabels('#d97706') },
+      ...countryAttemptedDatasets
     ]},
-    options: chartOpts()
+    options: { ...chartOpts(), maintainAspectRatio: false }
   });
 
   buildP1CancelledChart();
 
-  // BC Task Volume bar chart
-  const volCountry = getVolChartCountry();
-  const volLabel = volCountry === 'EU' ? 'EU Aggregate' : volCountry;
-  const getVolData = key => periods.map(p => {
-    if (key === 'bc_attempted') {
-      if (volCountry !== 'EU' && ptype === 'month' && BC_ATTEMPTED_COUNT_BY_COUNTRY[volCountry]?.[p] != null) {
-        return BC_ATTEMPTED_COUNT_BY_COUNTRY[volCountry][p];
-      }
-      const rate = getBCAttemptedRate(ptype, p, volCountry !== 'EU' ? volCountry : null);
-      if (rate == null) return null;
-      if (volCountry === 'EU') {
-        const rows = RAW_DATA.filter(r => r.period_type===ptype && r.period_name===p);
-        const agg = aggRows(rows);
-        return agg ? Math.round(rate * (agg.bc_created - agg.bc_cancelled)) : null;
-      } else {
-        const m = countryMetrics(ptype, p, volCountry, euMode);
-        return m ? Math.round(rate * (m.bc_created - (m.bc_cancelled || 0))) : null;
-      }
-    }
-    if (volCountry === 'EU') {
-      const rows = RAW_DATA.filter(r => r.period_type===ptype && r.period_name===p);
-      const agg = aggRows(rows);
-      return agg ? (agg[key] != null ? agg[key] : null) : null;
-    } else {
-      const m = countryMetrics(ptype, p, volCountry, euMode);
-      return m ? (m[key] != null ? m[key] : null) : null;
-    }
-  });
-  const _volCreated = getVolData('bc_created');
-  if (allNull(_volCreated)) showChartEmpty('p1_vol_chart', 'No task volume data available for this period');
-  else hideChartEmpty('p1_vol_chart');
-
-  destroyChart('p1_vol_chart');
-  const volTitleEl = document.getElementById('p1_vol_title');
-  if (volTitleEl) volTitleEl.textContent = `Booking Confirmation Task Volume \u2014 ${volLabel}`;
-  CHARTS['p1_vol_chart'] = new Chart(document.getElementById('p1_vol_chart'), {
-    type: 'bar', plugins: [ChartDataLabels],
-    data: {
-      labels: periods,
-      datasets: [
-        { label: 'BC Confirmations Created',   data: getVolData('bc_created'),   backgroundColor: 'rgba(59,130,246,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#1d4ed8' } },
-        { label: 'BC Confirmations Done',      data: getVolData('bc_done'),      backgroundColor: 'rgba(34,197,94,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#15803d' } },
-        { label: 'BC Confirmations Cancelled', data: getVolData('bc_cancelled'), backgroundColor: 'rgba(239,68,68,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#b91c1c' } },
-        { label: 'BC Confirmations Attempted', data: getVolData('bc_attempted'), backgroundColor: 'rgba(251,146,60,0.7)',
-          datalabels: { display: true, formatter: v => Math.round(v), anchor: 'end', align: 'end', font: { size: 9, weight: '600' }, color: '#c2410c' } }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: {
-        legend: { display: true, position: 'top', labels: { font: { size: 12 } } },
-        datalabels: { display: true },
-        tooltip: { mode: 'index', intersect: false,
-          callbacks: { label: ctx => `${ctx.dataset.label}: ${Math.round(ctx.parsed.y).toLocaleString()}` } }
-      },
-      scales: {
-        x: { grid: { color: 'rgba(0,0,0,.05)' } },
-        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' },
-          ticks: { callback: v => Math.round(v).toLocaleString() } }
-      }
-    }
-  });
-
-  // Country ranking table
-  const euWeightedSR = euSR(RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===period), 'weighted');
-  const euWeightedSR_prev = compPeriods.length ? (() => {
-    const vals = compPeriods.map(p => euSR(RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p), 'weighted')).filter(v=>!isNaN(v));
-    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
-  })() : null;
-
-  const titleEl = document.getElementById('p1_table_title');
-  if (titleEl) titleEl.textContent = `Country Rankings — ${period}`;
-
-  renderP1TableHeaders(period, compLabel);
-  renderP1TableBody(ptype, period, euMode, compMode, compLabel, euWeightedSR);
-
-  buildP1InsightCards(ptype, period, compMode, euMode, euWeightedSR, euWeightedSR_prev);
-  document.getElementById('p1_exec_summary_text').innerHTML = generateExecutiveSummary(ptype, period, compMode, euMode);
-
   // Apply country selection visibility AFTER charts are fully built
   updateP1ChartVisibility();
+  renderP1UtilChart();
+  renderP1LeadShareChart();
+}
+
+// Reusable Chart.js plugin that draws ▲/▼ delta badges between consecutive non-null points on a trend line
+// ── Pearson correlation (null-safe) ──────────────────────────────────────────
+function pearsonCorr(xs, ys) {
+  const pairs = xs.map((x, i) => [x, ys[i]]).filter(([a, b]) => a != null && b != null);
+  const n = pairs.length;
+  if (n < 4) return null;
+  const mx = pairs.reduce((s, [a]) => s + a, 0) / n;
+  const my = pairs.reduce((s, [, b]) => s + b, 0) / n;
+  const num = pairs.reduce((s, [a, b]) => s + (a - mx) * (b - my), 0);
+  const dx = Math.sqrt(pairs.reduce((s, [a]) => s + (a - mx) ** 2, 0));
+  const dy = Math.sqrt(pairs.reduce((s, [, b]) => s + (b - my) ** 2, 0));
+  return (!dx || !dy) ? null : +(num / (dx * dy)).toFixed(2);
+}
+
+function renderP1AiAnalysis() {
+  const el = document.getElementById('p1_ai_analysis');
+  if (!el) return;
+  const ptype = GLOBAL_PTYPE;
+  const euMode = document.querySelector('input[name=p1_eumode]:checked')?.value || 'weighted';
+  const focusCountries = P1_IS_ALL ? [] : [...P1_SELECTED].filter(c => c !== 'EU_AVG');
+  const useCountry = focusCountries.length === 1 ? focusCountries[0] : null;
+  const label = useCountry || 'EU';
+  const ctx = useCountry ? `For <strong>${useCountry}</strong>` : 'Across <strong>EU markets</strong>';
+
+  // All periods in RAW_DATA for better statistical power
+  const allPeriods = [...new Set(RAW_DATA.filter(r => r.period_type === ptype).map(r => r.period_name))].sort();
+
+  const getSR = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.sr != null ? +(m.sr*100) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const sr = euSR(rows, euMode); return sr != null ? +(sr*100) : null;
+  };
+  const getDone = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.bc_done_rate != null ? +(m.bc_done_rate*100) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const agg = aggRows(rows); const ex = agg.bc_created - agg.bc_cancelled;
+    return ex ? +(agg.bc_done / ex * 100) : null;
+  };
+  const getAttempt = p => { const v = getBCAttemptedRate(ptype, p, useCountry); return v != null ? +(v*100) : null; };
+  const getUtil = p => {
+    if (useCountry) return _getVal(UTIL_COUNTRY_WEEKLY[useCountry], UTIL_COUNTRY_MONTHLY?.[useCountry], p, ptype);
+    return _getVal(UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, p, ptype);
+  };
+  const getCancel = p => {
+    if (useCountry) { const m = countryMetrics(ptype, p, useCountry, euMode); return m?.bc_cancel_rate != null ? +(m.bc_cancel_rate*100) : null; }
+    const rows = RAW_DATA.filter(r => r.period_type === ptype && r.period_name === p);
+    if (!rows.length) return null;
+    const agg = aggRows(rows); return agg.bc_created ? +(agg.bc_cancelled / agg.bc_created * 100) : null;
+  };
+
+  const srArr = allPeriods.map(getSR);
+  const factors = [
+    { key: 'done',    label: '% BC Tasks Done',          data: allPeriods.map(getDone),   positive: true },
+    { key: 'attempt', label: '% Tasks Attempted',        data: allPeriods.map(getAttempt),positive: true },
+    { key: 'util',    label: 'Branch Utilisation',       data: allPeriods.map(getUtil),   positive: null },
+    { key: 'cancel',  label: 'BC Cancellation Rate',     data: allPeriods.map(getCancel), positive: false },
+    { key: 'dealer',  label: 'Dealer Now Lead Share',    data: allPeriods.map(p => { const d = ptype==='week' ? LEAD_SHARE_WEEKLY[p] : LEAD_SHARE_MONTHLY[p]; return d ? d[0] : null; }), positive: null },
+  ].map(f => ({ ...f, r: pearsonCorr(srArr, f.data) }))
+   .filter(f => f.r != null)
+   .sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
+
+  const fmtR = r => `<strong style="font-family:monospace">r = ${r > 0 ? '+' : ''}${r}</strong>`;
+  const strength = r => { const a = Math.abs(r); return a >= 0.75 ? 'strong' : a >= 0.5 ? 'moderate' : a >= 0.3 ? 'weak' : 'negligible'; };
+  const dir = r => r > 0 ? 'positive' : 'negative';
+
+  // Paragraph 1: top driver
+  let p1 = '', p2 = '';
+  if (factors.length === 0) {
+    el.innerHTML = '<p style="color:#94a3b8;font-style:italic;font-size:12px">Not enough data to compute correlations for the selected filter.</p>';
+    return;
+  }
+  const top = factors[0];
+  const n = factors.reduce((s, f) => s + (f.data.filter(v => v!=null)).length, 0);
+  const nPeriods = srArr.filter(v => v!=null).length;
+  p1 = `${ctx}, the factor tracking most closely with Show Rate over <strong>${nPeriods} ${ptype === 'week' ? 'weekly' : 'monthly'} periods</strong> is <strong>${top.label}</strong> (${fmtR(top.r)} — ${strength(top.r)} ${dir(top.r)} correlation).`;
+  if (factors.length >= 2) {
+    const f2 = factors[1];
+    p1 += ` <strong>${f2.label}</strong> ranks second (${fmtR(f2.r)}).`;
+  }
+  if (factors.length >= 3) {
+    const rest = factors.slice(2).map(f => `${f.label} (${fmtR(f.r)})`).join(', ');
+    p1 += ` Other measured factors — ${rest} — show ${factors.slice(2).every(f => Math.abs(f.r) < 0.3) ? 'weaker' : 'lower'} associations.`;
+  }
+
+  // Paragraph 2: actionable interpretation
+  const topKey = top.key;
+  const topR = top.r;
+  const actionMap = {
+    done:    `Closing the BC task completion gap — especially ensuring agents work through every created task before appointment day — is the most data-supported lever to lift show rate${useCountry ? ` in ${useCountry}` : ''}.`,
+    attempt: `Early outreach quality drives outcomes: markets that achieve higher task-attempt rates earlier in the week see higher show rates, pointing to scheduling and workload distribution as priority areas.`,
+    util:    `Branch capacity utilisation ${topR < 0 ? 'is negatively correlated with show rate — near-capacity branches may be accepting appointments they cannot service well, leading to last-minute cancellations.' : 'correlates positively with show rate — higher-utilisation periods tend to coincide with stronger conversion.'}`,
+    cancel:  `BC task cancellation rate shows a ${strength(topR)} ${dir(topR)} relationship — ${topR < 0 ? 'reducing unnecessary task cancellations' : 'managing cancellation patterns'} would have a measurable show rate impact.`,
+    dealer:  `The growing Dealer Now cohort share ${topR < 0 ? '(r = ' + topR + ') is negatively associated with show rate — same-day dealer leads carry higher no-show risk. Rebalancing pipeline toward longer-lead cohorts or improving same-day handling is the implied opportunity.' : 'does not appear to be dragging show rate down in this market — cohort composition risk is contained.'}`,
+  };
+  p2 = actionMap[topKey] || '';
+
+  el.innerHTML = `<p style="margin:0 0 8px;font-size:12.5px;line-height:1.6">${p1}</p><p style="margin:0;font-size:12.5px;line-height:1.6">${p2}</p><p style="margin:6px 0 0;font-size:11px;color:#94a3b8">Pearson r over all available ${ptype} periods · |r|≥0.75 strong · ≥0.5 moderate · ≥0.3 weak</p>`;
+}
+
+// Chat conversation history — persists between follow-up questions
+let P1_CHAT_MESSAGES = [];
+
+// Shared streaming helper — streams a Groq response into a target element, returns full text
+async function _streamGroq(messages, maxTokens, onChunk) {
+  const resp = await fetch('https://ai-proxy.mateo-jaramillo.workers.dev/', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'llama-3.1-8b-instant', max_tokens: maxTokens, stream: true, messages }),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `HTTP ${resp.status}`);
+  }
+  const reader = resp.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '', text = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n'); buf = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (raw === '[DONE]') continue;
+      try { const d = JSON.parse(raw).choices?.[0]?.delta?.content; if (d) { text += d; onChunk(text); } } catch (_) {}
+    }
+  }
+  return text;
+}
+
+function _renderAnalysis(text) {
+  return text.trim().split(/\n+/).filter(Boolean).map(line =>
+    `<p style="margin:0 0 7px;font-size:12.5px;line-height:1.65">${line.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</p>`
+  ).join('') + '<p style="margin:4px 0 0;font-size:11px;color:#94a3b8">Generated by Llama 3.3 70B · regenerate anytime</p>';
+}
+
+async function generateAiAnalysis() {
+  const btn = document.getElementById('p1_ai_generate_btn');
+  const el = document.getElementById('p1_ai_analysis');
+  const chatHistory = document.getElementById('p1_chat_history');
+
+  const ptype = GLOBAL_PTYPE;
+  const euMode = document.querySelector('input[name=p1_eumode]:checked')?.value || 'weighted';
+  const focusCountries = P1_IS_ALL ? [] : [...P1_SELECTED].filter(c => c !== 'EU_AVG');
+  const useCountry = focusCountries.length === 1 ? focusCountries[0] : null;
+  const label = useCountry || 'EU AVG';
+
+  const allPeriods = [...new Set(RAW_DATA.filter(r => r.period_type === ptype).map(r => r.period_name))].sort();
+  const last6 = allPeriods.slice(-6);
+  const nPeriods = last6.length;
+  const fmtPeriod = p => p.replace(/(\d{4})_(\d+)/, (_, y, w) => ptype==='week' ? `CW${w} ${y}` : `${['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+w]} ${y}`);
+  const latestLabel = last6.length ? fmtPeriod(last6[last6.length-1]) : '—';
+  const periodLabels = last6.map(p => p.replace(/(\d{4})_(\d+)/, (_, y, w) => ptype==='week' ? `CW${w}` : `M${w}/${y}`)).join(' | ');
+
+  const fmt = v => v != null ? String(v) : 'n/a';
+
+  const getSR      = p => { let v; if (useCountry) { const m = countryMetrics(ptype,p,useCountry,euMode); v=m?.sr!=null?+(m.sr*100).toFixed(1):null; } else { const rows=RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p); v=rows.length?+(euSR(rows,euMode)*100).toFixed(1):null; } return (v===0||v==='0.0')?null:v; }; // 0% = data error
+  const getAppts   = p => { if (useCountry) { const m=countryMetrics(ptype,p,useCountry,euMode); return m?.nb_appointments??null; } return COUNTRIES.reduce((s,c)=>{const m=countryMetrics(ptype,p,c,euMode);return s+(m?.nb_appointments||0);},0)||null; };
+  const getPurch   = p => { const v=getPurchases(ptype,p,useCountry||'EU'); return v>0?v:null; };
+  const getDone    = p => { if (useCountry) { const m=countryMetrics(ptype,p,useCountry,euMode); return m?.bc_done_rate!=null?+(m.bc_done_rate*100).toFixed(1):null; } const rows=RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p); if(!rows.length)return null; const agg=aggRows(rows); const ex=agg.bc_created-agg.bc_cancelled; return ex?+(agg.bc_done/ex*100).toFixed(1):null; };
+  const getAttempt = p => { const v=getBCAttemptedRate(ptype,p,useCountry); return v!=null?+(v*100).toFixed(1):null; };
+  const getUtil    = p => { const v=useCountry?_getVal(UTIL_COUNTRY_WEEKLY[useCountry],UTIL_COUNTRY_MONTHLY?.[useCountry],p,ptype):_getVal(UTIL_EU_WEEKLY,UTIL_EU_MONTHLY,p,ptype); return v!=null?+v.toFixed(1):null; };
+  const getCancel  = p => { if (useCountry) { const m=countryMetrics(ptype,p,useCountry,euMode); return m?.bc_cancel_rate!=null?+(m.bc_cancel_rate*100).toFixed(1):null; } const rows=RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p); if(!rows.length)return null; const agg=aggRows(rows); return agg.bc_created?+(agg.bc_cancelled/agg.bc_created*100).toFixed(1):null; };
+  const getLeadShare = p => { const d=useCountry?(ptype==='week'?LEAD_SHARE_COUNTRY_WEEKLY[useCountry]?.[p]:LEAD_SHARE_COUNTRY_MONTHLY[useCountry]?.[p]):(ptype==='week'?LEAD_SHARE_WEEKLY[p]:LEAD_SHARE_MONTHLY[p]); return d?d.map(v=>+v.toFixed(1)):null; };
+  const getCancelTiming = p => { const rows=GLOBAL_COUNTRY_SET.size===0?RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p):RAW_DATA.filter(r=>r.period_type===ptype&&r.period_name===p&&GLOBAL_COUNTRY_SET.has(r.country)); return TIMING_KEYS.map(t=>rows.reduce((s,r)=>s+n(r[tKey(t)]),0)); };
+
+  const allSR = allPeriods.map(getSR);
+  const corrs = [
+    {label:'% BC Tasks Done',       fn:getDone},
+    {label:'% BC Tasks Attempted',  fn:getAttempt},
+    {label:'Branch Utilisation %',  fn:getUtil},
+    {label:'BC Cancellation Rate %',fn:getCancel},
+    {label:'Dealer Now Lead Share %',fn:p=>{const d=getLeadShare(p);return d?d[0]:null;}},
+  ].map(f=>({label:f.label,r:pearsonCorr(allSR,allPeriods.map(f.fn))}))
+   .filter(f=>f.r!=null).sort((a,b)=>Math.abs(b.r)-Math.abs(a.r));
+  const corrTable = corrs.map(f=>`  ${f.label}: r=${f.r>=0?'+':''}${f.r}`).join('\n');
+
+  const leadShareRows = LEAD_SHARE_SEGMENTS.map((seg,i)=>
+    `  ${seg}: ${last6.map(p=>{const d=getLeadShare(p);return d?fmt(d[i]):'n/a';}).join(' | ')}`
+  ).join('\n');
+  const cancelRows = TIMING_KEYS.map((t,i)=>
+    `  ${t.label}: ${last6.map(p=>{const d=getCancelTiming(p);return d?String(d[i]):'n/a';}).join(' | ')}`
+  ).join('\n');
+
+  const dataMessage =
+`CONTEXT
+- Granularity: ${ptype==='week'?'weekly':'monthly'}
+- Country: ${label}
+- Period window: last ${nPeriods} ${ptype==='week'?'weeks':'months'}
+- Latest period: ${latestLabel}${nPeriods<8?' ⚠ small sample (fewer than 8 periods)':''}
+
+PERIODS: ${periodLabels}
+
+1. SHOW RATE & VOLUMES
+  Show Rate %:        ${last6.map(getSR).map(fmt).join(' | ')}
+  # Appointments:     ${last6.map(getAppts).map(fmt).join(' | ')}
+  # Purchases:        ${last6.map(getPurch).map(fmt).join(' | ')}
+
+2. BRANCH UTILISATION
+  Utilisation %:      ${last6.map(getUtil).map(fmt).join(' | ')}
+
+3. LEAD SHARE BY COHORT
+${leadShareRows}
+
+4. BC TASK COMPLETION
+  % BC Tasks Done:     ${last6.map(getDone).map(fmt).join(' | ')}
+  % BC Tasks Attempted:${last6.map(getAttempt).map(fmt).join(' | ')}
+  BC Cancellation Rate:${last6.map(getCancel).map(fmt).join(' | ')}
+
+5. CANCELLED APPOINTMENTS — TIMING BREAKDOWN
+${cancelRows}
+
+PEARSON CORRELATIONS with Show Rate (across all ${allSR.filter(v=>v!=null).length} available periods):
+${corrTable}`;
+
+  const systemPrompt =
+`ROLE
+You are an AI Data Analyst embedded in the Customer Service Show Rate Dashboard at Auto1. Audience: CS Project Manager and CS HQ Director. The dashboard tracks how many customers with car-selling appointments actually show up at our branches (Show Rate = shows / appointments).
+
+DOMAIN KNOWLEDGE — context for interpreting the metrics (do NOT assume causation):
+- Show Rate benchmark: ~69–72% is typical EU range. Below 67% is noteworthy. Above 74% is strong.
+- BC Tasks Done % and Attempted %: measure booking-confirmation outreach completion. These tend to move together with show rate — report the direction and magnitude, not a causal claim.
+- Branch Utilisation %: tends to correlate with show rate in some markets — report the observed relationship, not a cause.
+- Lead Share cohorts: "Dealer Now" and "Not Planned" are same-day or unplanned leads. "Private 4W/3M" are longer-lead. Note the cohort mix and how it has shifted — describe the correlation, not whether it "causes" outcomes.
+- Cancelled Appointments timing: "Before >30 min" vs "After <30 min same-day" vs "After 1+ day" — describe the dominant category and whether it has changed alongside show rate.
+- Always frame relationships as: "X moved in the same/opposite direction as show rate" or "X and show rate are positively/negatively correlated" — never "X caused" or "X drove" or "X is impacting" show rate.
+
+TASK — ON "GENERATE"
+Produce an analysis of max 180 words using this exact structure:
+
+📊 **HEADLINE:** State the latest show rate, the pp change vs previous period, and whether it is improving/declining/stable over the window. Flag with 🚨 if drop >2pp. Note appointment volume trend.
+
+🔑 **KEY CORRELATES:** For each metric group, describe how it moved relative to show rate over the window — same direction, opposite direction, or no clear pattern. Report the figures and the observed co-movement. Do NOT claim any metric caused or drove the show rate change.
+- BC Tasks Done & Attempted: direction and magnitude vs show rate trend
+- Lead Mix: Dealer Now + Not Planned share — is it rising or falling alongside show rate changes?
+- Branch Utilisation: how has it moved relative to show rate?
+- Cancellations: which timing category dominates, and has it shifted?
+Highlight the 1–2 strongest co-movements with exact figures.
+
+🔗 **CORRELATION:** Report the strongest Pearson r value, direction, and a plain-English description of the relationship. Explicitly note: correlation does not imply causation. Flag small-sample caveat if fewer than 8 periods.
+
+💡 **OBSERVATION & QUESTION:** Based on the strongest correlation, state one observation worth investigating further — framed as a hypothesis, not a conclusion.
+
+FOLLOW-UP CHAT
+- Only use data in scope. Never invent numbers. Max 80 words per answer.
+- Lead with the number, then interpretation. Distinguish data facts from hypotheses.
+
+STYLE
+- Business English. Always cite period and country with figures.
+- pp for rate changes, % for volumes.
+- 0% show rate = data error — skip it, use most recent valid value.
+- **Bold** every KPI value, period label, country, and key phrase. Aim 3–5 bold items per section.
+- Emojis only as section headers or trend indicators (📈📉➡️⚠️✅🚨). Never substitute for numbers.`;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  el.innerHTML = '<p style="color:#94a3b8;font-size:12px;font-style:italic;margin:0">Generating analysis…</p>';
+  chatHistory.innerHTML = '';
+  document.getElementById('p1_chat_suggestions').innerHTML = '';
+  P1_CHAT_MESSAGES = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user',   content: dataMessage },
+  ];
+
+  // Show stop / finish-now controls
+  document.getElementById('p1_ai_stop_btn').style.display = 'inline-block';
+  document.getElementById('p1_ai_finish_btn').style.display = 'inline-block';
+  _aiCtrl = { abort: false, finish: false, reader: null, timer: null };
+
+  try {
+    let twShown = '', twQueue = '';
+    const twTick = () => {
+      if (_aiCtrl.abort) { _aiCtrl.timer = null; return; }
+      if (_aiCtrl.finish) {
+        twShown += twQueue; twQueue = '';
+        el.innerHTML = _renderAnalysis(twShown);
+        _aiCtrl.timer = null; return;
+      }
+      if (!twQueue) { _aiCtrl.timer = null; return; }
+      const take = Math.min(3, twQueue.length);
+      twShown += twQueue.slice(0, take);
+      twQueue = twQueue.slice(take);
+      el.innerHTML = _renderAnalysis(twShown);
+      const sc = document.getElementById('p1_ai_scroll'); if (sc) sc.scrollTop = sc.scrollHeight;
+      _aiCtrl.timer = setTimeout(twTick, 35);
+    };
+
+    const resp = await fetch('https://ai-proxy.mateo-jaramillo.workers.dev/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'llama-3.1-8b-instant', max_tokens: 600, stream: true, messages: P1_CHAT_MESSAGES }),
+    });
+    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || `HTTP ${resp.status}`); }
+
+    _aiCtrl.reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', text = '';
+    while (true) {
+      if (_aiCtrl.abort) { await _aiCtrl.reader.cancel(); break; }
+      const { done, value } = await _aiCtrl.reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') continue;
+        try { const d = JSON.parse(raw).choices?.[0]?.delta?.content; if (d) { text += d; twQueue += d; if (!_aiCtrl.timer) _aiCtrl.timer = setTimeout(twTick, 35); } } catch(_) {}
+      }
+    }
+    _aiCtrl.reader = null;
+
+    if (_aiCtrl.abort) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px;font-style:italic">Generation stopped.</p>'; return; }
+
+    // Wait for typewriter to drain
+    await new Promise(resolve => {
+      const check = () => _aiCtrl.timer ? setTimeout(check, 35) : resolve();
+      check();
+    });
+
+    if (!text.trim()) { el.innerHTML = '<p style="color:#94a3b8;font-size:12px">No response received.</p>'; }
+    P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
+    document.getElementById('p1_chat_input').focus({ preventScroll: true });
+    btn.textContent = '✨ Regenerate';
+    generateChatSuggestions();
+  } catch (err) {
+    if (!_aiCtrl.abort) el.innerHTML = `<p style="color:#dc2626;font-size:12px;margin:0">Error: ${err.message}</p>`;
+    btn.textContent = '✨ Generate with AI';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('p1_ai_stop_btn').style.display = 'none';
+    document.getElementById('p1_ai_finish_btn').style.display = 'none';
+    _aiCtrl.finish = false;
+  }
+}
+
+let _aiCtrl = { abort: false, finish: false, reader: null, timer: null };
+
+function stopAiGeneration() {
+  _aiCtrl.abort = true;
+  if (_aiCtrl.reader) { _aiCtrl.reader.cancel(); _aiCtrl.reader = null; }
+  if (_aiCtrl.timer) { clearTimeout(_aiCtrl.timer); _aiCtrl.timer = null; }
+}
+
+function finishAiGeneration() {
+  _aiCtrl.finish = true;
+}
+
+async function generateChatSuggestions() {
+  const el = document.getElementById('p1_chat_suggestions');
+  if (!el || !P1_CHAT_MESSAGES.length) return;
+  const lastAI = [...P1_CHAT_MESSAGES].reverse().find(m => m.role === 'assistant')?.content || '';
+  if (!lastAI) return;
+  el.innerHTML = '<span style="font-size:11px;color:#94a3b8;align-self:center">Loading suggestions…</span>';
+  try {
+    const resp = await fetch('https://ai-proxy.mateo-jaramillo.workers.dev/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        max_tokens: 200,
+        messages: [
+          { role: 'system', content: 'You generate exactly 3 short follow-up questions for a CS performance dashboard. Output ONLY a valid JSON array like ["Q1","Q2","Q3"]. No intro text, no numbered lists, no explanation. Just the JSON array.' },
+          { role: 'user', content: `Analysis:\n"${lastAI.slice(0, 700)}"\n\nWrite 3 follow-up questions referencing specific numbers/KPIs/periods above. JSON array only.` }
+        ]
+      })
+    });
+    if (!resp.ok) { el.innerHTML = ''; return; }
+    const data = await resp.json();
+    const raw = (data.choices?.[0]?.message?.content || '').trim();
+    // Try parsing the whole response first, then look for an array inside it
+    let questions = [];
+    try { questions = JSON.parse(raw); } catch (_) {
+      const m = raw.match(/\[[\s\S]*?\]/);
+      if (m) try { questions = JSON.parse(m[0]); } catch (_) {}
+    }
+    // Fallback: extract lines if JSON failed
+    if (!Array.isArray(questions) || questions.length === 0) {
+      questions = raw.split('\n').map(l => l.replace(/^[\d\-\.\*\s"]+/, '').replace(/[",]+$/, '').trim()).filter(l => l.length > 5).slice(0, 3);
+    }
+    if (!questions.length) { el.innerHTML = ''; return; }
+    el.innerHTML = questions.slice(0, 3).map(q =>
+      `<button onclick="sendSuggestedQuestion(this)" data-q="${String(q).replace(/"/g,'&quot;')}"
+        style="font-size:11.5px;padding:5px 10px;border:1px solid #6366f1;border-radius:20px;background:#f0f0ff;color:#4338ca;cursor:pointer;font-family:inherit;transition:background .15s;white-space:normal;text-align:left;line-height:1.4"
+        onmouseover="this.style.background='#e0e0ff'" onmouseout="this.style.background='#f0f0ff'">${q}</button>`
+    ).join('');
+  } catch (e) { el.innerHTML = ''; console.warn('Suggestions failed:', e); }
+}
+
+function sendSuggestedQuestion(btn) {
+  const q = btn.getAttribute('data-q');
+  document.getElementById('p1_chat_input').value = q;
+  document.getElementById('p1_chat_suggestions').innerHTML = '';
+  sendChatMessage();
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('p1_chat_input');
+  const sendBtn = document.getElementById('p1_chat_send_btn');
+  const chatHistory = document.getElementById('p1_chat_history');
+  const question = input.value.trim();
+  if (!question || !P1_CHAT_MESSAGES.length) return;
+
+  input.value = '';
+  input.disabled = true;
+  sendBtn.disabled = true;
+
+  // User bubble
+  chatHistory.insertAdjacentHTML('beforeend',
+    `<div style="align-self:flex-end;max-width:85%;background:#6366f1;color:#fff;border-radius:10px 10px 2px 10px;padding:6px 10px;font-size:12px;line-height:1.5">${question}</div>`);
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+
+  P1_CHAT_MESSAGES.push({ role: 'user', content: question });
+
+  // AI bubble placeholder
+  const aiId = 'chat_msg_' + Date.now();
+  chatHistory.insertAdjacentHTML('beforeend',
+    `<div id="${aiId}" style="align-self:flex-start;max-width:90%;background:#f3f4f6;border-radius:10px 10px 10px 2px;padding:6px 10px;font-size:12px;line-height:1.55;color:#374151">⏳</div>`);
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+
+  try {
+    const aiEl = document.getElementById(aiId);
+    const text = await _streamGroq(P1_CHAT_MESSAGES, 300, t => {
+      aiEl.innerHTML = t.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    });
+    P1_CHAT_MESSAGES.push({ role: 'assistant', content: text });
+    generateChatSuggestions();
+  } catch (err) {
+    document.getElementById(aiId).innerHTML = `<span style="color:#dc2626">Error: ${err.message}</span>`;
+  } finally {
+    input.disabled = false;
+    sendBtn.disabled = false;
+    input.focus({ preventScroll: true });
+  }
+}
+
+function makeDeltaPlugin(canvasId, primaryData) {
+  return {
+    id: 'dpl_' + canvasId,
+    afterDraw(chart) {
+      if (!primaryData || primaryData.length === 0) return;
+      const { ctx, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      ctx.save();
+      ctx.font = '600 13px system-ui,-apple-system,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let i = 1; i < primaryData.length; i++) {
+        const prev = primaryData[i - 1];
+        const curr = primaryData[i];
+        if (prev == null || curr == null) continue;
+        const delta = +(curr - prev).toFixed(1);
+        const arrow = delta >= 0 ? '▲' : '▼';
+        const sign  = delta >= 0 ? '+' : '';
+        const color = delta >= 0 ? '#16a34a' : '#dc2626';
+        const text  = `${arrow} ${sign}${Math.abs(delta).toFixed(1)}%`;
+        const xPos = (scales.x.getPixelForTick(i - 1) + scales.x.getPixelForTick(i)) / 2;
+        const yA = scales.y.getPixelForValue(prev);
+        const yB = scales.y.getPixelForValue(curr);
+        const yCenter = (yA + yB) / 2 + 16;
+        const w = ctx.measureText(text).width;
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(xPos - w/2 - 3, yCenter - 8, w + 6, 16, 3);
+        else ctx.rect(xPos - w/2 - 3, yCenter - 8, w + 6, 16);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.fillText(text, xPos, yCenter);
+      }
+      ctx.restore();
+    }
+  };
+}
+
+// Converts a period name to a value from weekly/monthly arrays (null if no data for that period)
+function _getVal(weeklyArr, monthlyArr, period, ptype) {
+  if (ptype === 'week') {
+    const idx = CW18_WEEK_MAP[period];
+    return idx !== undefined ? weeklyArr[idx] : null;
+  }
+  const idx = MONTHLY_MAP[period];
+  return idx !== undefined && monthlyArr ? monthlyArr[idx] : null;
+}
+
+// sel = {isAll: bool, selected: Set<string>, showEU: bool}
+// slotWeekly/slotMonthly: optional {country: [values]} — adds stacked bars on secondary y-axis
+// slotEuWeekly/slotEuMonthly: optional EU-total arrays — adds a trend line on y2
+function _renderTrendChart(canvasId, ptype, euWeekly, euMonthly, countryWeekly, countryMonthly, sel, slotWeekly, slotMonthly, slotEuWeekly, slotEuMonthly, aspectRatio = 1.7, maintainAR = true) {
+  const periods = getPeriods(ptype);
+  const isSingleSel = !sel.isAll;
+  const hasSlots = !!slotWeekly;
+
+  // Compute max stacked slot value across visible countries to scale y2 so bars
+  // stay in the lower portion of the chart and don't hide utilisation lines.
+  let maxStackedSlots = 0;
+  if (hasSlots) {
+    periods.forEach(p => {
+      let s = 0;
+      COUNTRIES.forEach(c => {
+        if ((sel.isAll || sel.selected.has(c)) && slotWeekly[c]) {
+          const v = _getVal(slotWeekly[c], slotMonthly ? slotMonthly[c] : null, p, ptype);
+          if (v) s += v;
+        }
+      });
+      if (s > maxStackedSlots) maxStackedSlots = s;
+    });
+  }
+  // Single-country: bars fill ~40% of height (util line clearly above).
+  // All-countries: bars fill ~65% of height (stacked, individual segments smaller).
+  const y2SuggestedMax = maxStackedSlots > 0 ? maxStackedSlots * (isSingleSel ? 2.5 : 1.55) : undefined;
+
+  // Primary utilisation data for period-over-period delta annotations
+  const primaryDataForDelta = (isSingleSel && sel.selected.size === 1)
+    ? periods.map(p => {
+        const sc = [...sel.selected][0];
+        return _getVal(countryWeekly[sc], countryMonthly ? countryMonthly[sc] : null, p, ptype);
+      })
+    : periods.map(p => _getVal(euWeekly, euMonthly, p, ptype));
+
+  const deltaPlugin = makeDeltaPlugin(canvasId, primaryDataForDelta);
+
+  const datasets = [];
+
+  // Stacked slot bars (drawn first so lines render on top)
+  if (hasSlots) {
+    COUNTRIES.forEach(c => {
+      if (!slotWeekly[c]) return;
+      const visible = sel.isAll || sel.selected.has(c);
+      datasets.push({
+        type: 'bar', label: `${c} Slots`,
+        data: periods.map(p => _getVal(slotWeekly[c], slotMonthly ? slotMonthly[c] : null, p, ptype)),
+        backgroundColor: COUNTRY_COLORS[c] + '38',
+        borderColor: COUNTRY_COLORS[c] + '88',
+        borderWidth: 0.5,
+        categoryPercentage: 0.85, barPercentage: 0.9,
+        stack: 'slots', yAxisID: 'y2', hidden: !visible,
+        datalabels: {
+          display: 'auto',
+          anchor: isSingleSel ? 'end' : 'center',
+          align: isSingleSel ? 'top' : 'center',
+          clamp: true,
+          offset: isSingleSel ? 4 : 0,
+          formatter: v => {
+            if (!v) return null;
+            const num = v >= 1000 ? (v/1000).toFixed(1)+'k' : String(v);
+            return isSingleSel ? `${num} eval slots` : `${c} ${num}`;
+          },
+          color: COUNTRY_COLORS[c],
+          font: { size: 11, weight: '600' }
+        }
+      });
+    });
+  }
+
+  // Eval slots trend line on y2 — EU total or selected-country total
+  if (hasSlots) {
+    let trendArr = null, trendLabel = '';
+    if (isSingleSel && sel.selected.size === 1) {
+      const sc = [...sel.selected][0];
+      if (slotWeekly[sc]) { trendArr = periods.map(p => _getVal(slotWeekly[sc], slotMonthly ? slotMonthly[sc] : null, p, ptype)); trendLabel = sc + ' Slots Trend'; }
+    }
+    if (!trendArr && slotEuWeekly) {
+      trendArr = periods.map(p => _getVal(slotEuWeekly, slotEuMonthly || null, p, ptype));
+      trendLabel = 'EU Slots Trend';
+    }
+    if (trendArr) {
+      datasets.push({
+        type: 'line', label: trendLabel, data: trendArr,
+        borderColor: '#334155', borderWidth: 2, borderDash: [5, 3],
+        tension: 0.3, pointRadius: 3, pointBackgroundColor: '#334155',
+        fill: false, yAxisID: 'y2',
+        datalabels: {
+          display: isSingleSel ? 'auto' : false,
+          formatter: v => v != null ? (v >= 1000 ? (v/1000).toFixed(0)+'k' : String(v)) + ' slots' : null,
+          color: '#334155', font: { size: 11, weight: '600' }, anchor: 'end', align: 'top', offset: 4
+        }
+      });
+    }
+  }
+
+  if (sel.showEU) {
+    datasets.push({
+      label: 'EU Avg', data: periods.map(p => _getVal(euWeekly, euMonthly, p, ptype)),
+      borderColor: '#6366f1', borderWidth: 2.5, borderDash: [6,3],
+      tension: 0.3, pointRadius: isSingleSel ? 4 : 3, fill: false,
+      datalabels: {
+        display: isSingleSel,
+        formatter: v => v != null ? v.toFixed(1)+'%' : '',
+        color: '#6366f1', font: {size:12, weight:'bold'}, anchor:'end', align:'top', offset:4
+      }
+    });
+  }
+  COUNTRIES.forEach(c => {
+    if (!countryWeekly[c]) return;
+    const visible = sel.isAll || sel.selected.has(c);
+    datasets.push({
+      label: c, data: periods.map(p => _getVal(countryWeekly[c], countryMonthly ? countryMonthly[c] : null, p, ptype)),
+      borderColor: COUNTRY_COLORS[c], borderWidth: isSingleSel && visible ? 2 : 1.5,
+      tension: 0.3, pointRadius: isSingleSel && visible ? 4 : 2, fill: false, hidden: !visible,
+      datalabels: {
+        display: isSingleSel && visible,
+        formatter: v => v != null ? v.toFixed(1)+'%' : '',
+        color: COUNTRY_COLORS[c], font: {size:12, weight:'bold'}, anchor:'end', align:'top', offset:4
+      }
+    });
+  });
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  CHARTS[canvasId] = new Chart(canvas, {
+    type: 'line', plugins: [ChartDataLabels, deltaPlugin],
+    data: { labels: periods, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: maintainAR, aspectRatio,
+      plugins: {
+        legend: { display: false },
+        datalabels: { display: 'auto' },
+        tooltip: {
+          mode: 'index', intersect: false,
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.yAxisID === 'y2') {
+                const v = ctx.parsed.y;
+                if (v == null) return null;
+                const lbl = ctx.dataset.type === 'bar'
+                  ? ctx.dataset.label.replace(' Slots', '')
+                  : ctx.dataset.label;
+                return `${lbl}: ${v.toLocaleString()} slots`;
+              }
+              return `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : 'n/a'}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { callback: (_, i) => ptype === 'week'
+          ? periods[i].replace('2026_','CW')
+          : ({'2025_12':'Dec 25','2026_01':'Jan 26','2026_02':'Feb 26','2026_03':'Mar 26','2026_04':'Apr 26','2026_05':'May 26','2026_06':'Jun 26'}[periods[i]] || periods[i]) } },
+        y: { min: 0, max: 100, ticks: { callback: v => v+'%' }, grid: { color: 'rgba(0,0,0,.05)' } },
+        y2: {
+          display: hasSlots, position: 'right',
+          suggestedMax: y2SuggestedMax,
+          title: { display: true, text: '# Eval Slots', font: {size:11}, color: '#94a3b8' },
+          ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, color: '#94a3b8' },
+          grid: { drawOnChartArea: false }
+        }
+      }
+    }
+  });
+}
+
+function renderP1LeadShareChart() {
+  const ptype = GLOBAL_PTYPE;
+  const periods = getPeriods(ptype);
+
+  const focusCountries = P1_IS_ALL ? [] : [...P1_SELECTED].filter(c => c !== 'EU_AVG');
+  const useCountry = focusCountries.length === 1 ? focusCountries[0] : null;
+
+  const countryData = useCountry
+    ? (ptype === 'week' ? LEAD_SHARE_COUNTRY_WEEKLY[useCountry] : LEAD_SHARE_COUNTRY_MONTHLY[useCountry])
+    : null;
+  const hasCountryData = !!countryData;
+  const lsData = hasCountryData
+    ? countryData
+    : (ptype === 'week' ? LEAD_SHARE_WEEKLY : LEAD_SHARE_MONTHLY);
+
+  const titleEl = document.getElementById('p1_ls_title');
+  if (titleEl) titleEl.textContent = useCountry ? `Lead Share by Cohort — ${useCountry}` : 'Lead Share by Cohort — EU';
+  const noteEl = document.getElementById('p1_ls_country_note');
+  if (noteEl) {
+    if (useCountry && !hasCountryData) {
+      noteEl.textContent = `⚠ ${useCountry}: country-level data not available in source — showing EU aggregate`;
+      noteEl.style.display = 'block';
+    } else {
+      noteEl.style.display = 'none';
+    }
+  }
+
+  const legend = document.getElementById('p1_ls_legend');
+  if (legend) {
+    legend.innerHTML = LEAD_SHARE_SEGMENTS.map((s, i) =>
+      `<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:2px;background:${LEAD_SHARE_COLORS[i]};flex-shrink:0"></span>${s}</span>`
+    ).join('');
+  }
+
+  // Precompute top-3 segment indices per period (for always-on data labels)
+  const top3ByPeriodIdx = periods.map(p => {
+    if (!lsData[p]) return new Set();
+    return new Set(
+      lsData[p].map((v, si) => ({ si, v }))
+        .sort((a, b) => b.v - a.v)
+        .slice(0, 3)
+        .map(r => r.si)
+    );
+  });
+
+  const datasets = LEAD_SHARE_SEGMENTS.map((label, i) => ({
+    label,
+    data: periods.map(p => (lsData[p] ? +lsData[p][i].toFixed(1) : null)),
+    backgroundColor: LEAD_SHARE_COLORS[i],
+    borderWidth: 0,
+  }));
+
+  destroyChart('p1_ls_chart');
+  CHARTS['p1_ls_chart'] = new Chart(document.getElementById('p1_ls_chart'), {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: { labels: periods, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: {
+          display: ctx => {
+            const val = ctx.dataset.data[ctx.dataIndex];
+            const top3 = top3ByPeriodIdx[ctx.dataIndex];
+            return !!(val != null && top3 && top3.has(ctx.datasetIndex));
+          },
+          formatter: (v, ctx) => {
+            const val = ctx.dataset.data[ctx.dataIndex];
+            return (val != null && !isNaN(+val)) ? (+val).toFixed(1) + '%' : '';
+          },
+          color: '#fff',
+          font: { size: 10, weight: '600' },
+          anchor: 'center',
+          align: 'center',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1) + '%' : 'n/a'}`
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { color: 'rgba(0,0,0,.05)' } },
+        y: {
+          stacked: true,
+          min: 0,
+          max: 100,
+          ticks: { callback: v => v + '%' },
+          grid: { color: 'rgba(0,0,0,.05)' }
+        }
+      }
+    }
+  });
+}
+
+function renderP1UtilChart() {
+  const sel = { isAll: P1_IS_ALL, selected: P1_SELECTED, showEU: P1_SELECTED.has('EU_AVG') };
+  _renderTrendChart('p1_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY, 1.7, false);
+}
+
+// ========== PAGE 8 — Branch Operations ==========
+function renderP8() {
+  const isAll = GLOBAL_COUNTRY_SET.size === 0;
+  const sel = { isAll, selected: GLOBAL_COUNTRY_SET, showEU: GLOBAL_SHOW_EU_AVG };
+  _renderTrendChart('p8_util_chart', GLOBAL_PTYPE, UTIL_EU_WEEKLY, UTIL_EU_MONTHLY, UTIL_COUNTRY_WEEKLY, UTIL_COUNTRY_MONTHLY, sel, EVAL_SLOTS_COUNTRY_WEEKLY, EVAL_SLOTS_COUNTRY_MONTHLY, EVAL_SLOTS_EU_WEEKLY, EVAL_SLOTS_EU_MONTHLY);
+}
+
+function renderP8KpiCards() {
+  const ptype = GLOBAL_PTYPE;
+  const container = document.getElementById('p8_kpi_cards');
+  if (!container) return;
+  const periods = getPeriods(ptype);
+  const latestP = periods[periods.length - 1];
+  const prevP = periods.length > 1 ? periods[periods.length - 2] : null;
+
+  const fmtDelta = (cur, prev) => {
+    if (cur == null || prev == null) return '';
+    const d = +(cur - prev).toFixed(1);
+    const cls = d >= 0 ? 'delta-pos' : 'delta-neg';
+    return `<div class="delta ${cls}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)} pp vs prev</div>`;
+  };
+
+  // Find last period with actual AC data to show as "latest"
+  const lastDataP = [...periods].reverse().find(p => _cw18Val(APPTCONV_EU_WEEKLY, p, ptype) != null) || latestP;
+  const prevDataP = (() => { const i = periods.indexOf(lastDataP); return i > 0 ? periods[i-1] : null; })();
+
+  // Which countries to show
+  const countries = P1_IS_ALL ? COUNTRIES : [...P1_SELECTED].filter(c => COUNTRIES.includes(c));
+
+  const cardHtml = (label, cur, prev) => {
+    if (cur == null) return '';
+    return `<div class="kpi-card">
+      <div class="label">${label}</div>
+      <div class="value">${cur.toFixed(1)}%</div>
+      <div class="sub">${ptype === 'week' ? lastDataP.replace('2026_','CW') : lastDataP.replace('2026_0','May ').replace('2026_','Jun ')}</div>
+      ${fmtDelta(cur, prevDataP ? _cw18Val(APPTCONV_EU_WEEKLY, prevDataP, ptype) !== null ? prev : null : null)}
+    </div>`;
+  };
+
+  let html = '';
+  const euCur = _cw18Val(APPTCONV_EU_WEEKLY, lastDataP, ptype);
+  const euPrev = prevDataP ? _cw18Val(APPTCONV_EU_WEEKLY, prevDataP, ptype) : null;
+  if (euCur != null) {
+    const d = euPrev != null ? +(euCur - euPrev).toFixed(1) : null;
+    const cls = d != null ? (d >= 0 ? 'delta-pos' : 'delta-neg') : '';
+    html += `<div class="kpi-card kpi-card-primary">
+      <div class="label">EU Avg — Appt Conversion</div>
+      <div class="value">${euCur.toFixed(1)}%</div>
+      <div class="sub">${ptype === 'week' ? lastDataP.replace('2026_','CW') : (lastDataP === '2026_05' ? 'May 2026' : 'Jun 2026')}</div>
+      ${d != null ? `<div class="delta ${cls}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)} pp vs prev</div>` : ''}
+    </div>`;
+  }
+  countries.forEach(c => {
+    if (!APPTCONV_COUNTRY_WEEKLY[c]) return;
+    const cur = _cw18Val(APPTCONV_COUNTRY_WEEKLY[c], lastDataP, ptype);
+    const prev = prevDataP ? _cw18Val(APPTCONV_COUNTRY_WEEKLY[c], prevDataP, ptype) : null;
+    if (cur == null) return;
+    const d = prev != null ? +(cur - prev).toFixed(1) : null;
+    const cls = d != null ? (d >= 0 ? 'delta-pos' : 'delta-neg') : '';
+    html += `<div class="kpi-card">
+      <div class="label">${c} — Appt Conversion</div>
+      <div class="value">${cur.toFixed(1)}%</div>
+      <div class="sub">${ptype === 'week' ? lastDataP.replace('2026_','CW') : (lastDataP === '2026_05' ? 'May 2026' : 'Jun 2026')}</div>
+      ${d != null ? `<div class="delta ${cls}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(1)} pp vs prev</div>` : ''}
+    </div>`;
+  });
+  container.innerHTML = html || '<div style="color:#94a3b8;font-size:13px;padding:12px 0">No data for selected period.</div>';
 }
 
 function buildP1InsightCards(ptype, period, compMode, euMode, euSRcur, euSRprev) {
@@ -5055,9 +6374,14 @@ function renderP2() {
     if (allNull(euData)) showChartEmpty(canvasId, 'No data available for this period');
     else hideChartEmpty(canvasId);
 
+    const p2DeltaData = periods.map(p => {
+      const m = countryMetrics(ptype, p, country, euMode);
+      return (m && m[metricKey] != null) ? +(m[metricKey]*100).toFixed(2) : null;
+    });
+
     destroyChart(canvasId);
     CHARTS[canvasId] = new Chart(document.getElementById(canvasId), {
-      type: 'line', plugins: [ChartDataLabels],
+      type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin(canvasId, p2DeltaData)],
       data: { labels: periods, datasets },
       options: {
         responsive: true, maintainAspectRatio: true,
@@ -5759,9 +7083,10 @@ function rankAsc(vals) {
 // ========== PAGE 4 ==========
 let p4PctMode = false;
 let P4_SELECTED_BUCKET = null; // index into TIMING_KEYS; null = no segment highlighted
-let P4_SHOW_EU_AVG = true;    // whether EU Avg line is shown on the SR trend chart
-let SHOW_APPTS = false;        // toggle appointment volume bars
+let P4_SHOW_EU_AVG = false;   // whether EU Avg line is shown on the SR trend chart
+let SHOW_APPTS = false;        // appointment volume bars off by default
 let SHOW_PURCHASES = false;    // toggle purchase volume bars
+let VOL_ONLY_MODE = false;     // when true: hide SR lines, show both appt+purchase bars + delta trend
 let SHOW_BC_ATTEMPTED = false; // toggle % BC Tasks Attempted line on P1/P2 trend charts
 let SHOW_P3_EU_AVG = false;   // toggle EU Avg line on the P3 BC trend chart
 let P3_TASK_TYPE = 'BC';      // currently selected task type in Customer Services Task tab
@@ -6027,6 +7352,9 @@ function renderP4() {
     };
   });
   const p4SrDatasets = P4_SHOW_EU_AVG ? [p4EuDataset, ...p4CtyDatasets] : [...p4CtyDatasets];
+  const p4PrimaryDeltaData = isEU
+    ? euSRData4
+    : periods.map(p => { const m = countryMetrics(ptype, p, country, euMode); return (m && m.sr != null) ? +(m.sr*100).toFixed(2) : null; });
   // Holiday footer: show selected country's holidays when a country is active, or all when EU mode
   const p4HolidayCountry = isEU ? 'EU' : country;
   const fmtAppt4 = v => v == null ? '' : v >= 1000 ? (v/1000).toFixed(1)+'k' : String(v);
@@ -6098,7 +7426,7 @@ function renderP4() {
 
   destroyChart('p4_sr_chart');
   CHARTS['p4_sr_chart'] = new Chart(document.getElementById('p4_sr_chart'), {
-    type: 'line', plugins: [ChartDataLabels],
+    type: 'line', plugins: [ChartDataLabels, makeDeltaPlugin('p4_sr_chart', p4PrimaryDeltaData)],
     data: { labels: periods, datasets: [...p4ApptDatasets, ...p4PurchaseDatasets, ...p4SrDatasets] },
     options: {
       responsive: true, maintainAspectRatio: true,
@@ -6710,8 +8038,6 @@ function onPtypeChange(page) {
   if (page==='p1') { renderP1(); }  // P1 always uses latest period, no select to update
   else if (page==='p3') { populatePeriodSelect('p3_period', ptype, true); renderP3(); }
   else if (page==='p4') { populatePeriodSelect('p4_period', ptype, true); renderP4(); }
-  else if (page==='p5') { populatePeriodSelect('p5_period', ptype, true); renderP5(); }
-  else if (page==='p2') { renderP2(); }
 }
 
 function updateGapBanner() {
@@ -6734,9 +8060,16 @@ function updateFilterBarTop() {
 document.addEventListener('DOMContentLoaded', () => {
   initSelects();
   buildDataStatus();
+  // Always start in EU / All-countries view regardless of any prior state
+  P1_IS_ALL = true;
+  P1_SELECTED = new Set();
   updateCountryBarStyles();
+  updateWindowBtnStyles();
   renderP1();
   requestAnimationFrame(updateFilterBarTop);
+  // Auto-generate AI analysis on load after a short delay so charts render first
+  document.getElementById('p1_ai_analysis').innerHTML =
+    '<p style="color:#94a3b8;font-size:12.5px;margin:0">Click <strong>✨ Generate with AI</strong> to analyse the current view.</p>';
   window.addEventListener('resize', updateFilterBarTop);
   updateGapBanner();
   // Render emoji flags as images (cross-platform — flag emojis are unsupported on Windows natively)
@@ -6836,6 +8169,73 @@ document.addEventListener('DOMContentLoaded', () => {
 <div id="p7" class="page">
   <div style="max-width:860px">
     <div class="section-title" style="margin-bottom:16px">Dashboard Changelog</div>
+
+    <!-- DATA UPDATE ENTRIES — add a new cl-data-block each time data is refreshed -->
+    <div class="cl-data-block">
+      <div class="cl-version-header">
+        <span class="cl-version-title" style="font-size:14px;font-weight:700;color:#92400e">Data Update — 2026-06-09</span>
+        <span class="cl-version-date">Mateo</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Performance metrics</strong> (Show Rate, Done Rate, Cancellation) — weekly: CW18–CW23; monthly: Jan–Jun 2026 (Jun partial, CW23 only). Source: Tableau BC Task Overview</li>
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Branch Utilisation</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Conversion</strong> — weekly: CW18–CW24 (CW24 WTD/partial). Source: Tableau Purchasing Report 2.1, Cockpit</li>
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Appointment Cancellation</strong> — weekly: CW18–CW23; monthly: Jan–Jun 2026. Source: Tableau</li>
+      </ul>
+    </div>
+
+    <div class="cl-version">
+      <div class="cl-version-header">
+        <span class="cl-version-title">v18 — Executive Overview Redesign: 6-Quadrant Layout + AI Analysis</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-new">NEW</span> AI Analysis panel in Executive Overview (top-left quadrant) — summarises key show rate drivers: lead cohort shift, BC task completion gap by country, branch availability, and cancellation timing risk</li>
+        <li><span class="cl-tag cl-tag-new">NEW</span> Per-country Attempted dashed lines added to % BC Tasks Done &amp; Attempted chart — visible when a single country is selected; sourced from <code>BC_ATTEMPTED_RATE_BY_COUNTRY</code> (monthly, mapped to weeks)</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Executive Overview reorganised into 3 rows × 2 columns: (1) AI Analysis + Show Rate, (2) Lead Share + Branch Utilisation, (3) BC Tasks Done + Cancelled Appointments</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Booking Confirmation Task Volume chart removed from Executive Overview</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> All p1 charts set to aspectRatio 2.5 for compact display — all 6 panels visible without scrolling</li>
+      </ul>
+    </div>
+
+    <div class="cl-version">
+      <div class="cl-version-header">
+        <span class="cl-version-title">v17 — Lead Share by Cohort Chart</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-new">NEW</span> Lead Share by Cohort stacked bar chart added to Executive Overview — placed next to BC Task Volume chart; shows breakdown across 7 cohorts (Dealer Now, Private Now, Dealer 4W, Private 4W, Dealer 3M, Private 3M, Not Planned)</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Delta badges now fall back to EU aggregate data when multiple countries or all-countries mode is selected — badges were previously hidden in those modes</li>
+      </ul>
+    </div>
+
+    <div class="cl-data-block">
+      <div class="cl-version-header">
+        <span class="cl-version-title">DATA UPDATE — Lead Share by Cohort</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-data">DATA</span> <strong>Lead Share by Cohort</strong> — weekly: CW06–CW23 (EU aggregate); monthly: Feb–Jun 2026 (Jan excluded — no data). Source: Tableau CJ Dashboard · Lead Share By view</li>
+      </ul>
+    </div>
+
+    <div class="cl-version">
+      <div class="cl-version-header">
+        <span class="cl-version-title">v16 — Global Window Filter, Delta Badges &amp; UX Refinements</span>
+        <span class="cl-version-date">2026-06-09 · Agent1</span>
+      </div>
+      <ul class="cl-items">
+        <li><span class="cl-tag cl-tag-new">NEW</span> Global window filter (Last 4 / 6 / 8 / 10 / 12 / All) added to the top bar — controls the x-axis window across every chart simultaneously; default is last 6 periods</li>
+        <li><span class="cl-tag cl-tag-new">NEW</span> Dynamic "Last N weeks / months" label updates alongside the active window selection</li>
+        <li><span class="cl-tag cl-tag-new">NEW</span> Period-over-period delta badges (▲/▼) on all trend charts — displayed in % aligned to each period column</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Delta badges shown only when exactly 1 country is selected; hidden automatically in EU/all mode or when 2+ countries are selected (reduces visual clutter)</li>
+        <li><span class="cl-tag cl-tag-fix">FIX</span> All charts now share the same x-axis via <code>getPeriods()</code> — Branch Utilisation chart x-axis now aligns with Show Rate; periods before CW18 render as empty gaps instead of 0%</li>
+        <li><span class="cl-tag cl-tag-fix">FIX</span> # Appointments y2 axis auto-scales independently per chart — removed cross-chart y2 sync that was inflating the scale</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Priority Actions tab removed</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Booking Confirmation Task Volume chart anchored to the left 50% column; right slot reserved for a future chart</li>
+        <li><span class="cl-tag cl-tag-change">CHANGE</span> Chart title font size increased to 15 px for better readability</li>
+      </ul>
+    </div>
 
     <div class="cl-version">
       <div class="cl-version-header">
@@ -7056,6 +8456,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   </div>
 </div>
+
+<div id="p8" class="page">
+  <div class="section-title" style="margin-bottom:16px">Branch Operations</div>
+
+  <!-- Branch Utilisation trend chart -->
+  <div class="chart-box" style="margin-bottom:16px">
+    <h3>Branch Utilisation — Trend per Market</h3>
+    <canvas id="p8_util_chart"></canvas>
+    <p style="font-size:11px;color:#94a3b8;margin-top:6px;margin-bottom:0">Data available from CW18 (May 2026) — earlier periods shown as empty. Source: Tableau Purchasing Report 2.1.</p>
+  </div>
+</div>
+
 
 
 </div><!-- /section-sr -->
