@@ -6406,15 +6406,17 @@ function getPwWeek() {
   return s ? s.value : '';
 }
 
-function onPwCountryChange() {
-  updatePwFilters();
-  renderWeatherTab();
+// Use global country bar — same as all other tabs
+function getPwCountries() {
+  if (GLOBAL_COUNTRY_SET.size === 0) return COUNTRIES;
+  return [...GLOBAL_COUNTRY_SET].filter(c => COUNTRIES.includes(c));
 }
 
 function updatePwFilters() {
-  const c = (document.getElementById('pw_country')||{value:'EU'}).value;
+  const ctries = getPwCountries();
+  const singleCountry = ctries.length === 1;
+  const c = singleCountry ? ctries[0] : null;
   const isWeekly = GLOBAL_PTYPE === 'week';
-  const singleCountry = c !== 'EU';
 
   // Toggle month vs week selector
   const monthWrap = document.getElementById('pw_month_wrap');
@@ -6422,19 +6424,18 @@ function updatePwFilters() {
   if (monthWrap) monthWrap.style.display = (singleCountry && isWeekly) ? 'none' : '';
   if (weekWrap)  weekWrap.style.display  = (singleCountry && isWeekly) ? '' : 'none';
 
-  // Region dropdown
+  // Region dropdown — only shown when exactly one country selected
   const regWrap = document.getElementById('pw_region_wrap');
   const regSel  = document.getElementById('pw_region');
-  if (!regWrap||!regSel) return;
-  if (!singleCountry||!WEATHER_REGIONS[c]) { regWrap.style.display='none'; regSel.value=''; return; }
+  if (!regWrap || !regSel) return;
+  if (!c || !WEATHER_REGIONS[c]) { regWrap.style.display='none'; if(regSel)regSel.value=''; return; }
   const prev = regSel.value;
-  regWrap.style.display='';
+  regWrap.style.display = '';
   regSel.innerHTML = '<option value="">All regions</option>' +
     WEATHER_REGIONS[c].map(r=>`<option value="${r.key}">${r.city} (${r.region})</option>`).join('');
   if (prev && [...regSel.options].some(o=>o.value===prev)) regSel.value = prev;
 }
 
-// Keep old name as alias for backward compat calls inside renderWeatherTab
 function updatePwRegionDropdown() { updatePwFilters(); }
 
 // Helper: get weekly extreme days for a city key across all 2026 weeks
@@ -6549,7 +6550,7 @@ function renderPwMainChart() {
     bgColors = regions.map(r=>{
       const d=WEATHER_WEEKLY[r.key]&&WEATHER_WEEKLY[r.key][wk];
       const s=d?d[1]+d[2]+d[3]:0;
-      return s>=5?'#ef444455':s>=2?'#f59e0b44':COUNTRY_COLORS[c]+'99';
+      return s>=5?'#ef4444aa':s>=2?'#f59e0baa':COUNTRY_COLORS[c]+'dd';
     });
     // SR is country-level (same for all regions); show as constant line
     const srRow = RAW_DATA.find(r=>r.country===c&&r.period_type==='week'&&r.period_name===wk);
@@ -6572,7 +6573,7 @@ function renderPwMainChart() {
       weeklyStats = cityKeys.length ? pwAvgWeeklyExtreme(cityKeys) : PW_ALL_WEEKS.map(()=>({heat:0,cold:0,rain:0,tmax:null}));
     }
     extremeData = weeklyStats.map(d=>d.heat+d.cold+d.rain);
-    bgColors = extremeData.map(s=>s>=5?'#ef444455':s>=2?'#f59e0b44':COUNTRY_COLORS[c]+'66');
+    bgColors = extremeData.map(s=>s>=5?'#ef4444aa':s>=2?'#f59e0baa':COUNTRY_COLORS[c]+'cc');
 
     const cityLabel = regionKey ? ((WEATHER_REGIONS[c]||[]).find(r=>r.key===regionKey)||{city:regionKey}).city+', ' : '';
     document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${cityLabel}${c} · All weeks 2026`;
@@ -6582,7 +6583,7 @@ function renderPwMainChart() {
     labels = PW_MONTH_LABELS;
     srData = PW_MONTHS.map(mo=>pwGetSR(c, mo));
     extremeData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;});
-    bgColors = extremeData.map(s=>s>=15?'#ef444455':s>=5?'#f59e0b44':COUNTRY_COLORS[c]+'66');
+    bgColors = extremeData.map(s=>s>=15?'#ef4444aa':s>=5?'#f59e0baa':COUNTRY_COLORS[c]+'cc');
     document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${c} · Monthly trend`;
 
   } else {
@@ -6590,7 +6591,7 @@ function renderPwMainChart() {
     labels = ctries;
     srData = ctries.map(cc=>pwGetSR(cc, m));
     extremeData = ctries.map(cc=>{const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;});
-    bgColors = ctries.map(cc=>COUNTRY_COLORS[cc]+'99');
+    bgColors = ctries.map(cc=>COUNTRY_COLORS[cc]+'dd');
     document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${mLabel} · All countries`;
   }
 
@@ -9231,19 +9232,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <option value="2026_22">CW22</option><option value="2026_23">CW23</option><option value="2026_24">CW24</option>
       </select>
     </span>
-    <label>Country:</label>
-    <select id="pw_country" onchange="onPwCountryChange()">
-      <option value="EU">All Countries (EU)</option>
-      <option value="AT">Austria (AT)</option>
-      <option value="BE">Belgium (BE)</option>
-      <option value="DE">Germany (DE)</option>
-      <option value="ES">Spain (ES)</option>
-      <option value="FR">France (FR)</option>
-      <option value="IT">Italy (IT)</option>
-      <option value="NL">Netherlands (NL)</option>
-      <option value="PT">Portugal (PT)</option>
-      <option value="SE">Sweden (SE)</option>
-    </select>
     <span id="pw_region_wrap" style="display:none">
       <label>Region:</label>
       <select id="pw_region" onchange="renderWeatherTab()">
