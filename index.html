@@ -2364,6 +2364,57 @@ function setGlobalPtype(v) {
   populatePeriodSelect('p4_period', v, true);
   updateWindowBtnStyles();
   rerenderActivePage();
+  updateWeatherBadges();
+}
+
+// Adds weather condition badges (🌡️🥶🌧️) to country buttons for the latest period
+function updateWeatherBadges() {
+  if (typeof WEATHER_MONTHLY === 'undefined' || typeof COUNTRIES === 'undefined') return;
+  const isWeekly = GLOBAL_PTYPE === 'week';
+  // Latest period keys
+  const latestWeek  = (typeof PW_ALL_WEEKS !== 'undefined') ? PW_ALL_WEEKS[PW_ALL_WEEKS.length - 1] : '2026_24';
+  const latestMonth = '2026_06'; // most recent month in WEATHER_MONTHLY
+
+  COUNTRIES.forEach(c => {
+    const btn = document.getElementById('gcb_' + c);
+    if (!btn) return;
+    // Remove stale badge
+    btn.querySelectorAll('.wx-badge').forEach(el => el.remove());
+
+    let heat = 0, cold = 0, rain = 0;
+    if (isWeekly && typeof WEATHER_WEEKLY !== 'undefined' && typeof WEATHER_REGIONS !== 'undefined' && WEATHER_REGIONS[c]) {
+      const keys = WEATHER_REGIONS[c].map(r => r.key).filter(k => WEATHER_WEEKLY[k] && WEATHER_WEEKLY[k][latestWeek]);
+      if (keys.length) {
+        heat = keys.reduce((s,k) => s + (WEATHER_WEEKLY[k][latestWeek][1]||0), 0) / keys.length;
+        cold = keys.reduce((s,k) => s + (WEATHER_WEEKLY[k][latestWeek][2]||0), 0) / keys.length;
+        rain = keys.reduce((s,k) => s + (WEATHER_WEEKLY[k][latestWeek][3]||0), 0) / keys.length;
+      }
+    } else {
+      const wd = WEATHER_MONTHLY[c] && WEATHER_MONTHLY[c][latestMonth];
+      if (wd) { heat = wd.days_extreme_heat; cold = wd.days_extreme_cold; rain = wd.days_heavy_rain; }
+    }
+
+    let icon = '', tip = '';
+    if      (heat >= 1)  { icon = '🔥'; tip = `Extreme heat — ${Math.ceil(heat)} day(s) over 35°C in the latest ${isWeekly?'week':'month'}`; }
+    else if (cold >= 1)  { icon = '❄️'; tip = `Extreme cold — ${Math.ceil(cold)} day(s) below 0°C in the latest ${isWeekly?'week':'month'}`; }
+    else if (rain >= 0.5){ icon = '🌧️'; tip = `Heavy rain — ${Math.ceil(rain)} day(s) over 20mm in the latest ${isWeekly?'week':'month'}`; }
+
+    if (icon) {
+      const span = document.createElement('span');
+      span.className = 'wx-badge';
+      span.title = tip;
+      span.style.cssText = 'font-size:12px;margin-left:2px;vertical-align:middle;line-height:1;cursor:default';
+      span.textContent = icon;
+      btn.appendChild(span);
+    }
+  });
+
+  // Re-parse emoji badges as SVG images for cross-platform rendering
+  if (typeof twemoji !== 'undefined') {
+    document.querySelectorAll('.wx-badge').forEach(el => {
+      twemoji.parse(el, {folder:'svg', ext:'.svg'});
+    });
+  }
 }
 
 function setGlobalWindow(n) {
@@ -8855,6 +8906,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof twemoji !== 'undefined') {
     twemoji.parse(document.getElementById('global_country_bar'), {folder: 'svg', ext: '.svg'});
   }
+  // Add weather badges after flag images are rendered
+  setTimeout(updateWeatherBadges, 100);
 
   // Fetch own source so saveUpdatedHTML() can work without a server
   fetch(location.href)
