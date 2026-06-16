@@ -6401,23 +6401,41 @@ function getPwRegionKey() {
   return s ? s.value : '';
 }
 
+function getPwWeek() {
+  const s = document.getElementById('pw_week');
+  return s ? s.value : '';
+}
+
 function onPwCountryChange() {
-  updatePwRegionDropdown();
+  updatePwFilters();
   renderWeatherTab();
 }
 
-function updatePwRegionDropdown() {
+function updatePwFilters() {
   const c = (document.getElementById('pw_country')||{value:'EU'}).value;
-  const wrap = document.getElementById('pw_region_wrap');
-  const sel = document.getElementById('pw_region');
-  if (!wrap||!sel) return;
-  if (c==='EU'||!WEATHER_REGIONS[c]) { wrap.style.display='none'; sel.value=''; return; }
-  const prev = sel.value; // preserve current selection
-  wrap.style.display='';
-  sel.innerHTML = '<option value="">All regions</option>' +
+  const isWeekly = GLOBAL_PTYPE === 'week';
+  const singleCountry = c !== 'EU';
+
+  // Toggle month vs week selector
+  const monthWrap = document.getElementById('pw_month_wrap');
+  const weekWrap  = document.getElementById('pw_week_wrap');
+  if (monthWrap) monthWrap.style.display = (singleCountry && isWeekly) ? 'none' : '';
+  if (weekWrap)  weekWrap.style.display  = (singleCountry && isWeekly) ? '' : 'none';
+
+  // Region dropdown
+  const regWrap = document.getElementById('pw_region_wrap');
+  const regSel  = document.getElementById('pw_region');
+  if (!regWrap||!regSel) return;
+  if (!singleCountry||!WEATHER_REGIONS[c]) { regWrap.style.display='none'; regSel.value=''; return; }
+  const prev = regSel.value;
+  regWrap.style.display='';
+  regSel.innerHTML = '<option value="">All regions</option>' +
     WEATHER_REGIONS[c].map(r=>`<option value="${r.key}">${r.city} (${r.region})</option>`).join('');
-  if (prev && [...sel.options].some(o=>o.value===prev)) sel.value = prev;
+  if (prev && [...regSel.options].some(o=>o.value===prev)) regSel.value = prev;
 }
+
+// Keep old name as alias for backward compat calls inside renderWeatherTab
+function updatePwRegionDropdown() { updatePwFilters(); }
 
 // Helper: get weekly extreme days for a city key across all 2026 weeks
 function pwWeeklyExtreme(cityKey) {
@@ -6468,23 +6486,42 @@ function renderWeatherTab() {
 function renderPwKPIs() {
   const ctries = getPwCountries();
   const m = getPwMonth();
-  let totalHeat=0, totalCold=0, totalRain=0, temps=[], srArr=[];
-  ctries.forEach(c => {
-    const wd = WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
-    if (wd) { totalHeat+=wd.days_extreme_heat; totalCold+=wd.days_extreme_cold; totalRain+=wd.days_heavy_rain; if(wd.avg_tmax!==null) temps.push(wd.avg_tmax); }
-    const sr = pwGetSR(c, m);
-    if (sr !== null) srArr.push(sr);
-  });
+  const wk = getPwWeek();
+  const singleCountry = ctries.length === 1;
+  const isWeekly = GLOBAL_PTYPE === 'week';
+  const regionKey = getPwRegionKey();
+  let totalHeat=0, totalCold=0, totalRain=0, temps=[], srArr=[], periodLabel='';
+
+  if (singleCountry && isWeekly && wk) {
+    // Specific week + country: pull from weekly data
+    periodLabel = wk.replace('2026_','CW');
+    const c = ctries[0];
+    const cityKeys = regionKey ? [regionKey] : (WEATHER_REGIONS[c]||[]).map(r=>r.key).filter(k=>WEATHER_WEEKLY[k]);
+    cityKeys.forEach(k=>{
+      const d=WEATHER_WEEKLY[k]&&WEATHER_WEEKLY[k][wk];
+      if(d){totalHeat+=d[1];totalCold+=d[2];totalRain+=d[3];if(d[0]!==null)temps.push(d[0]);}
+    });
+    const sr = RAW_DATA.find(r=>r.country===c&&r.period_type==='week'&&r.period_name===wk);
+    if(sr) srArr.push(+sr.show_rate*100);
+  } else {
+    periodLabel = singleCountry&&isWeekly ? 'All weeks 2026' : (PW_MONTH_LABELS[PW_MONTHS.indexOf(m)]||m);
+    ctries.forEach(c => {
+      const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
+      if(wd){totalHeat+=wd.days_extreme_heat;totalCold+=wd.days_extreme_cold;totalRain+=wd.days_heavy_rain;if(wd.avg_tmax!==null)temps.push(wd.avg_tmax);}
+      const sr=pwGetSR(c,m);
+      if(sr!==null) srArr.push(sr);
+    });
+  }
+
   const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '-';
-  const avgSR = srArr.length ? (srArr.reduce((a,b)=>a+b,0)/srArr.length).toFixed(1) : '-';
-  const mLabel = PW_MONTH_LABELS[PW_MONTHS.indexOf(m)] || m;
-  const ptLabel = GLOBAL_PTYPE==='week' ? 'Weekly avg' : 'Monthly';
+  const avgSR   = srArr.length ? (srArr.reduce((a,b)=>a+b,0)/srArr.length).toFixed(1) : '-';
+  const ptLabel = isWeekly ? 'Weekly' : 'Monthly';
   document.getElementById('pw_kpis').innerHTML = `
-    <div class="kpi-card"><div class="label">Avg Max Temp</div><div class="value">${avgTemp}°C</div><div class="sub">${mLabel}</div></div>
+    <div class="kpi-card"><div class="label">Avg Max Temp</div><div class="value">${avgTemp}°C</div><div class="sub">${periodLabel}</div></div>
     <div class="kpi-card"><div class="label">Extreme Heat Days</div><div class="value" style="color:#dc2626">${totalHeat}</div><div class="sub">tmax &gt; 35°C</div></div>
     <div class="kpi-card"><div class="label">Extreme Cold Days</div><div class="value" style="color:#2563eb">${totalCold}</div><div class="sub">tmin &lt; 0°C</div></div>
     <div class="kpi-card"><div class="label">Heavy Rain Days</div><div class="value" style="color:#0891b2">${totalRain}</div><div class="sub">&gt; 20mm precip</div></div>
-    ${avgSR !== '-' ? '<div class="kpi-card kpi-card-primary"><div class="label">Avg Show Rate</div><div class="value">'+avgSR+'%</div><div class="sub">'+ptLabel+'</div></div>' : ''}
+    ${avgSR !== '-' ? '<div class="kpi-card kpi-card-primary"><div class="label">Show Rate</div><div class="value">'+avgSR+'%</div><div class="sub">'+ptLabel+'</div></div>' : ''}
   `;
 }
 
@@ -6493,6 +6530,7 @@ function renderPwMainChart() {
   const ctx = document.getElementById('pw_main_chart').getContext('2d');
   const ctries = getPwCountries();
   const m = getPwMonth();
+  const wk = getPwWeek();
   const c = ctries[0];
   const singleCountry = ctries.length === 1;
   const isWeekly = GLOBAL_PTYPE === 'week';
@@ -6501,8 +6539,27 @@ function renderPwMainChart() {
 
   let labels, srData, extremeData, bgColors, xIsWeeks = false;
 
-  if (singleCountry && isWeekly) {
-    // ── Weekly trend for one country (optionally one region/city) ──
+  if (singleCountry && isWeekly && wk) {
+    // ── Specific week: compare all regions of this country ──
+    const regions = regionKey
+      ? [(WEATHER_REGIONS[c]||[]).find(r=>r.key===regionKey)||{key:regionKey,city:regionKey,region:''}]
+      : (WEATHER_REGIONS[c]||[]);
+    labels = regions.map(r=>`${r.city}\n(${r.region})`);
+    extremeData = regions.map(r=>{const d=WEATHER_WEEKLY[r.key]&&WEATHER_WEEKLY[r.key][wk];return d?d[1]+d[2]+d[3]:0;});
+    bgColors = regions.map(r=>{
+      const d=WEATHER_WEEKLY[r.key]&&WEATHER_WEEKLY[r.key][wk];
+      const s=d?d[1]+d[2]+d[3]:0;
+      return s>=5?'#ef444455':s>=2?'#f59e0b44':COUNTRY_COLORS[c]+'99';
+    });
+    // SR is country-level (same for all regions); show as constant line
+    const srRow = RAW_DATA.find(r=>r.country===c&&r.period_type==='week'&&r.period_name===wk);
+    const srVal = srRow ? +srRow.show_rate*100 : null;
+    srData = regions.map(()=>srVal);
+    document.getElementById('pw_main_title').textContent =
+      `Show Rate & Extreme Weather — ${c} · ${wk.replace('2026_','CW')} by region`;
+
+  } else if (singleCountry && isWeekly) {
+    // ── All weeks trend for one country (optionally one region/city) ──
     xIsWeeks = true;
     labels = PW_ALL_WEEKS.map(w=>'CW'+parseInt(w.split('_')[1]));
     srData = PW_ALL_WEEKS.map(w=>{const r=RAW_DATA.find(x=>x.country===c&&x.period_type==='week'&&x.period_name===w);return r?+r.show_rate*100:null;});
@@ -6518,7 +6575,7 @@ function renderPwMainChart() {
     bgColors = extremeData.map(s=>s>=5?'#ef444455':s>=2?'#f59e0b44':COUNTRY_COLORS[c]+'66');
 
     const cityLabel = regionKey ? ((WEATHER_REGIONS[c]||[]).find(r=>r.key===regionKey)||{city:regionKey}).city+', ' : '';
-    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${cityLabel}${c} · Weekly (CW01–CW24 2026)`;
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${cityLabel}${c} · All weeks 2026`;
 
   } else if (singleCountry) {
     // ── Monthly trend for one country ──
@@ -6575,14 +6632,24 @@ function renderPwExtremeChart() {
   const ctx = document.getElementById('pw_extreme_chart').getContext('2d');
   const ctries = getPwCountries();
   const m = getPwMonth();
+  const wk = getPwWeek();
   const c = ctries[0];
   const singleCountry = ctries.length === 1;
   const isWeekly = GLOBAL_PTYPE === 'week';
   const regionKey = getPwRegionKey();
   let labels, heatData, coldData, rainData;
 
-  if (singleCountry && isWeekly) {
-    // Weekly breakdown for country/region
+  if (singleCountry && isWeekly && wk) {
+    // Specific week: one bar per region
+    const regions = regionKey
+      ? [(WEATHER_REGIONS[c]||[]).find(r=>r.key===regionKey)||{key:regionKey,city:regionKey,region:''}]
+      : (WEATHER_REGIONS[c]||[]);
+    labels = regions.map(r=>r.city);
+    heatData = regions.map(r=>{const d=WEATHER_WEEKLY[r.key]&&WEATHER_WEEKLY[r.key][wk];return d?d[1]:0;});
+    coldData = regions.map(r=>{const d=WEATHER_WEEKLY[r.key]&&WEATHER_WEEKLY[r.key][wk];return d?d[2]:0;});
+    rainData = regions.map(r=>{const d=WEATHER_WEEKLY[r.key]&&WEATHER_WEEKLY[r.key][wk];return d?d[3]:0;});
+  } else if (singleCountry && isWeekly) {
+    // All weeks trend for country/region
     labels = PW_ALL_WEEKS.map(w=>'CW'+parseInt(w.split('_')[1]));
     let stats;
     if (regionKey && WEATHER_WEEKLY[regionKey]) {
@@ -6665,6 +6732,7 @@ function renderPwScatterChart() {
 function renderPwCountryCards() {
   const ctries = getPwCountries();
   const m = getPwMonth();
+  const wk = getPwWeek();
   const singleCountry = ctries.length === 1;
   const isWeekly = GLOBAL_PTYPE === 'week';
   const c = ctries[0];
@@ -6673,17 +6741,21 @@ function renderPwCountryCards() {
   if (singleCountry && WEATHER_REGIONS[c]) {
     // Show regional breakdown for this country
     const regions = WEATHER_REGIONS[c];
-    const sr = pwGetSR(c, m); // country-level show rate (not per-region)
-    const latestWeek = PW_ALL_WEEKS[PW_ALL_WEEKS.length - 1];
+    const srRow = isWeekly && wk ? RAW_DATA.find(r=>r.country===c&&r.period_type==='week'&&r.period_name===wk) : null;
+    const srVal = srRow ? (+srRow.show_rate*100).toFixed(1)+'%' : (pwGetSR(c,m)!==null?pwGetSR(c,m).toFixed(1)+'%':'-');
 
     html = regions.map(r => {
       let heat=0, cold=0, rain=0, tmax=null;
-      if (isWeekly && WEATHER_WEEKLY[r.key]) {
-        // Use latest available week
-        const wk = [...PW_ALL_WEEKS].reverse().find(w=>WEATHER_WEEKLY[r.key][w]);
-        if (wk) { const d=WEATHER_WEEKLY[r.key][wk]; tmax=d[0]; heat=d[1]; cold=d[2]; rain=d[3]; }
+      if (isWeekly && wk && WEATHER_WEEKLY[r.key]) {
+        // Specific week selected
+        const d=WEATHER_WEEKLY[r.key][wk];
+        if(d){tmax=d[0];heat=d[1];cold=d[2];rain=d[3];}
+      } else if (isWeekly && WEATHER_WEEKLY[r.key]) {
+        // All weeks: use latest available week
+        const latestWk = [...PW_ALL_WEEKS].reverse().find(w=>WEATHER_WEEKLY[r.key][w]);
+        if (latestWk) { const d=WEATHER_WEEKLY[r.key][latestWk]; tmax=d[0]; heat=d[1]; cold=d[2]; rain=d[3]; }
       } else {
-        // Use selected month from WEATHER_MONTHLY (only capital has monthly data; approximate with weekly sum)
+        // Monthly: approximate from weekly data for the selected month
         const wks = PW_ALL_WEEKS.filter(w=>pwWeekToMonth(w)===m);
         if (WEATHER_WEEKLY[r.key]) {
           wks.forEach(w=>{ const d=WEATHER_WEEKLY[r.key][w]; if(d){heat+=d[1];cold+=d[2];rain+=d[3];if(d[0]!==null&&tmax===null)tmax=d[0];} });
@@ -6697,7 +6769,7 @@ function renderPwCountryCards() {
         <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">${r.region}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           ${tmax!==null?`<div><div style="font-size:11px;color:#64748b">Temp</div><div style="font-weight:700">${tmax}°C</div></div>`:''}
-          ${sr!==null?`<div><div style="font-size:11px;color:#64748b">Show Rate</div><div style="font-weight:700">${sr.toFixed(1)}%</div></div>`:''}
+          <div><div style="font-size:11px;color:#64748b">Show Rate</div><div style="font-weight:700">${srVal}</div></div>
           ${heat>0?`<div><div style="font-size:11px;color:#dc2626">Heat</div><div style="font-weight:700;color:#dc2626">${heat}d</div></div>`:''}
           ${cold>0?`<div><div style="font-size:11px;color:#2563eb">Cold</div><div style="font-weight:700;color:#2563eb">${cold}d</div></div>`:''}
           ${rain>0?`<div><div style="font-size:11px;color:#0891b2">Rain</div><div style="font-weight:700;color:#0891b2">${rain}d</div></div>`:''}
@@ -9116,31 +9188,49 @@ document.addEventListener('DOMContentLoaded', () => {
     <span class="nav-ptype-toggle" id="pw_ptype_toggle">
       <input type="radio" name="pw_ptype" id="pw_pt_week" value="week" onchange="setGlobalPtype('week')"><label for="pw_pt_week">Weekly</label><input type="radio" name="pw_ptype" id="pw_pt_month" value="month" onchange="setGlobalPtype('month')"><label for="pw_pt_month">Monthly</label>
     </span>
-    <label>Month:</label>
-    <select id="pw_month" onchange="renderWeatherTab()">
-      <optgroup label="2025">
-        <option value="2025_01">Jan 2025</option>
-        <option value="2025_02">Feb 2025</option>
-        <option value="2025_03">Mar 2025</option>
-        <option value="2025_04">Apr 2025</option>
-        <option value="2025_05">May 2025</option>
-        <option value="2025_06">Jun 2025</option>
-        <option value="2025_07">Jul 2025</option>
-        <option value="2025_08">Aug 2025</option>
-        <option value="2025_09">Sep 2025</option>
-        <option value="2025_10">Oct 2025</option>
-        <option value="2025_11">Nov 2025</option>
-        <option value="2025_12">Dec 2025</option>
-      </optgroup>
-      <optgroup label="2026">
-        <option value="2026_01">Jan 2026</option>
-        <option value="2026_02">Feb 2026</option>
-        <option value="2026_03">Mar 2026</option>
-        <option value="2026_04">Apr 2026</option>
-        <option value="2026_05" selected>May 2026</option>
-        <option value="2026_06">Jun 2026</option>
-      </optgroup>
-    </select>
+    <!-- Month selector: shown in monthly mode OR when EU is selected -->
+    <span id="pw_month_wrap">
+      <label>Month:</label>
+      <select id="pw_month" onchange="renderWeatherTab()">
+        <optgroup label="2025">
+          <option value="2025_01">Jan 2025</option>
+          <option value="2025_02">Feb 2025</option>
+          <option value="2025_03">Mar 2025</option>
+          <option value="2025_04">Apr 2025</option>
+          <option value="2025_05">May 2025</option>
+          <option value="2025_06">Jun 2025</option>
+          <option value="2025_07">Jul 2025</option>
+          <option value="2025_08">Aug 2025</option>
+          <option value="2025_09">Sep 2025</option>
+          <option value="2025_10">Oct 2025</option>
+          <option value="2025_11">Nov 2025</option>
+          <option value="2025_12">Dec 2025</option>
+        </optgroup>
+        <optgroup label="2026">
+          <option value="2026_01">Jan 2026</option>
+          <option value="2026_02">Feb 2026</option>
+          <option value="2026_03">Mar 2026</option>
+          <option value="2026_04">Apr 2026</option>
+          <option value="2026_05" selected>May 2026</option>
+          <option value="2026_06">Jun 2026</option>
+        </optgroup>
+      </select>
+    </span>
+    <!-- Week selector: shown in weekly mode when a specific country is selected -->
+    <span id="pw_week_wrap" style="display:none">
+      <label>Week:</label>
+      <select id="pw_week" onchange="renderWeatherTab()">
+        <option value="">All weeks (trend)</option>
+        <option value="2026_01">CW01</option><option value="2026_02">CW02</option><option value="2026_03">CW03</option>
+        <option value="2026_04">CW04</option><option value="2026_05">CW05</option><option value="2026_06">CW06</option>
+        <option value="2026_07">CW07</option><option value="2026_08">CW08</option><option value="2026_09">CW09</option>
+        <option value="2026_10">CW10</option><option value="2026_11">CW11</option><option value="2026_12">CW12</option>
+        <option value="2026_13">CW13</option><option value="2026_14">CW14</option><option value="2026_15">CW15</option>
+        <option value="2026_16">CW16</option><option value="2026_17">CW17</option><option value="2026_18">CW18</option>
+        <option value="2026_19">CW19</option><option value="2026_20">CW20</option><option value="2026_21">CW21</option>
+        <option value="2026_22">CW22</option><option value="2026_23">CW23</option><option value="2026_24">CW24</option>
+      </select>
+    </span>
     <label>Country:</label>
     <select id="pw_country" onchange="onPwCountryChange()">
       <option value="EU">All Countries (EU)</option>
