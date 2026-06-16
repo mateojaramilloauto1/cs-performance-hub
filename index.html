@@ -1848,7 +1848,7 @@ const WEATHER_FORECAST = {
   SE:{weekly:{'2026_25':[21.6, 0, 0, 0],'2026_26':[18.8, 0, 0, 1],'2026_27':[18.6, 0, 0, 0]},monthly:{'2026_07':[18.4, 0, 0, 0]}},
 };
 const PW_FORECAST_WEEKS  = ['2026_25','2026_26','2026_27'];
-const PW_FORECAST_MONTHS = ['2026_07'];
+const PW_FORECAST_MONTHS = ['2026_07','2026_08','2026_09','2026_10','2026_11','2026_12'];
 
 // Lead Share by Cohort — source: Tableau CJ Dashboard, LEAD SHARE BY view (EU aggregate, all countries)
 // Array order per period: [Dealer_Now, Private_Now, Dealer_4W, Private_4W, Dealer_3M, Private_3M, Not_Planned]
@@ -6702,23 +6702,43 @@ function renderPwMainChart() {
     document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${cityLabel}${c} · CW01–CW24 + forecast CW25–CW27`;
 
   } else if (singleCountry) {
-    // ── Monthly trend for one country + Jul 2026 forecast ──
-    const fcMonths = PW_FORECAST_MONTHS;
-    const allMonths = [...PW_MONTHS, ...fcMonths];
+    // ── Monthly trend: Jan 2025–Jun 2026 (actual) + Jul 2026 (forecast) + Aug–Dec 2026 (seasonal est.) ──
+    // Jul 2026 = 16-day Open-Meteo forecast; Aug–Dec 2026 = 2025 same-month as seasonal baseline
+    const fcActual   = ['2026_07'];                                            // 16-day forecast
+    const fcEstimate = ['2026_08','2026_09','2026_10','2026_11','2026_12'];    // seasonal estimate from 2025
+    const allMonths  = [...PW_MONTHS, ...fcActual, ...fcEstimate];
     labels = [
       ...PW_MONTH_LABELS,
-      ...fcMonths.map(m=>'Jul 26→'),
+      'Jul 26→',
+      'Aug 26~','Sep 26~','Oct 26~','Nov 26~','Dec 26~',
     ];
-    srData = allMonths.map(mo=>pwGetSR(c, mo));
-    const histMonthExtreme = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;});
-    const fcMonthExtreme = fcMonths.map(mo=>{const fd=WEATHER_FORECAST[c]&&WEATHER_FORECAST[c].monthly&&WEATHER_FORECAST[c].monthly[mo];return fd?fd[1]+fd[2]+fd[3]:0;});
-    extremeData = [...histMonthExtreme, ...fcMonthExtreme.map(()=>null)];
-    extremeForecast = [...histMonthExtreme.map(()=>null), histMonthExtreme[histMonthExtreme.length-1], ...fcMonthExtreme.slice(1)];
+    srData = allMonths.map(mo=>pwGetSR(c, mo)); // null for Aug-Dec 26
+
+    const histMonthExtreme = PW_MONTHS.map(mo=>{
+      const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];
+      return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;
+    });
+    // Jul 2026 from 16-day forecast
+    const julFc = WEATHER_FORECAST[c]&&WEATHER_FORECAST[c].monthly&&WEATHER_FORECAST[c].monthly['2026_07'];
+    const julExtreme = julFc ? julFc[1]+julFc[2]+julFc[3] : 0;
+    // Aug-Dec 2026 from 2025 same-month data
+    const estExtreme = fcEstimate.map(mo=>{
+      const key='2025_'+mo.split('_')[1];
+      const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][key];
+      return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;
+    });
+
+    extremeData = [...histMonthExtreme, ...new Array(fcActual.length+fcEstimate.length).fill(null)];
+    extremeForecast = [
+      ...histMonthExtreme.map(()=>null),
+      histMonthExtreme[histMonthExtreme.length-1], julExtreme,  // connect + Jul forecast
+      ...estExtreme,                                             // Aug-Dec seasonal estimate
+    ];
     bgColors = [
       ...histMonthExtreme.map(s=>s>=15?'#ef4444aa':s>=5?'#f59e0baa':COUNTRY_COLORS[c]+'cc'),
-      ...fcMonthExtreme.map(s=>s>=5?'#ef444455':s>=2?'#f59e0b55':COUNTRY_COLORS[c]+'44'),
+      ...[julExtreme, ...estExtreme].map(s=>s>=5?'#ef444455':s>=2?'#f59e0b55':COUNTRY_COLORS[c]+'33'),
     ];
-    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${c} · Jan 2025–Jun 2026 + forecast Jul 2026`;
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${c} · Jan 2025–Jun 2026 + Jul 26 forecast + Aug–Dec 26 seasonal est.`;
 
   } else {
     // ── Cross-country comparison for selected month ──
@@ -9425,7 +9445,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="chart-box" style="margin-bottom:16px">
     <h3 id="pw_main_title">Show Rate &amp; Extreme Weather Days</h3>
     <canvas id="pw_main_chart" style="max-height:300px"></canvas>
-    <p class="note">Bars: show rate (left axis) · Red line: total extreme weather days — heat + cold + heavy rain (right axis) · Red dots = high stress (&gt;10 days), amber = moderate (&gt;4)</p>
+    <p class="note">Bars: show rate (left axis) · Red line: extreme weather days (right axis) · Solid = historical · Dashed → = 16-day forecast · Dashed ~ = seasonal estimate from 2025 same month</p>
   </div>
 
   <!-- Row: Extreme breakdown + Scatter -->
