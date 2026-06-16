@@ -6327,9 +6327,8 @@ function renderP8() {
 }
 
 // ========== PAGE W: WEATHER IMPACT ==========
-let PW_CHART_TEMP = null, PW_CHART_PRECIP = null, PW_CHART_EXTREME = null, PW_CHART_SCATTER = null;
+let PW_CHART_MAIN = null, PW_CHART_EXTREME = null, PW_CHART_SCATTER = null;
 const PW_MONTHS = ['2025_01','2025_02','2025_03','2025_04','2025_05','2025_06','2025_07','2025_08','2025_09','2025_10','2025_11','2025_12','2026_01','2026_02','2026_03','2026_04','2026_05','2026_06'];
-const PW_MONTHS_2025 = PW_MONTHS.slice(0, 12);
 const PW_MONTH_LABELS = ['Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26'];
 
 function pwWeekToMonth(period_name) {
@@ -6347,22 +6346,26 @@ function getPwCountries() {
 }
 
 function getPwMonth() {
-  return ((document.getElementById('pw_month')||{value:'all'}).value);
+  return ((document.getElementById('pw_month')||{value:'2026_05'}).value);
 }
 
-function getPwMonths() {
-  const m = getPwMonth();
-  return m === 'all' ? PW_MONTHS : [m];
+function pwGetSR(c, m) {
+  if (GLOBAL_PTYPE === 'month') {
+    const r = RAW_DATA.find(x=>x.country===c&&x.period_type==='month'&&x.period_name===m);
+    return r ? +r.show_rate*100 : null;
+  } else {
+    const wks = RAW_DATA.filter(x=>x.country===c&&x.period_type==='week'&&pwWeekToMonth(x.period_name)===m);
+    if (!wks.length) return null;
+    return wks.reduce((s,x)=>s+(+x.show_rate),0)/wks.length*100;
+  }
 }
 
 function renderWeatherTab() {
-  // Keep in-tab Weekly/Monthly toggle in sync with global state
   const pwWeek = document.getElementById('pw_pt_week');
   const pwMonth = document.getElementById('pw_pt_month');
   if (pwWeek && pwMonth) { pwWeek.checked = GLOBAL_PTYPE==='week'; pwMonth.checked = GLOBAL_PTYPE==='month'; }
   renderPwKPIs();
-  renderPwTempChart();
-  renderPwPrecipChart();
+  renderPwMainChart();
   renderPwExtremeChart();
   renderPwScatterChart();
   renderPwCountryCards();
@@ -6371,106 +6374,108 @@ function renderWeatherTab() {
 
 function renderPwKPIs() {
   const ctries = getPwCountries();
-  const months = getPwMonths();
+  const m = getPwMonth();
   let totalHeat=0, totalCold=0, totalRain=0, temps=[], srArr=[];
   ctries.forEach(c => {
-    months.forEach(m => {
-      const wd = WEATHER_MONTHLY[c] && WEATHER_MONTHLY[c][m];
-      if (wd) { totalHeat+=wd.days_extreme_heat; totalCold+=wd.days_extreme_cold; totalRain+=wd.days_heavy_rain; temps.push(wd.avg_tmax); }
-    });
-    // show rate: use GLOBAL_PTYPE data
-    if (GLOBAL_PTYPE === 'month') {
-      months.forEach(m => {
-        const sr = RAW_DATA.find(r => r.country===c && r.period_type==='month' && r.period_name===m);
-        if (sr) srArr.push(+sr.show_rate);
-      });
-    } else {
-      RAW_DATA.filter(r => r.country===c && r.period_type==='week').forEach(r => {
-        const wMonth = pwWeekToMonth(r.period_name);
-        if (months.includes(wMonth)) srArr.push(+r.show_rate);
-      });
-    }
+    const wd = WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
+    if (wd) { totalHeat+=wd.days_extreme_heat; totalCold+=wd.days_extreme_cold; totalRain+=wd.days_heavy_rain; if(wd.avg_tmax!==null) temps.push(wd.avg_tmax); }
+    const sr = pwGetSR(c, m);
+    if (sr !== null) srArr.push(sr);
   });
   const avgTemp = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '-';
-  const avgSR = srArr.length ? (srArr.reduce((a,b)=>a+b,0)/srArr.length*100).toFixed(1) : '-';
-  const mLabel = getPwMonth()==='all' ? 'Jan 2025 – Jun 2026' : (PW_MONTH_LABELS[PW_MONTHS.indexOf(getPwMonth())] || getPwMonth());
-  const ptLabel = GLOBAL_PTYPE==='week' ? 'Weekly avg' : 'Monthly avg';
+  const avgSR = srArr.length ? (srArr.reduce((a,b)=>a+b,0)/srArr.length).toFixed(1) : '-';
+  const mLabel = PW_MONTH_LABELS[PW_MONTHS.indexOf(m)] || m;
+  const ptLabel = GLOBAL_PTYPE==='week' ? 'Weekly avg' : 'Monthly';
   document.getElementById('pw_kpis').innerHTML = `
     <div class="kpi-card"><div class="label">Avg Max Temp</div><div class="value">${avgTemp}°C</div><div class="sub">${mLabel}</div></div>
-    <div class="kpi-card"><div class="label">Extreme Heat Days</div><div class="value" style="color:#dc2626">${totalHeat}</div><div class="sub">Days with max &gt; 35°C</div></div>
-    <div class="kpi-card"><div class="label">Extreme Cold Days</div><div class="value" style="color:#2563eb">${totalCold}</div><div class="sub">Days with min &lt; 0°C</div></div>
-    <div class="kpi-card"><div class="label">Heavy Rain Days</div><div class="value" style="color:#0891b2">${totalRain}</div><div class="sub">Days with &gt; 20mm precip</div></div>
-    ${avgSR !== '-' ? '<div class="kpi-card"><div class="label">Avg Show Rate</div><div class="value">'+avgSR+'%</div><div class="sub">'+ptLabel+' (selection)</div></div>' : ''}
+    <div class="kpi-card"><div class="label">Extreme Heat Days</div><div class="value" style="color:#dc2626">${totalHeat}</div><div class="sub">tmax &gt; 35°C</div></div>
+    <div class="kpi-card"><div class="label">Extreme Cold Days</div><div class="value" style="color:#2563eb">${totalCold}</div><div class="sub">tmin &lt; 0°C</div></div>
+    <div class="kpi-card"><div class="label">Heavy Rain Days</div><div class="value" style="color:#0891b2">${totalRain}</div><div class="sub">&gt; 20mm precip</div></div>
+    ${avgSR !== '-' ? '<div class="kpi-card kpi-card-primary"><div class="label">Avg Show Rate</div><div class="value">'+avgSR+'%</div><div class="sub">'+ptLabel+'</div></div>' : ''}
   `;
 }
 
-function renderPwTempChart() {
-  if (PW_CHART_TEMP) { PW_CHART_TEMP.destroy(); PW_CHART_TEMP = null; }
-  const ctx = document.getElementById('pw_temp_chart').getContext('2d');
+// Main combo chart: show rate (bars) + extreme weather days (line)
+// - EU mode: X = countries, for the selected month
+// - Single country: X = all months, trend over time
+function renderPwMainChart() {
+  if (PW_CHART_MAIN) { PW_CHART_MAIN.destroy(); PW_CHART_MAIN = null; }
+  const ctx = document.getElementById('pw_main_chart').getContext('2d');
   const ctries = getPwCountries();
-  const isTrend = getPwMonth() === 'all';
-  let datasets;
-  if (isTrend) {
-    datasets = ctries.map(c => ({
-      label: c, tension: 0.3,
-      data: PW_MONTHS.map(m => WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m] ? WEATHER_MONTHLY[c][m].avg_tmax : null),
-      borderColor: COUNTRY_COLORS[c], backgroundColor: COUNTRY_COLORS[c]+'22',
-      borderWidth: ctries.length===1?3:2, pointRadius: ctries.length===1?4:2.5,
-    }));
-  } else {
-    datasets = [{
-      label: 'Avg Max Temp (°C)',
-      data: ctries.map(c => WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][getPwMonth()] ? WEATHER_MONTHLY[c][getPwMonth()].avg_tmax : null),
-      backgroundColor: ctries.map(c => COUNTRY_COLORS[c]+'bb'), borderColor: ctries.map(c => COUNTRY_COLORS[c]), borderWidth:1,
-    }];
-  }
-  PW_CHART_TEMP = new Chart(ctx, {
-    type: isTrend ? 'line' : 'bar',
-    data: { labels: isTrend ? PW_MONTH_LABELS : ctries, datasets },
-    options: {
-      responsive:true, maintainAspectRatio:true,
-      plugins: { legend:{ display: isTrend && ctries.length>1, position:'bottom', labels:{boxWidth:12,font:{size:11}} }, datalabels:{display:false},
-        tooltip:{callbacks:{label: c => `${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y+'°C':'N/A'}`}}},
-      scales: {
-        y:{ticks:{callback:v=>v+'°C',font:{size:11}}, grid:{color:'#f1f5f9'}, title:{display:true,text:'Avg Max Temp (°C)',font:{size:11}}},
-        x:{ticks:{font:{size:11}}, grid:{display:false}},
-      },
-    },
-  });
-}
+  const m = getPwMonth();
+  const singleCountry = ctries.length === 1;
+  const mLabel = PW_MONTH_LABELS[PW_MONTHS.indexOf(m)] || m;
 
-function renderPwPrecipChart() {
-  if (PW_CHART_PRECIP) { PW_CHART_PRECIP.destroy(); PW_CHART_PRECIP = null; }
-  const ctx = document.getElementById('pw_precip_chart').getContext('2d');
-  const ctries = getPwCountries();
-  const isTrend = getPwMonth() === 'all';
-  let datasets, labels;
-  if (isTrend) {
+  let labels, srData, extremeData, heatData, coldData, rainData, bgColors;
+
+  if (singleCountry) {
+    // Trend for selected country across all months
+    const c = ctries[0];
     labels = PW_MONTH_LABELS;
-    if (ctries.length === 1) {
-      const c = ctries[0];
-      datasets = [{label:c, data:PW_MONTHS.map(m=>WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m]?WEATHER_MONTHLY[c][m].total_precip_mm:0), backgroundColor:COUNTRY_COLORS[c]+'99', borderColor:COUNTRY_COLORS[c], borderWidth:1}];
-    } else {
-      datasets = [{
-        label:'EU Avg',
-        data: PW_MONTHS.map(m=>{ const vals=ctries.map(c=>WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m]?WEATHER_MONTHLY[c][m].total_precip_mm:0); return +(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1); }),
-        backgroundColor:'#3b82f666', borderColor:'#3b82f6', borderWidth:1.5,
-      }];
-    }
+    srData = PW_MONTHS.map(mo => pwGetSR(c, mo));
+    heatData = PW_MONTHS.map(mo => (WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo])||{days_extreme_heat:0,days_extreme_cold:0,days_heavy_rain:0}).map(d=>d.days_extreme_heat);
+    coldData = PW_MONTHS.map(mo => (WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo])||{days_extreme_cold:0}).map(d=>d.days_extreme_cold);
+    rainData = PW_MONTHS.map(mo => (WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo])||{days_heavy_rain:0}).map(d=>d.days_heavy_rain);
+    // fix: recompute cleanly
+    heatData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat:0;});
+    coldData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_cold:0;});
+    rainData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_heavy_rain:0;});
+    extremeData = PW_MONTHS.map((mo,i)=>heatData[i]+coldData[i]+rainData[i]);
+    bgColors = PW_MONTHS.map(mo => {
+      const idx = PW_MONTHS.indexOf(mo);
+      const stress = extremeData[idx];
+      return stress >= 15 ? '#ef444455' : stress >= 5 ? '#f59e0b44' : COUNTRY_COLORS[c]+'66';
+    });
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather Days — ${c} (all months)`;
   } else {
+    // Cross-country comparison for selected month
     labels = ctries;
-    datasets = [{
-      label:'Precipitation (mm)',
-      data: ctries.map(c=>WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][getPwMonth()]?WEATHER_MONTHLY[c][getPwMonth()].total_precip_mm:0),
-      backgroundColor: ctries.map(c=>COUNTRY_COLORS[c]+'99'), borderColor:ctries.map(c=>COUNTRY_COLORS[c]), borderWidth:1,
-    }];
+    srData = ctries.map(c => pwGetSR(c, m));
+    heatData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_heat:0;});
+    coldData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_cold:0;});
+    rainData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_heavy_rain:0;});
+    extremeData = ctries.map((_,i)=>heatData[i]+coldData[i]+rainData[i]);
+    bgColors = ctries.map(c => COUNTRY_COLORS[c]+'99');
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather Days — ${mLabel}`;
   }
-  PW_CHART_PRECIP = new Chart(ctx, {
-    type:'bar', data:{labels, datasets},
-    options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{legend:{display:false}, datalabels:{display:false}, tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toFixed(0)}mm`}}},
-      scales:{y:{ticks:{callback:v=>v+'mm',font:{size:11}},grid:{color:'#f1f5f9'}}, x:{ticks:{font:{size:11}},grid:{display:false}}},
+
+  PW_CHART_MAIN = new Chart(ctx, {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar', label: 'Show Rate %', data: srData, yAxisID: 'ySR',
+          backgroundColor: bgColors, borderColor: singleCountry ? COUNTRY_COLORS[ctries[0]] : ctries.map(c=>COUNTRY_COLORS[c]),
+          borderWidth: 1,
+        },
+        {
+          type: 'line', label: 'Extreme Weather Days', data: extremeData, yAxisID: 'yEx',
+          borderColor: '#ef4444', backgroundColor: '#ef444422', borderWidth: 2.5,
+          tension: singleCountry?0.3:0, pointRadius: 5, pointBackgroundColor: extremeData.map(v=>v>10?'#dc2626':v>4?'#f59e0b':'#94a3b8'),
+          pointBorderColor: '#fff', pointBorderWidth: 1.5,
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        datalabels: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.label === 'Show Rate %') return `Show Rate: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1)+'%' : 'N/A'}`;
+              return `Extreme days: ${ctx.parsed.y} (heat+cold+rain)`;
+            }
+          }
+        }
+      },
+      scales: {
+        ySR: { position: 'left', min: 60, max: 80, ticks: { callback: v => v+'%', font: { size: 11 } }, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Show Rate', font: { size: 11 } } },
+        yEx: { position: 'right', beginAtZero: true, ticks: { font: { size: 11 } }, grid: { display: false }, title: { display: true, text: 'Extreme days', font: { size: 11 } } },
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+      },
     },
   });
 }
@@ -6478,23 +6483,41 @@ function renderPwPrecipChart() {
 function renderPwExtremeChart() {
   if (PW_CHART_EXTREME) { PW_CHART_EXTREME.destroy(); PW_CHART_EXTREME = null; }
   const ctx = document.getElementById('pw_extreme_chart').getContext('2d');
-  const months = getPwMonths();
-  const heatData = COUNTRIES.map(c=>months.reduce((s,m)=>s+(WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m]?WEATHER_MONTHLY[c][m].days_extreme_heat:0),0));
-  const coldData = COUNTRIES.map(c=>months.reduce((s,m)=>s+(WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m]?WEATHER_MONTHLY[c][m].days_extreme_cold:0),0));
-  const rainData = COUNTRIES.map(c=>months.reduce((s,m)=>s+(WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m]?WEATHER_MONTHLY[c][m].days_heavy_rain:0),0));
+  const ctries = getPwCountries();
+  const m = getPwMonth();
+  const singleCountry = ctries.length === 1;
+  let labels, heatData, coldData, rainData;
+  if (singleCountry) {
+    // All months for this country
+    const c = ctries[0];
+    labels = PW_MONTH_LABELS;
+    heatData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat:0;});
+    coldData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_cold:0;});
+    rainData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_heavy_rain:0;});
+  } else {
+    // All selected countries for this month
+    labels = ctries;
+    heatData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_heat:0;});
+    coldData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_cold:0;});
+    rainData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_heavy_rain:0;});
+  }
   PW_CHART_EXTREME = new Chart(ctx, {
-    type:'bar', data:{
-      labels: COUNTRIES,
-      datasets:[
-        {label:'Extreme Heat (>35°C)', data:heatData, backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:1, stack:'s'},
-        {label:'Extreme Cold (<0°C)',  data:coldData, backgroundColor:'#3b82f699', borderColor:'#3b82f6', borderWidth:1, stack:'s'},
-        {label:'Heavy Rain (>20mm)',   data:rainData, backgroundColor:'#06b6d499', borderColor:'#06b6d4', borderWidth:1, stack:'s'},
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Heat (>35°C)', data: heatData, backgroundColor: '#ef444499', borderColor: '#ef4444', borderWidth: 1, stack: 's' },
+        { label: 'Cold (<0°C)',  data: coldData, backgroundColor: '#3b82f699', borderColor: '#3b82f6', borderWidth: 1, stack: 's' },
+        { label: 'Rain (>20mm)', data: rainData, backgroundColor: '#06b6d499', borderColor: '#06b6d4', borderWidth: 1, stack: 's' },
       ],
     },
-    options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,font:{size:11}}}, datalabels:{display:false}},
-      scales:{x:{stacked:true,ticks:{font:{size:11}},grid:{display:false}}, y:{stacked:true,ticks:{font:{size:11}},grid:{color:'#f1f5f9'},title:{display:true,text:'Days',font:{size:11}}}},
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }, datalabels: { display: false } },
+      scales: {
+        x: { stacked: true, ticks: { font: { size: 11 } }, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, ticks: { font: { size: 11 } }, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Days', font: { size: 11 } } },
+      },
     },
   });
 }
@@ -6502,37 +6525,36 @@ function renderPwExtremeChart() {
 function renderPwScatterChart() {
   if (PW_CHART_SCATTER) { PW_CHART_SCATTER.destroy(); PW_CHART_SCATTER = null; }
   const ctx = document.getElementById('pw_scatter_chart').getContext('2d');
+  const ctries = getPwCountries();
   const isWeekly = GLOBAL_PTYPE === 'week';
-  const datasets = COUNTRIES.map(c => {
+  const datasets = ctries.map(c => {
     let pts = [];
     if (isWeekly) {
-      RAW_DATA.filter(r => r.country===c && r.period_type==='week').forEach(r => {
-        const wMonth = pwWeekToMonth(r.period_name);
-        const wd = WEATHER_MONTHLY[c] && WEATHER_MONTHLY[c][wMonth];
-        if (wd) pts.push({x: wd.avg_tmax, y: parseFloat(r.show_rate)*100, _label: r.period_name});
+      RAW_DATA.filter(r=>r.country===c&&r.period_type==='week').forEach(r=>{
+        const wm = pwWeekToMonth(r.period_name);
+        const wd = WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][wm];
+        if (wd) pts.push({x:wd.avg_tmax, y:parseFloat(r.show_rate)*100, _l:r.period_name});
       });
     } else {
-      pts = PW_MONTHS.map(m => {
-        const wd = WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
-        const sr = RAW_DATA.find(r=>r.country===c&&r.period_type==='month'&&r.period_name===m);
-        if (!wd||!sr) return null;
-        return {x:wd.avg_tmax, y:parseFloat(sr.show_rate)*100, _label:m};
-      }).filter(Boolean);
+      PW_MONTHS.forEach(m=>{
+        const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
+        const sr=RAW_DATA.find(r=>r.country===c&&r.period_type==='month'&&r.period_name===m);
+        if(wd&&sr) pts.push({x:wd.avg_tmax, y:parseFloat(sr.show_rate)*100, _l:m});
+      });
     }
-    return {label:c, data:pts, backgroundColor:COUNTRY_COLORS[c]+'bb', borderColor:COUNTRY_COLORS[c], borderWidth:1, pointRadius: isWeekly?3:5, pointHoverRadius:7};
+    return {label:c, data:pts, backgroundColor:COUNTRY_COLORS[c]+'bb', borderColor:COUNTRY_COLORS[c], borderWidth:1, pointRadius:isWeekly?3:5, pointHoverRadius:7};
   });
-  const ptypeNote = isWeekly ? 'Each dot = one country × week (weather mapped to that week\'s month)' : 'Each dot = one country × month';
-  document.getElementById('pw_scatter_note').textContent = ptypeNote + '. Higher temp doesn\'t always mean lower show rate — look for outliers.';
+  document.getElementById('pw_scatter_note').textContent = (isWeekly?'Each dot = one week':'Each dot = one month')+' · hover for detail';
   PW_CHART_SCATTER = new Chart(ctx, {
     type:'scatter', data:{datasets},
     options:{
       responsive:true, maintainAspectRatio:true,
       plugins:{
-        legend:{display:true,position:'bottom',labels:{boxWidth:12,font:{size:11}}}, datalabels:{display:false},
-        tooltip:{callbacks:{label:c=>`${c.dataset.label} (${c.raw._label||''}): ${c.parsed.x}°C → SR ${c.parsed.y.toFixed(1)}%`}},
+        legend:{display:ctries.length>1,position:'bottom',labels:{boxWidth:12,font:{size:11}}}, datalabels:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label} ${c.raw._l||''}: ${c.parsed.x}°C → SR ${c.parsed.y.toFixed(1)}%`}},
       },
       scales:{
-        x:{title:{display:true,text:'Avg Max Temperature (°C)',font:{size:11}}, ticks:{callback:v=>v+'°C',font:{size:11}}, grid:{color:'#f1f5f9'}},
+        x:{title:{display:true,text:'Avg Max Temp (°C)',font:{size:11}}, ticks:{callback:v=>v+'°C',font:{size:11}}, grid:{color:'#f1f5f9'}},
         y:{title:{display:true,text:'Show Rate (%)',font:{size:11}}, ticks:{callback:v=>v.toFixed(0)+'%',font:{size:11}}, grid:{color:'#f1f5f9'}},
       },
     },
@@ -6541,38 +6563,25 @@ function renderPwScatterChart() {
 
 function renderPwCountryCards() {
   const ctries = getPwCountries();
-  const months = getPwMonths();
-  const isWeekly = GLOBAL_PTYPE === 'week';
+  const m = getPwMonth();
   const html = ctries.map(c => {
-    let heat=0,cold=0,rain=0,temps=[],srArr=[];
-    months.forEach(m => {
-      const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
-      if(wd){heat+=wd.days_extreme_heat;cold+=wd.days_extreme_cold;rain+=wd.days_heavy_rain;temps.push(wd.avg_tmax);}
-    });
-    if (isWeekly) {
-      RAW_DATA.filter(r=>r.country===c&&r.period_type==='week').forEach(r=>{
-        const wMonth=pwWeekToMonth(r.period_name);
-        if(months.includes(wMonth)) srArr.push(+r.show_rate);
-      });
-    } else {
-      months.forEach(m=>{
-        const sr=RAW_DATA.find(r=>r.country===c&&r.period_type==='month'&&r.period_name===m);
-        if(sr) srArr.push(+sr.show_rate);
-      });
-    }
-    const avgT=temps.length?(temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1):'-';
-    const avgSR=srArr.length?(srArr.reduce((a,b)=>a+b,0)/srArr.length*100).toFixed(1):'-';
+    const wd = WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
+    const heat=wd?wd.days_extreme_heat:0, cold=wd?wd.days_extreme_cold:0, rain=wd?wd.days_heavy_rain:0;
+    const avgT=wd&&wd.avg_tmax!==null?wd.avg_tmax+'°C':'-';
+    const sr = pwGetSR(c, m);
+    const avgSR = sr!==null ? sr.toFixed(1)+'%' : '-';
     const stress=heat+cold+rain;
-    const stressColor=stress>=50?'#dc2626':stress>=20?'#f59e0b':'#15803d';
-    return `<div class="kpi-card" style="border-left:4px solid ${COUNTRY_COLORS[c]};min-width:160px;flex:1">
+    const stressColor=stress>=15?'#dc2626':stress>=5?'#f59e0b':'#15803d';
+    const hasBadWeather = stress > 0;
+    return `<div class="kpi-card" style="border-left:4px solid ${COUNTRY_COLORS[c]};min-width:150px;flex:1${hasBadWeather?';background:#fffbeb':''}">
       <div class="label" style="color:${COUNTRY_COLORS[c]};font-size:13px;font-weight:700">${c}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
-        <div><div style="font-size:11px;color:#64748b">Avg Temp</div><div style="font-weight:700;font-size:15px">${avgT}°C</div></div>
-        <div><div style="font-size:11px;color:#64748b">Show Rate</div><div style="font-weight:700;font-size:15px">${avgSR}%</div></div>
-        <div><div style="font-size:11px;color:#dc2626">Heat</div><div style="font-weight:700">${heat}d</div></div>
-        <div><div style="font-size:11px;color:#2563eb">Cold</div><div style="font-weight:700">${cold}d</div></div>
-        <div><div style="font-size:11px;color:#0891b2">Rain</div><div style="font-weight:700">${rain}d</div></div>
-        <div><div style="font-size:11px;color:#64748b">Stress</div><div style="font-weight:700;color:${stressColor}">${stress}</div></div>
+        <div><div style="font-size:11px;color:#64748b">Temp</div><div style="font-weight:700;font-size:15px">${avgT}</div></div>
+        <div><div style="font-size:11px;color:#64748b">Show Rate</div><div style="font-weight:700;font-size:15px">${avgSR}</div></div>
+        ${heat>0?`<div><div style="font-size:11px;color:#dc2626">Heat</div><div style="font-weight:700;color:#dc2626">${heat}d</div></div>`:''}
+        ${cold>0?`<div><div style="font-size:11px;color:#2563eb">Cold</div><div style="font-weight:700;color:#2563eb">${cold}d</div></div>`:''}
+        ${rain>0?`<div><div style="font-size:11px;color:#0891b2">Rain</div><div style="font-weight:700;color:#0891b2">${rain}d</div></div>`:''}
+        ${stress>0?`<div><div style="font-size:11px;color:#64748b">Stress</div><div style="font-weight:700;color:${stressColor}">${stress}d</div></div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -6581,44 +6590,29 @@ function renderPwCountryCards() {
 
 function renderPwTable() {
   const ctries = getPwCountries();
-  const months = getPwMonths();
-  const isSingle = getPwMonth() !== 'all';
+  const m = getPwMonth();
+  const mLabel = PW_MONTH_LABELS[PW_MONTHS.indexOf(m)] || m;
   const isWeekly = GLOBAL_PTYPE === 'week';
-  const ptLabel = isWeekly ? 'Weekly Show Rate' : 'Avg Show Rate';
-  document.getElementById('pw_table_title').textContent = isSingle
-    ? 'Country Detail — ' + PW_MONTH_LABELS[PW_MONTHS.indexOf(getPwMonth())] + ' 2025'
-    : 'Country Detail — Annual 2025 Totals';
-  document.querySelector('#pw_table thead tr th:nth-child(9)').textContent = ptLabel;
+  document.getElementById('pw_table_title').textContent = `Country Detail — ${mLabel}`;
+  document.querySelector('#pw_table thead tr th:nth-child(9)').textContent = isWeekly ? 'Weekly Show Rate' : 'Show Rate';
   const rows = ctries.map(c => {
-    let tmx=[],tmn=[],prec=0,wind=[],heat=0,cold=0,rain=0,srArr=[];
-    months.forEach(m => {
-      const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
-      if(wd){if(wd.avg_tmax!==null)tmx.push(wd.avg_tmax);if(wd.avg_tmin!==null)tmn.push(wd.avg_tmin);prec+=wd.total_precip_mm;wind.push(wd.avg_wind_kmh);heat+=wd.days_extreme_heat;cold+=wd.days_extreme_cold;rain+=wd.days_heavy_rain;}
-    });
-    if (isWeekly) {
-      RAW_DATA.filter(r=>r.country===c&&r.period_type==='week').forEach(r=>{
-        const wMonth=pwWeekToMonth(r.period_name);
-        if(months.includes(wMonth)) srArr.push(+r.show_rate);
-      });
-    } else {
-      months.forEach(m=>{
-        const sr=RAW_DATA.find(r=>r.country===c&&r.period_type==='month'&&r.period_name===m);
-        if(sr) srArr.push(+sr.show_rate);
-      });
-    }
-    const avgTmx=tmx.length?(tmx.reduce((a,b)=>a+b,0)/tmx.length).toFixed(1):'-';
-    const avgTmn=tmn.length?(tmn.reduce((a,b)=>a+b,0)/tmn.length).toFixed(1):'-';
-    const avgWind=wind.length?(wind.reduce((a,b)=>a+b,0)/wind.length).toFixed(1):'-';
-    const avgSR=srArr.length?(srArr.reduce((a,b)=>a+b,0)/srArr.length*100).toFixed(1)+'%':'-';
-    const stress=heat+cold+rain;
-    const sb=stress>=20?'badge-red':stress>=8?'badge-amber':'badge-green';
+    const wd = WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
+    const avgTmx = wd&&wd.avg_tmax!==null ? wd.avg_tmax+'°C' : '-';
+    const avgTmn = wd&&wd.avg_tmin!==null ? wd.avg_tmin+'°C' : '-';
+    const prec = wd ? wd.total_precip_mm+'mm' : '-';
+    const wind = wd ? wd.avg_wind_kmh+' km/h' : '-';
+    const heat = wd?wd.days_extreme_heat:0, cold=wd?wd.days_extreme_cold:0, rain=wd?wd.days_heavy_rain:0;
+    const sr = pwGetSR(c, m);
+    const srStr = sr!==null ? sr.toFixed(1)+'%' : '-';
+    const stress = heat+cold+rain;
+    const sb = stress>=15?'badge-red':stress>=5?'badge-amber':'badge-green';
     return `<tr>
       <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COUNTRY_COLORS[c]};margin-right:6px;vertical-align:middle"></span><strong>${c}</strong></td>
-      <td>${avgTmx}°C</td><td>${avgTmn}°C</td><td>${prec.toFixed(0)} mm</td><td>${avgWind} km/h</td>
+      <td>${avgTmx}</td><td>${avgTmn}</td><td>${prec}</td><td>${wind}</td>
       <td style="color:${heat>0?'#dc2626':'#94a3b8'}">${heat}</td>
       <td style="color:${cold>0?'#2563eb':'#94a3b8'}">${cold}</td>
       <td style="color:${rain>0?'#0891b2':'#94a3b8'}">${rain}</td>
-      <td><strong>${avgSR}</strong></td>
+      <td><strong>${srStr}</strong></td>
       <td><span class="badge ${sb}">${stress}</span></td>
     </tr>`;
   }).join('');
@@ -8966,10 +8960,10 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- ====== WEATHER IMPACT PAGE ====== -->
 <div id="pW" class="page">
   <div class="insight-box" style="margin-bottom:16px">
-    <h4>Weather Impact Analysis — 2025</h4>
-    Historical weather data from Open-Meteo archive (capital city per country).
-    <strong>Extreme heat:</strong> daily max &gt; 35°C &nbsp;·&nbsp; <strong>Extreme cold:</strong> daily min &lt; 0°C &nbsp;·&nbsp; <strong>Heavy rain:</strong> daily precipitation &gt; 20mm.
-    Use this tab to investigate whether adverse weather correlates with show rate dips in specific markets or periods.
+    <h4>Weather Impact Analysis</h4>
+    Select a month and country to see if extreme weather days coincide with show rate dips.
+    Data: Open-Meteo historical archive (capital city per country, Jan 2025 – Jun 2026).
+    <strong>Heat:</strong> max &gt; 35°C &nbsp;·&nbsp; <strong>Cold:</strong> min &lt; 0°C &nbsp;·&nbsp; <strong>Rain:</strong> &gt; 20mm/day.
   </div>
 
   <div class="filter-bar" style="--filter-bar-top:116px">
@@ -8978,7 +8972,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </span>
     <label>Month:</label>
     <select id="pw_month" onchange="renderWeatherTab()">
-      <option value="all">All (Jan 25 – Jun 26)</option>
       <optgroup label="2025">
         <option value="2025_01">Jan 2025</option>
         <option value="2025_02">Feb 2025</option>
@@ -8998,7 +8991,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <option value="2026_02">Feb 2026</option>
         <option value="2026_03">Mar 2026</option>
         <option value="2026_04">Apr 2026</option>
-        <option value="2026_05">May 2026</option>
+        <option value="2026_05" selected>May 2026</option>
         <option value="2026_06">Jun 2026</option>
       </optgroup>
     </select>
@@ -9019,40 +9012,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
   <div class="kpi-row" id="pw_kpis"></div>
 
-  <!-- Row 1: Temperature trend + Precipitation -->
+  <!-- Main combo chart: show rate + extreme weather days -->
+  <div class="chart-box" style="margin-bottom:16px">
+    <h3 id="pw_main_title">Show Rate &amp; Extreme Weather Days</h3>
+    <canvas id="pw_main_chart" style="max-height:300px"></canvas>
+    <p class="note">Bars: show rate (left axis) · Red line: total extreme weather days — heat + cold + heavy rain (right axis) · Red dots = high stress (&gt;10 days), amber = moderate (&gt;4)</p>
+  </div>
+
+  <!-- Row: Extreme breakdown + Scatter -->
   <div class="chart-row">
-    <div class="chart-box" style="flex:2">
-      <h3>Monthly Avg Max Temperature — 2025 (°C)</h3>
-      <canvas id="pw_temp_chart" style="max-height:260px"></canvas>
-      <p class="note">Source: Open-Meteo historical archive · Capital city per country (Vienna, Brussels, Berlin, Madrid, Paris, Rome, Amsterdam, Lisbon, Stockholm)</p>
+    <div class="chart-box">
+      <h3>Extreme Weather Breakdown</h3>
+      <canvas id="pw_extreme_chart" style="max-height:240px"></canvas>
+      <p class="note">Heat (&gt;35°C) · Cold (&lt;0°C) · Heavy rain (&gt;20mm/day)</p>
     </div>
-    <div class="chart-box" style="flex:1">
-      <h3>Monthly Precipitation (mm)</h3>
-      <canvas id="pw_precip_chart" style="max-height:260px"></canvas>
-      <p class="note">Total monthly precipitation. When All Countries selected, shows EU average.</p>
+    <div class="chart-box">
+      <h3>Show Rate vs Temperature</h3>
+      <canvas id="pw_scatter_chart" style="max-height:240px"></canvas>
+      <p class="note" id="pw_scatter_note">Each dot = one period · hover for detail</p>
     </div>
   </div>
 
-  <!-- Row 2: Extreme weather days + Show Rate scatter -->
-  <div class="chart-row">
-    <div class="chart-box">
-      <h3>Extreme Weather Days — by Country</h3>
-      <canvas id="pw_extreme_chart" style="max-height:260px"></canvas>
-      <p class="note">Heat: tmax &gt; 35°C · Cold: tmin &lt; 0°C · Heavy rain: &gt; 20mm/day · Always shows all 9 countries for comparison</p>
-    </div>
-    <div class="chart-box">
-      <h3>Show Rate vs Temperature — Monthly Correlation</h3>
-      <canvas id="pw_scatter_chart" style="max-height:260px"></canvas>
-      <p class="note" id="pw_scatter_note">Each dot = one country × month. Higher temperature doesn't always mean lower show rate — look for outliers.</p>
-    </div>
-  </div>
-
-  <!-- Country summary -->
+  <!-- Country summary cards -->
   <div class="section-title">Country Summary</div>
   <div id="pw_region_cards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
 
   <!-- Country detail table -->
-  <div class="section-title" id="pw_table_title">Country Detail — Annual 2025 Totals</div>
+  <div class="section-title" id="pw_table_title">Country Detail</div>
   <div class="tbl-scroll">
     <table id="pw_table">
       <thead>
@@ -9060,19 +9046,19 @@ document.addEventListener('DOMContentLoaded', () => {
           <th>Country</th>
           <th>Avg Max Temp</th>
           <th>Avg Min Temp</th>
-          <th>Total Precip</th>
+          <th>Precipitation</th>
           <th>Avg Wind</th>
-          <th>Heat Days (&gt;35°C)</th>
-          <th>Cold Days (&lt;0°C)</th>
-          <th>Heavy Rain Days</th>
-          <th>Avg Show Rate</th>
+          <th>Heat Days</th>
+          <th>Cold Days</th>
+          <th>Rain Days</th>
+          <th>Show Rate</th>
           <th>Weather Stress</th>
         </tr>
       </thead>
       <tbody id="pw_tbody"></tbody>
     </table>
   </div>
-  <p class="note" style="margin-top:6px">Weather Stress = total extreme heat + cold + heavy rain days. Show Rate from monthly Tableau CS Report 2.0.</p>
+  <p class="note" style="margin-top:6px">Weather Stress = extreme heat + cold + heavy rain days combined. Show Rate from Tableau CS Report 2.0.</p>
 </div>
 
 
