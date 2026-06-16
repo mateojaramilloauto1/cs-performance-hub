@@ -5785,6 +5785,38 @@ async function generateAiAnalysis() {
    .filter(f=>f.r!=null).sort((a,b)=>Math.abs(b.r)-Math.abs(a.r));
   const corrTable = corrs.map(f=>`  ${f.label}: r=${f.r>=0?'+':''}${f.r}`).join('\n');
 
+  // ---- Weather section (weekly + single country only) ----
+  let weatherSection = '';
+  if (useCountry && ptype === 'week' && WEATHER_REGIONS[useCountry]) {
+    const cityKeys = WEATHER_REGIONS[useCountry].map(r=>r.key).filter(k=>WEATHER_WEEKLY[k]);
+    const getWeekWeather = w => {
+      const vals = cityKeys.map(k=>WEATHER_WEEKLY[k]&&WEATHER_WEEKLY[k][w]).filter(Boolean);
+      if (!vals.length) return null;
+      return {
+        tmax: +(vals.reduce((s,d)=>s+d[0],0)/vals.length).toFixed(1),
+        stress: +(vals.reduce((s,d)=>s+d[1]+d[2]+d[3],0)/vals.length).toFixed(1),
+        heat:   +(vals.reduce((s,d)=>s+d[1],0)/vals.length).toFixed(1),
+        cold:   +(vals.reduce((s,d)=>s+d[2],0)/vals.length).toFixed(1),
+        rain:   +(vals.reduce((s,d)=>s+d[3],0)/vals.length).toFixed(1),
+      };
+    };
+    const allWeeklyWeather = allPeriods.map(getWeekWeather);
+    const weatherStress = allWeeklyWeather.map(w => w ? w.stress : null);
+    const weatherCorr = pearsonCorr(allSR, weatherStress);
+    const cityNames = WEATHER_REGIONS[useCountry].map(r=>r.city).join('/');
+    const last6Weather = last6.map(p => {
+      const w = getWeekWeather(p);
+      if (!w) return 'n/a';
+      const flag = w.stress >= 5 ? '🌡️' : w.stress >= 2 ? '⚠️' : '✅';
+      return `${flag}${w.tmax}°C/${w.stress}d`;
+    });
+    weatherSection = `\n6. WEATHER DATA — ${useCountry} (avg across ${cityKeys.length} cities: ${cityNames})\n  Format: [flag]AvgMaxTemp/ExtremeStressDays (heat>35°C + cold<0°C + rain>20mm)\n  ${periodLabels}\n  ${last6Weather.join(' | ')}\n  Pearson r (extreme stress days vs show rate, ${weatherStress.filter(v=>v!==null).length} weeks): ${weatherCorr!=null?(weatherCorr>=0?'+':'')+weatherCorr.toFixed(3):'n/a'}`;
+    if (weatherCorr !== null) {
+      corrs.push({label:'Weather Stress Days', r: weatherCorr});
+      corrs.sort((a,b)=>Math.abs(b.r)-Math.abs(a.r));
+    }
+  }
+
   const leadShareRows = LEAD_SHARE_SEGMENTS.map((seg,i)=>
     `  ${seg}: ${last6.map(p=>{const d=getLeadShare(p);return d?fmt(d[i]):'n/a';}).join(' | ')}`
   ).join('\n');
@@ -5818,7 +5850,7 @@ ${leadShareRows}
   BC Cancellation Rate:${last6.map(getCancel).map(fmt).join(' | ')}
 
 5. CANCELLED APPOINTMENTS — TIMING BREAKDOWN
-${cancelRows}
+${cancelRows}${weatherSection}
 
 PEARSON CORRELATIONS with Show Rate (across all ${allSR.filter(v=>v!=null).length} available periods):
 ${corrTable}`;
@@ -5833,6 +5865,7 @@ DOMAIN KNOWLEDGE — context for interpreting the metrics (do NOT assume causati
 - Branch Utilisation %: tends to correlate with show rate in some markets — report the observed relationship, not a cause.
 - Lead Share cohorts: "Dealer Now" and "Not Planned" are same-day or unplanned leads. "Private 4W/3M" are longer-lead. Note the cohort mix and how it has shifted — describe the correlation, not whether it "causes" outcomes.
 - Cancelled Appointments timing: "Before >30 min" vs "After <30 min same-day" vs "After 1+ day" — describe the dominant category and whether it has changed alongside show rate.
+- Weather Impact (if section 6 is provided): extreme weather stress days = heat (>35°C) + cold (<0°C) + heavy rain (>20mm/day), averaged across multiple cities in the country. A negative Pearson r means weeks with more extreme weather tended to have lower show rates. Flag this only if |r| > 0.25 and at least 8 weeks of data are available. Southern markets (ES, IT, PT) are most exposed to summer heat; northern markets (SE, DE, AT) to winter cold.
 - Always frame relationships as: "X moved in the same/opposite direction as show rate" or "X and show rate are positively/negatively correlated" — never "X caused" or "X drove" or "X is impacting" show rate.
 
 TASK — ON "GENERATE"
@@ -5845,6 +5878,7 @@ Produce an analysis of max 180 words using this exact structure:
 - Lead Mix: Dealer Now + Not Planned share — is it rising or falling alongside show rate changes?
 - Branch Utilisation: how has it moved relative to show rate?
 - Cancellations: which timing category dominates, and has it shifted?
+- Weather (if provided): were there weeks with extreme stress days (heat/cold/rain) that coincided with lower show rates? Cite the Pearson r and flag the specific weeks.
 Highlight the 1–2 strongest co-movements with exact figures.
 
 🔗 **CORRELATION:** Report the strongest Pearson r value, direction, and a plain-English description of the relationship. Explicitly note: correlation does not imply causation. Flag small-sample caveat if fewer than 8 periods.
@@ -6526,8 +6560,18 @@ function renderPwKPIs() {
   `;
 }
 
+function pwDestroyChart(varKey, canvasId) {
+  // Destroy by canvas ID (works for let-scoped chart vars)
+  const cv = document.getElementById(canvasId);
+  if (cv) {
+    const ex = Chart.getChart(cv) || Chart.getChart(canvasId);
+    if (ex) { try { ex.destroy(); } catch(e){} }
+  }
+  if (window[varKey]) { try { window[varKey].destroy(); } catch(e){} window[varKey] = null; }
+}
+
 function renderPwMainChart() {
-  if (PW_CHART_MAIN) { PW_CHART_MAIN.destroy(); PW_CHART_MAIN = null; }
+  pwDestroyChart('PW_CHART_MAIN', 'pw_main_chart');
   const ctx = document.getElementById('pw_main_chart').getContext('2d');
   const ctries = getPwCountries();
   const m = getPwMonth();
@@ -6600,12 +6644,31 @@ function renderPwMainChart() {
       labels,
       datasets: [
         { type:'bar', label:'Show Rate %', data:srData, yAxisID:'ySR',
-          backgroundColor:bgColors, borderColor:singleCountry?COUNTRY_COLORS[c]:ctries.map(cc=>COUNTRY_COLORS[cc]), borderWidth:1 },
+          backgroundColor:bgColors,
+          borderColor:singleCountry?COUNTRY_COLORS[c]:ctries.map(cc=>COUNTRY_COLORS[cc]),
+          borderWidth:1,
+          borderRadius:3,
+          datalabels:{
+            display: ctx => ctx.parsed && ctx.parsed.y != null,
+            formatter: v => v !== null ? v.toFixed(1)+'%' : '',
+            anchor:'end', align:'top',
+            font:{size:11, weight:600}, color:'#374151',
+            padding:{bottom:2},
+          },
+        },
         { type:'line', label:'Extreme Weather Days', data:extremeData, yAxisID:'yEx',
           borderColor:'#ef4444', backgroundColor:'#ef444420', borderWidth:2.5,
           tension:xIsWeeks?0.2:singleCountry?0.3:0, pointRadius:5,
           pointBackgroundColor:extremeData.map(v=>v>=5?'#dc2626':v>=2?'#f59e0b':'#94a3b8'),
-          pointBorderColor:'#fff', pointBorderWidth:1.5 },
+          pointBorderColor:'#fff', pointBorderWidth:1.5,
+          datalabels:{
+            display: ctx => ctx.parsed && ctx.parsed.y > 0,
+            formatter: v => v > 0 ? v+'d' : '',
+            anchor:'end', align:'top',
+            font:{size:10, weight:700}, color:'#dc2626',
+            padding:{bottom:2},
+          },
+        },
       ],
     },
     options: {
@@ -6613,14 +6676,14 @@ function renderPwMainChart() {
       interaction:{mode:'index', intersect:false},
       plugins:{
         legend:{display:true, position:'bottom', labels:{boxWidth:12, font:{size:11}}},
-        datalabels:{display:false},
+        datalabels:{},
         tooltip:{callbacks:{label:c=>{
           if(c.dataset.label==='Show Rate %') return `SR: ${c.parsed.y!==null?c.parsed.y.toFixed(1)+'%':'N/A'}`;
           return `Extreme days: ${c.parsed.y}`;
         }}},
       },
       scales:{
-        ySR:{position:'left', min:60, max:80, ticks:{callback:v=>v+'%', font:{size:11}}, grid:{color:'#f1f5f9'}, title:{display:true, text:'Show Rate', font:{size:11}}},
+        ySR:{position:'left', min:60, max:80, ticks:{callback:v=>v+'%', font:{size:11}}, grid:{color:'rgba(0,0,0,.05)'}, title:{display:true, text:'Show Rate', font:{size:11}}},
         yEx:{position:'right', beginAtZero:true, ticks:{font:{size:11}}, grid:{display:false}, title:{display:true, text:'Extreme days', font:{size:11}}},
         x:{ticks:{font:{size:11}, maxRotation: xIsWeeks?45:0}, grid:{display:false}},
       },
@@ -6629,7 +6692,7 @@ function renderPwMainChart() {
 }
 
 function renderPwExtremeChart() {
-  if (PW_CHART_EXTREME) { PW_CHART_EXTREME.destroy(); PW_CHART_EXTREME = null; }
+  pwDestroyChart('PW_CHART_EXTREME', 'pw_extreme_chart');
   const ctx = document.getElementById('pw_extreme_chart').getContext('2d');
   const ctries = getPwCountries();
   const m = getPwMonth();
@@ -6673,26 +6736,34 @@ function renderPwExtremeChart() {
     coldData = ctries.map(cc=>{const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];return wd?wd.days_extreme_cold:0;});
     rainData = ctries.map(cc=>{const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];return wd?wd.days_heavy_rain:0;});
   }
+  const totals = labels.map((_,i) => (heatData[i]||0)+(coldData[i]||0)+(rainData[i]||0));
   PW_CHART_EXTREME = new Chart(ctx, {
     type:'bar',
     data:{ labels, datasets:[
-      {label:'Heat (>35°C)', data:heatData, backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:1, stack:'s'},
-      {label:'Cold (<0°C)',  data:coldData, backgroundColor:'#3b82f699', borderColor:'#3b82f6', borderWidth:1, stack:'s'},
-      {label:'Rain (>20mm)', data:rainData, backgroundColor:'#06b6d499', borderColor:'#06b6d4', borderWidth:1, stack:'s'},
+      {label:'Heat (>35°C)', data:heatData, backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:1, stack:'s', datalabels:{display:false}},
+      {label:'Cold (<0°C)',  data:coldData, backgroundColor:'#3b82f699', borderColor:'#3b82f6', borderWidth:1, stack:'s', datalabels:{display:false}},
+      {label:'Rain (>20mm)', data:rainData, backgroundColor:'#06b6d499', borderColor:'#06b6d4', borderWidth:1, stack:'s',
+        datalabels:{
+          display: (ctx) => !!(totals && totals[ctx.dataIndex] > 0),
+          formatter: (_v, ctx) => (totals && totals[ctx.dataIndex] > 0) ? totals[ctx.dataIndex]+'d' : '',
+          anchor:'end', align:'top',
+          font:{size:11, weight:700}, color:'#374151',
+        },
+      },
     ]},
     options:{
       responsive:true, maintainAspectRatio:true,
-      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,font:{size:11}}}, datalabels:{display:false}},
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,font:{size:11}}}, datalabels:{}},
       scales:{
         x:{stacked:true, ticks:{font:{size:11}, maxRotation:singleCountry&&isWeekly?45:0}, grid:{display:false}},
-        y:{stacked:true, beginAtZero:true, ticks:{font:{size:11}}, grid:{color:'#f1f5f9'}, title:{display:true,text:'Days',font:{size:11}}},
+        y:{stacked:true, beginAtZero:true, ticks:{font:{size:11}}, grid:{color:'rgba(0,0,0,.05)'}, title:{display:true,text:'Days',font:{size:11}}},
       },
     },
   });
 }
 
 function renderPwScatterChart() {
-  if (PW_CHART_SCATTER) { PW_CHART_SCATTER.destroy(); PW_CHART_SCATTER = null; }
+  pwDestroyChart('PW_CHART_SCATTER', 'pw_scatter_chart');
   const ctx = document.getElementById('pw_scatter_chart').getContext('2d');
   const ctries = getPwCountries();
   const isWeekly = GLOBAL_PTYPE === 'week';
