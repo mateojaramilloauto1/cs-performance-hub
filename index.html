@@ -6356,6 +6356,10 @@ function getPwMonths() {
 }
 
 function renderWeatherTab() {
+  // Keep in-tab Weekly/Monthly toggle in sync with global state
+  const pwWeek = document.getElementById('pw_pt_week');
+  const pwMonth = document.getElementById('pw_pt_month');
+  if (pwWeek && pwMonth) { pwWeek.checked = GLOBAL_PTYPE==='week'; pwMonth.checked = GLOBAL_PTYPE==='month'; }
   renderPwKPIs();
   renderPwTempChart();
   renderPwPrecipChart();
@@ -8969,6 +8973,9 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 
   <div class="filter-bar" style="--filter-bar-top:116px">
+    <span class="nav-ptype-toggle" id="pw_ptype_toggle">
+      <input type="radio" name="pw_ptype" id="pw_pt_week" value="week" onchange="setGlobalPtype('week')"><label for="pw_pt_week">Weekly</label><input type="radio" name="pw_ptype" id="pw_pt_month" value="month" onchange="setGlobalPtype('month')"><label for="pw_pt_month">Monthly</label>
+    </span>
     <label>Month:</label>
     <select id="pw_month" onchange="renderWeatherTab()">
       <option value="all">All (Jan 25 – Jun 26)</option>
