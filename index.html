@@ -685,9 +685,9 @@ tr:hover td{background:#f9fafb !important;}
   <button class="tab-btn" onclick="showTab('p3')">Customer Service Tasks Overview</button>
   <button class="tab-btn" onclick="showTab('p4')">Appointment Cancellation Overview</button>
   <button class="tab-btn" onclick="showTab('p8')">Branch Operations</button>
+  <button class="tab-btn" onclick="showTab('pW')">Weather Impact</button>
   <button class="tab-btn" onclick="showTab('p6')">KPI Definitions</button>
   <button class="tab-btn" onclick="showTab('p7')">Changelog</button>
-  <button class="tab-btn" onclick="showTab('pW')">Weather Impact</button>
   <button class="help-toggle" style="margin-left:auto;font-size:12px;padding:0 8px" onclick="toggleHelp()">? Help</button>
   <button class="update-nav-btn" onclick="toggleUpdatePanel()">↻ Update Data</button>
 </div>
@@ -1833,6 +1833,22 @@ const WEATHER_WEEKLY = {
   'SE_Malmö':{'2026_01':[2.6, 0, 5, 0],'2026_02':[-0.8, 0, 7, 0],'2026_03':[3.4, 0, 2, 0],'2026_04':[1.3, 0, 6, 0],'2026_05':[-0.9, 0, 7, 0],'2026_06':[-0.4, 0, 7, 0],'2026_07':[-0.0, 0, 7, 0],'2026_08':[-0.1, 0, 6, 0],'2026_09':[5.5, 0, 1, 0],'2026_10':[8.1, 0, 1, 0],'2026_11':[7.3, 0, 0, 0],'2026_12':[7.1, 0, 0, 0],'2026_13':[7.4, 0, 0, 0],'2026_14':[8.4, 0, 0, 0],'2026_15':[8.5, 0, 0, 0],'2026_16':[10.1, 0, 0, 0],'2026_17':[11.9, 0, 0, 0],'2026_18':[15.1, 0, 0, 0],'2026_19':[14.2, 0, 0, 0],'2026_20':[11.3, 0, 0, 1],'2026_21':[16.9, 0, 0, 0],'2026_22':[19.1, 0, 0, 0],'2026_23':[18.4, 0, 0, 0],'2026_24':[16.5, 0, 0, 0]},
   'SE_Stockholm':{'2026_01':[-1.1, 0, 7, 0],'2026_02':[-1.8, 0, 7, 0],'2026_03':[1.0, 0, 3, 0],'2026_04':[-0.9, 0, 7, 0],'2026_05':[-4.0, 0, 7, 0],'2026_06':[-5.5, 0, 7, 0],'2026_07':[-6.4, 0, 7, 0],'2026_08':[-2.3, 0, 7, 0],'2026_09':[3.5, 0, 3, 0],'2026_10':[7.6, 0, 5, 0],'2026_11':[7.5, 0, 0, 0],'2026_12':[9.8, 0, 2, 0],'2026_13':[8.1, 0, 0, 0],'2026_14':[8.0, 0, 0, 0],'2026_15':[8.3, 0, 3, 0],'2026_16':[12.3, 0, 0, 0],'2026_17':[12.4, 0, 0, 0],'2026_18':[16.1, 0, 0, 0],'2026_19':[13.9, 0, 0, 0],'2026_20':[12.6, 0, 0, 0],'2026_21':[19.1, 0, 0, 0],'2026_22':[19.2, 0, 0, 0],'2026_23':[20.4, 0, 0, 0],'2026_24':[18.2, 0, 0, 0]},
 };
+
+// ---- 16-day weather forecast (Open-Meteo, fetched 2026-06-16, capital city per country) ----
+// Format per week/month: [avg_tmax_°C, heat_days>35°C, cold_days<0°C, heavy_rain_days>20mm]
+const WEATHER_FORECAST = {
+  AT:{weekly:{'2026_25':[29.3, 0, 0, 0],'2026_26':[31.5, 1, 0, 0],'2026_27':[31.5, 1, 0, 0]},monthly:{'2026_07':[30.0, 0, 0, 0]}},
+  BE:{weekly:{'2026_25':[31.1, 0, 0, 0],'2026_26':[28.0, 0, 0, 0],'2026_27':[24.2, 0, 0, 0]},monthly:{'2026_07':[22.5, 0, 0, 0]}},
+  DE:{weekly:{'2026_25':[27.9, 0, 0, 0],'2026_26':[24.5, 0, 0, 0],'2026_27':[23.2, 0, 0, 0]},monthly:{'2026_07':[21.6, 0, 0, 0]}},
+  ES:{weekly:{'2026_25':[35.2, 2, 0, 0],'2026_26':[37.5, 7, 0, 0],'2026_27':[35.2, 2, 0, 0]},monthly:{'2026_07':[33.8, 0, 0, 0]}},
+  FR:{weekly:{'2026_25':[33.4, 3, 0, 0],'2026_26':[33.1, 2, 0, 0],'2026_27':[28.9, 0, 0, 0]},monthly:{'2026_07':[28.3, 0, 0, 0]}},
+  IT:{weekly:{'2026_25':[34.4, 4, 0, 0],'2026_26':[36.3, 7, 0, 0],'2026_27':[34.8, 1, 0, 0]},monthly:{'2026_07':[34.8, 0, 0, 0]}},
+  NL:{weekly:{'2026_25':[27.5, 0, 0, 0],'2026_26':[25.1, 0, 0, 0],'2026_27':[20.3, 0, 0, 0]},monthly:{'2026_07':[18.2, 0, 0, 0]}},
+  PT:{weekly:{'2026_25':[29.7, 0, 0, 0],'2026_26':[33.4, 3, 0, 0],'2026_27':[31.4, 1, 0, 0]},monthly:{'2026_07':[23.4, 0, 0, 0]}},
+  SE:{weekly:{'2026_25':[21.6, 0, 0, 0],'2026_26':[18.8, 0, 0, 1],'2026_27':[18.6, 0, 0, 0]},monthly:{'2026_07':[18.4, 0, 0, 0]}},
+};
+const PW_FORECAST_WEEKS  = ['2026_25','2026_26','2026_27'];
+const PW_FORECAST_MONTHS = ['2026_07'];
 
 // Lead Share by Cohort — source: Tableau CJ Dashboard, LEAD SHARE BY view (EU aggregate, all countries)
 // Array order per period: [Dealer_Now, Private_Now, Dealer_4W, Private_4W, Dealer_3M, Private_3M, Not_Planned]
@@ -4878,7 +4894,7 @@ function showTab(id) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    if (['p1','p3','p4','p8','p6','p7','pW'][i] === id) b.classList.add('active');
+    if (['p1','p3','p4','p8','pW','p6','p7'][i] === id) b.classList.add('active');
   });
   if (id==='p1') renderP1();
   else if (id==='p3') renderP3();
@@ -6633,7 +6649,7 @@ function renderPwMainChart() {
   const regionKey = getPwRegionKey();
   const mLabel = PW_MONTH_LABELS[PW_MONTHS.indexOf(m)] || m;
 
-  let labels, srData, extremeData, bgColors, xIsWeeks = false;
+  let labels, srData, extremeData, extremeForecast = null, bgColors, xIsWeeks = false;
 
   if (singleCountry && isWeekly && wk) {
     // ── Specific week: compare all regions of this country ──
@@ -6655,31 +6671,54 @@ function renderPwMainChart() {
       `Show Rate & Extreme Weather — ${c} · ${wk.replace('2026_','CW')} by region`;
 
   } else if (singleCountry && isWeekly) {
-    // ── All weeks trend for one country (optionally one region/city) ──
+    // ── All weeks trend for one country + 3-week forecast ──
     xIsWeeks = true;
-    labels = PW_ALL_WEEKS.map(w=>'CW'+parseInt(w.split('_')[1]));
-    srData = PW_ALL_WEEKS.map(w=>{const r=RAW_DATA.find(x=>x.country===c&&x.period_type==='week'&&x.period_name===w);return r?+r.show_rate*100:null;});
+    const fcWeeks = PW_FORECAST_WEEKS;
+    const allWks = [...PW_ALL_WEEKS, ...fcWeeks];
+    labels = [
+      ...PW_ALL_WEEKS.map(w=>'CW'+parseInt(w.split('_')[1])),
+      ...fcWeeks.map(w=>'CW'+parseInt(w.split('_')[1])+'→'),
+    ];
+    srData = allWks.map(w=>{const r=RAW_DATA.find(x=>x.country===c&&x.period_type==='week'&&x.period_name===w);return r?+r.show_rate*100:null;});
 
     let weeklyStats;
     if (regionKey && WEATHER_WEEKLY[regionKey]) {
       weeklyStats = pwWeeklyExtreme(regionKey);
     } else {
       const cityKeys = (WEATHER_REGIONS[c]||[]).map(r=>r.key).filter(k=>WEATHER_WEEKLY[k]);
-      weeklyStats = cityKeys.length ? pwAvgWeeklyExtreme(cityKeys) : PW_ALL_WEEKS.map(()=>({heat:0,cold:0,rain:0,tmax:null}));
+      weeklyStats = cityKeys.length ? pwAvgWeeklyExtreme(cityKeys) : PW_ALL_WEEKS.map(()=>({heat:0,cold:0,rain:0}));
     }
-    extremeData = weeklyStats.map(d=>d.heat+d.cold+d.rain);
-    bgColors = extremeData.map(s=>s>=5?'#ef4444aa':s>=2?'#f59e0baa':COUNTRY_COLORS[c]+'cc');
+    const histExtreme = weeklyStats.map(d=>d.heat+d.cold+d.rain);
+    // Forecast uses capital city data (WEATHER_FORECAST keyed by country)
+    const fcData = fcWeeks.map(w=>{const fd=WEATHER_FORECAST[c]&&WEATHER_FORECAST[c].weekly&&WEATHER_FORECAST[c].weekly[w];return fd?fd[1]+fd[2]+fd[3]:0;});
+    extremeData = [...histExtreme, ...fcData.map(()=>null)];  // historical line (null tail so gap before forecast)
+    extremeForecast = [...histExtreme.map(()=>null), histExtreme[histExtreme.length-1], ...fcData.slice(1)]; // connect from last hist point
+    bgColors = [
+      ...histExtreme.map(s=>s>=5?'#ef4444aa':s>=2?'#f59e0baa':COUNTRY_COLORS[c]+'cc'),
+      ...fcData.map(s=>s>=5?'#ef444455':s>=2?'#f59e0b55':COUNTRY_COLORS[c]+'44'),
+    ];
 
     const cityLabel = regionKey ? ((WEATHER_REGIONS[c]||[]).find(r=>r.key===regionKey)||{city:regionKey}).city+', ' : '';
-    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${cityLabel}${c} · All weeks 2026`;
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${cityLabel}${c} · CW01–CW24 + forecast CW25–CW27`;
 
   } else if (singleCountry) {
-    // ── Monthly trend for one country ──
-    labels = PW_MONTH_LABELS;
-    srData = PW_MONTHS.map(mo=>pwGetSR(c, mo));
-    extremeData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;});
-    bgColors = extremeData.map(s=>s>=15?'#ef4444aa':s>=5?'#f59e0baa':COUNTRY_COLORS[c]+'cc');
-    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${c} · Monthly trend`;
+    // ── Monthly trend for one country + Jul 2026 forecast ──
+    const fcMonths = PW_FORECAST_MONTHS;
+    const allMonths = [...PW_MONTHS, ...fcMonths];
+    labels = [
+      ...PW_MONTH_LABELS,
+      ...fcMonths.map(m=>'Jul 26→'),
+    ];
+    srData = allMonths.map(mo=>pwGetSR(c, mo));
+    const histMonthExtreme = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;});
+    const fcMonthExtreme = fcMonths.map(mo=>{const fd=WEATHER_FORECAST[c]&&WEATHER_FORECAST[c].monthly&&WEATHER_FORECAST[c].monthly[mo];return fd?fd[1]+fd[2]+fd[3]:0;});
+    extremeData = [...histMonthExtreme, ...fcMonthExtreme.map(()=>null)];
+    extremeForecast = [...histMonthExtreme.map(()=>null), histMonthExtreme[histMonthExtreme.length-1], ...fcMonthExtreme.slice(1)];
+    bgColors = [
+      ...histMonthExtreme.map(s=>s>=15?'#ef4444aa':s>=5?'#f59e0baa':COUNTRY_COLORS[c]+'cc'),
+      ...fcMonthExtreme.map(s=>s>=5?'#ef444455':s>=2?'#f59e0b55':COUNTRY_COLORS[c]+'44'),
+    ];
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${c} · Jan 2025–Jun 2026 + forecast Jul 2026`;
 
   } else {
     // ── Cross-country comparison for selected month ──
@@ -6707,19 +6746,34 @@ function renderPwMainChart() {
             padding:{bottom:2},
           },
         },
-        { type:'line', label:'Extreme Weather Days', data:extremeData, yAxisID:'yEx',
+        { type:'line', label:'Extreme Days (actual)', data:extremeData, yAxisID:'yEx',
           borderColor:'#ef4444', backgroundColor:'#ef444420', borderWidth:2.5,
-          tension:xIsWeeks?0.2:singleCountry?0.3:0, pointRadius:5,
-          pointBackgroundColor:extremeData.map(v=>v>=5?'#dc2626':v>=2?'#f59e0b':'#94a3b8'),
+          tension:xIsWeeks?0.2:singleCountry?0.3:0, pointRadius:5, spanGaps:false,
+          pointBackgroundColor:(extremeData||[]).map(v=>v>=5?'#dc2626':v>=2?'#f59e0b':'#94a3b8'),
           pointBorderColor:'#fff', pointBorderWidth:1.5,
           datalabels:{
-            display: ctx => ctx.parsed && ctx.parsed.y > 0,
+            display: ctx => !!(ctx.parsed && ctx.parsed.y > 0),
             formatter: v => v > 0 ? v+'d' : '',
             anchor:'end', align:'top',
             font:{size:10, weight:700}, color:'#dc2626',
             padding:{bottom:2},
           },
         },
+        // Dashed forecast line (only present in single-country trend views)
+        ...(extremeForecast ? [{
+          type:'line', label:'Extreme Days (forecast)', data:extremeForecast, yAxisID:'yEx',
+          borderColor:'#ef444488', backgroundColor:'transparent', borderWidth:2,
+          borderDash:[6,4], tension:0.2, pointRadius:5, spanGaps:true,
+          pointBackgroundColor:(extremeForecast||[]).map(v=>v!==null&&v>=5?'#dc2626':v!==null&&v>=2?'#f59e0b':'#94a3b866'),
+          pointBorderColor:'#fff', pointBorderWidth:1,
+          datalabels:{
+            display: ctx => !!(ctx.parsed && ctx.parsed.y > 0),
+            formatter: v => v > 0 ? v+'d' : '',
+            anchor:'end', align:'top',
+            font:{size:10, weight:700}, color:'#ef4444',
+            padding:{bottom:2},
+          },
+        }] : []),
       ],
     },
     options: {
@@ -6728,9 +6782,10 @@ function renderPwMainChart() {
       plugins:{
         legend:{display:true, position:'bottom', labels:{boxWidth:12, font:{size:11}}},
         datalabels:{},
-        tooltip:{callbacks:{label:c=>{
-          if(c.dataset.label==='Show Rate %') return `SR: ${c.parsed.y!==null?c.parsed.y.toFixed(1)+'%':'N/A'}`;
-          return `Extreme days: ${c.parsed.y}`;
+        tooltip:{callbacks:{label:ctx=>{
+          if(ctx.dataset.label==='Show Rate %') return `SR: ${ctx.parsed.y!==null?ctx.parsed.y.toFixed(1)+'%':'N/A'}`;
+          const tag = ctx.dataset.label.includes('forecast') ? ' (forecast)' : '';
+          return `Extreme days${tag}: ${ctx.parsed.y}`;
         }}},
       },
       scales:{
