@@ -1789,6 +1789,51 @@ const WEATHER_MONTHLY = {
   },
 };
 
+
+const WEATHER_REGIONS = {
+  AT: [{city:'Vienna',key:'AT_Vienna',region:'East'},{city:'Graz',key:'AT_Graz',region:'South'},{city:'Innsbruck',key:'AT_Innsbruck',region:'West'}],
+  BE: [{city:'Brussels',key:'BE_Brussels',region:'Center'},{city:'Antwerp',key:'BE_Antwerp',region:'North'},{city:'Liège',key:'BE_Liège',region:'East'}],
+  DE: [{city:'Berlin',key:'DE_Berlin',region:'East'},{city:'Munich',key:'DE_Munich',region:'South'},{city:'Hamburg',key:'DE_Hamburg',region:'North'},{city:'Frankfurt',key:'DE_Frankfurt',region:'West'}],
+  ES: [{city:'Madrid',key:'ES_Madrid',region:'Center'},{city:'Barcelona',key:'ES_Barcelona',region:'NE'},{city:'Seville',key:'ES_Seville',region:'South'},{city:'Bilbao',key:'ES_Bilbao',region:'North'}],
+  FR: [{city:'Paris',key:'FR_Paris',region:'North'},{city:'Lyon',key:'FR_Lyon',region:'SE'},{city:'Marseille',key:'FR_Marseille',region:'South'},{city:'Bordeaux',key:'FR_Bordeaux',region:'SW'}],
+  IT: [{city:'Rome',key:'IT_Rome',region:'Center'},{city:'Milan',key:'IT_Milan',region:'North'},{city:'Naples',key:'IT_Naples',region:'South'}],
+  NL: [{city:'Amsterdam',key:'NL_Amsterdam',region:'West'},{city:'Rotterdam',key:'NL_Rotterdam',region:'SW'},{city:'Eindhoven',key:'NL_Eindhoven',region:'SE'}],
+  PT: [{city:'Lisbon',key:'PT_Lisbon',region:'South'},{city:'Porto',key:'PT_Porto',region:'North'}],
+  SE: [{city:'Stockholm',key:'SE_Stockholm',region:'East'},{city:'Gothenburg',key:'SE_Gothenburg',region:'West'},{city:'Malmö',key:'SE_Malmö',region:'South'}],
+};
+
+const WEATHER_WEEKLY = {
+  'AT_Graz':{'2026_01':[2.1, 0, 7, 0],'2026_02':[-1.4, 0, 7, 0],'2026_03':[3.0, 0, 7, 0],'2026_04':[-1.6, 0, 7, 0],'2026_05':[4.0, 0, 5, 0],'2026_06':[6.2, 0, 3, 0],'2026_07':[7.7, 0, 1, 0],'2026_08':[4.6, 0, 7, 1],'2026_09':[11.9, 0, 2, 0],'2026_10':[13.8, 0, 0, 0],'2026_11':[14.4, 0, 0, 0],'2026_12':[10.7, 0, 0, 0],'2026_13':[10.5, 0, 0, 0],'2026_14':[13.7, 0, 0, 0],'2026_15':[16.5, 0, 0, 0],'2026_16':[18.2, 0, 0, 0],'2026_17':[18.7, 0, 0, 0],'2026_18':[18.7, 0, 0, 0],'2026_19':[22.5, 0, 0, 0],'2026_20':[16.0, 0, 0, 0],'2026_21':[23.1, 0, 0, 0],'2026_22':[27.4, 0, 0, 0],'2026_23':[21.7, 0, 0, 0],'2026_24':[22.9, 0, 0, 0]},
+  'AT_Innsbruck':{'2026_01':[2.3, 0, 7, 0],'2026_02':[0.1, 0, 7, 0],'2026_03':[8.2, 0, 7, 0],'2026_04':[7.4, 0, 6, 0],'2026_05':[6.1, 0, 6, 0],'2026_06':[8.8, 0, 5, 0],'2026_07':[8.3, 0, 3, 0],'2026_08':[6.0, 0, 5, 1],'2026_09':[13.0, 0, 4, 1],'2026_10':[13.7, 0, 6, 0],'2026_11':[11.2, 0, 2, 0],'2026_12':[10.8, 0, 3, 0],'2026_13':[8.6, 0, 4, 0],'2026_14':[9.3, 0, 3, 0],'2026_15':[20.7, 0, 0, 0],'2026_16':[18.5, 0, 0, 0],'2026_17':[17.7, 0, 0, 0],'2026_18':[21.3, 0, 0, 0],'2026_19':[21.0, 0, 0, 0],'2026_20':[13.8, 0, 0, 0],'2026_21':[23.3, 0, 0, 0],'2026_22':[28.5, 0, 0, 0],'2026_23':[22.4, 0, 0, 0],'2026_24':[21.2, 0, 0, 0]},
+  'AT_Vienna':{'2026_01':[2.7, 0, 6, 0],'2026_02':[-1.7, 0, 7, 0],'2026_03':[0.3, 0, 7, 0],'2026_04':[-1.6, 0, 7, 0],'2026_05':[2.5, 0, 6, 0],'2026_06':[4.8, 0, 3, 0],'2026_07':[7.0, 0, 1, 0],'2026_08':[4.1, 0, 6, 0],'2026_09':[11.8, 0, 1, 0],'2026_10':[13.6, 0, 0, 0],'2026_11':[15.6, 0, 0, 0],'2026_12':[12.7, 0, 0, 0],'2026_13':[10.7, 0, 0, 0],'2026_14':[12.8, 0, 0, 0],'2026_15':[14.3, 0, 0, 0],'2026_16':[18.8, 0, 0, 0],'2026_17':[17.9, 0, 0, 0],'2026_18':[19.9, 0, 0, 0],'2026_19':[24.0, 0, 0, 0],'2026_20':[16.2, 0, 0, 0],'2026_21':[23.3, 0, 0, 0],'2026_22':[28.0, 0, 0, 0],'2026_23':[22.6, 0, 0, 0],'2026_24':[22.4, 0, 0, 0]},
+  'BE_Antwerp':{'2026_01':[3.2, 0, 4, 0],'2026_02':[1.8, 0, 6, 0],'2026_03':[10.1, 0, 0, 0],'2026_04':[7.6, 0, 1, 0],'2026_05':[5.6, 0, 2, 0],'2026_06':[9.4, 0, 0, 0],'2026_07':[7.4, 0, 2, 0],'2026_08':[8.5, 0, 0, 1],'2026_09':[14.0, 0, 0, 0],'2026_10':[15.8, 0, 0, 0],'2026_11':[12.1, 0, 0, 0],'2026_12':[14.1, 0, 0, 0],'2026_13':[11.0, 0, 0, 0],'2026_14':[12.3, 0, 0, 0],'2026_15':[17.5, 0, 0, 0],'2026_16':[17.0, 0, 0, 0],'2026_17':[17.4, 0, 0, 0],'2026_18':[21.2, 0, 0, 0],'2026_19':[17.0, 0, 0, 0],'2026_20':[12.4, 0, 0, 0],'2026_21':[21.5, 0, 0, 0],'2026_22':[28.0, 0, 0, 0],'2026_23':[19.4, 0, 0, 0],'2026_24':[17.7, 0, 0, 0]},
+  'BE_Brussels':{'2026_01':[2.9, 0, 5, 0],'2026_02':[2.2, 0, 6, 1],'2026_03':[10.5, 0, 0, 0],'2026_04':[8.2, 0, 1, 0],'2026_05':[6.2, 0, 1, 0],'2026_06':[10.0, 0, 0, 0],'2026_07':[7.7, 0, 2, 0],'2026_08':[8.7, 0, 1, 1],'2026_09':[14.0, 0, 0, 0],'2026_10':[16.2, 0, 0, 0],'2026_11':[12.0, 0, 0, 0],'2026_12':[13.8, 0, 0, 0],'2026_13':[11.0, 0, 1, 0],'2026_14':[12.0, 0, 0, 0],'2026_15':[17.7, 0, 0, 0],'2026_16':[16.6, 0, 0, 0],'2026_17':[17.2, 0, 0, 0],'2026_18':[21.2, 0, 0, 0],'2026_19':[16.8, 0, 0, 0],'2026_20':[12.3, 0, 0, 0],'2026_21':[21.9, 0, 0, 0],'2026_22':[28.3, 0, 0, 0],'2026_23':[19.3, 0, 0, 0],'2026_24':[17.9, 0, 0, 0]},
+  'BE_Liège':{'2026_01':[1.7, 0, 6, 0],'2026_02':[1.3, 0, 6, 0],'2026_03':[10.1, 0, 0, 0],'2026_04':[7.8, 0, 3, 0],'2026_05':[5.5, 0, 2, 0],'2026_06':[9.3, 0, 0, 0],'2026_07':[7.5, 0, 2, 0],'2026_08':[7.7, 0, 1, 0],'2026_09':[14.6, 0, 0, 0],'2026_10':[16.8, 0, 0, 0],'2026_11':[11.2, 0, 1, 0],'2026_12':[12.9, 0, 0, 0],'2026_13':[10.5, 0, 1, 0],'2026_14':[11.3, 0, 0, 0],'2026_15':[16.9, 0, 0, 0],'2026_16':[15.7, 0, 0, 0],'2026_17':[16.0, 0, 0, 0],'2026_18':[20.4, 0, 0, 0],'2026_19':[16.1, 0, 0, 0],'2026_20':[11.7, 0, 0, 0],'2026_21':[21.1, 0, 0, 0],'2026_22':[26.4, 0, 0, 0],'2026_23':[19.1, 0, 0, 0],'2026_24':[17.7, 0, 0, 0]},
+  'DE_Berlin':{'2026_01':[2.1, 0, 5, 0],'2026_02':[-2.8, 0, 7, 0],'2026_03':[3.7, 0, 5, 0],'2026_04':[-0.3, 0, 7, 0],'2026_05':[-1.1, 0, 7, 0],'2026_06':[-1.9, 0, 6, 0],'2026_07':[3.7, 0, 4, 0],'2026_08':[2.3, 0, 6, 0],'2026_09':[12.5, 0, 0, 0],'2026_10':[13.7, 0, 1, 0],'2026_11':[13.6, 0, 0, 0],'2026_12':[11.3, 0, 1, 0],'2026_13':[10.9, 0, 1, 0],'2026_14':[11.6, 0, 1, 0],'2026_15':[11.7, 0, 1, 0],'2026_16':[17.6, 0, 0, 1],'2026_17':[14.3, 0, 0, 0],'2026_18':[20.7, 0, 0, 0],'2026_19':[16.2, 0, 0, 0],'2026_20':[14.3, 0, 0, 0],'2026_21':[22.7, 0, 0, 0],'2026_22':[24.1, 0, 0, 0],'2026_23':[22.9, 0, 0, 0],'2026_24':[20.2, 0, 0, 0]},
+  'DE_Frankfurt':{'2026_01':[1.9, 0, 6, 0],'2026_02':[0.6, 0, 6, 0],'2026_03':[7.0, 0, 3, 0],'2026_04':[2.3, 0, 7, 0],'2026_05':[2.8, 0, 4, 0],'2026_06':[4.7, 0, 4, 0],'2026_07':[7.6, 0, 2, 0],'2026_08':[7.3, 0, 1, 0],'2026_09':[13.9, 0, 0, 0],'2026_10':[15.4, 0, 0, 0],'2026_11':[13.0, 0, 0, 0],'2026_12':[13.0, 0, 0, 0],'2026_13':[9.9, 0, 2, 0],'2026_14':[13.2, 0, 1, 0],'2026_15':[16.6, 0, 0, 0],'2026_16':[17.9, 0, 0, 0],'2026_17':[18.0, 0, 0, 0],'2026_18':[21.9, 0, 0, 0],'2026_19':[19.7, 0, 0, 0],'2026_20':[14.2, 0, 0, 0],'2026_21':[23.7, 0, 0, 0],'2026_22':[28.3, 0, 0, 0],'2026_23':[21.6, 0, 0, 0],'2026_24':[21.0, 0, 0, 0]},
+  'DE_Hamburg':{'2026_01':[2.7, 0, 5, 0],'2026_02':[-1.3, 0, 7, 0],'2026_03':[4.2, 0, 2, 0],'2026_04':[-0.2, 0, 7, 0],'2026_05':[-0.9, 0, 7, 0],'2026_06':[-2.2, 0, 6, 0],'2026_07':[1.2, 0, 4, 0],'2026_08':[2.3, 0, 5, 0],'2026_09':[12.6, 0, 0, 1],'2026_10':[14.2, 0, 0, 0],'2026_11':[12.2, 0, 0, 0],'2026_12':[11.3, 0, 0, 0],'2026_13':[10.4, 0, 0, 0],'2026_14':[11.0, 0, 0, 0],'2026_15':[12.4, 0, 0, 0],'2026_16':[15.4, 0, 0, 0],'2026_17':[12.5, 0, 0, 0],'2026_18':[20.1, 0, 0, 0],'2026_19':[15.9, 0, 0, 0],'2026_20':[12.8, 0, 0, 0],'2026_21':[20.7, 0, 0, 0],'2026_22':[24.1, 0, 0, 0],'2026_23':[20.2, 0, 0, 0],'2026_24':[17.7, 0, 0, 0]},
+  'DE_Munich':{'2026_01':[0.4, 0, 7, 0],'2026_02':[-0.1, 0, 6, 0],'2026_03':[6.6, 0, 4, 0],'2026_04':[2.0, 0, 7, 0],'2026_05':[3.7, 0, 7, 0],'2026_06':[5.6, 0, 5, 0],'2026_07':[6.7, 0, 3, 0],'2026_08':[5.3, 0, 4, 0],'2026_09':[12.5, 0, 0, 1],'2026_10':[12.1, 0, 3, 0],'2026_11':[12.5, 0, 0, 0],'2026_12':[9.7, 0, 2, 0],'2026_13':[8.5, 0, 2, 0],'2026_14':[10.3, 0, 3, 0],'2026_15':[14.7, 0, 0, 0],'2026_16':[15.3, 0, 0, 0],'2026_17':[16.0, 0, 0, 0],'2026_18':[20.1, 0, 0, 0],'2026_19':[20.4, 0, 0, 0],'2026_20':[13.0, 0, 0, 0],'2026_21':[21.6, 0, 0, 0],'2026_22':[27.8, 0, 0, 0],'2026_23':[21.1, 0, 0, 0],'2026_24':[18.9, 0, 0, 0]},
+  'ES_Barcelona':{'2026_01':[11.8, 0, 0, 0],'2026_02':[11.6, 0, 1, 0],'2026_03':[13.9, 0, 0, 1],'2026_04':[12.7, 0, 0, 2],'2026_05':[14.0, 0, 0, 0],'2026_06':[14.9, 0, 0, 0],'2026_07':[16.8, 0, 0, 0],'2026_08':[17.1, 0, 0, 0],'2026_09':[16.2, 0, 0, 0],'2026_10':[15.2, 0, 0, 2],'2026_11':[14.9, 0, 0, 0],'2026_12':[15.7, 0, 0, 0],'2026_13':[15.9, 0, 0, 0],'2026_14':[18.7, 0, 0, 0],'2026_15':[20.9, 0, 0, 0],'2026_16':[19.4, 0, 0, 0],'2026_17':[20.5, 0, 0, 0],'2026_18':[20.9, 0, 0, 0],'2026_19':[19.7, 0, 0, 0],'2026_20':[20.5, 0, 0, 0],'2026_21':[23.9, 0, 0, 0],'2026_22':[28.2, 0, 0, 0],'2026_23':[24.5, 0, 0, 0],'2026_24':[26.4, 0, 0, 0]},
+  'ES_Bilbao':{'2026_01':[10.1, 0, 0, 0],'2026_02':[10.6, 0, 0, 0],'2026_03':[13.2, 0, 0, 0],'2026_04':[12.8, 0, 0, 0],'2026_05':[14.7, 0, 0, 0],'2026_06':[14.6, 0, 0, 0],'2026_07':[15.5, 0, 0, 1],'2026_08':[15.6, 0, 0, 1],'2026_09':[20.3, 0, 0, 0],'2026_10':[16.6, 0, 0, 1],'2026_11':[15.6, 0, 0, 1],'2026_12':[20.0, 0, 0, 0],'2026_13':[13.2, 0, 0, 0],'2026_14':[16.3, 0, 0, 0],'2026_15':[21.9, 0, 0, 0],'2026_16':[19.3, 0, 0, 0],'2026_17':[23.4, 0, 0, 0],'2026_18':[21.3, 0, 0, 1],'2026_19':[18.4, 0, 0, 0],'2026_20':[16.6, 0, 0, 0],'2026_21':[27.3, 0, 0, 0],'2026_22':[29.4, 0, 0, 0],'2026_23':[21.9, 0, 0, 0],'2026_24':[24.8, 1, 0, 0]},
+  'ES_Madrid':{'2026_01':[9.3, 0, 2, 0],'2026_02':[7.5, 0, 3, 0],'2026_03':[9.3, 0, 0, 0],'2026_04':[8.8, 0, 2, 0],'2026_05':[10.5, 0, 0, 0],'2026_06':[9.6, 0, 0, 1],'2026_07':[12.3, 0, 0, 1],'2026_08':[14.1, 0, 0, 0],'2026_09':[17.9, 0, 0, 0],'2026_10':[14.4, 0, 0, 0],'2026_11':[14.3, 0, 0, 0],'2026_12':[16.6, 0, 0, 0],'2026_13':[17.5, 0, 0, 0],'2026_14':[21.4, 0, 0, 0],'2026_15':[22.5, 0, 0, 0],'2026_16':[23.5, 0, 0, 0],'2026_17':[25.6, 0, 0, 0],'2026_18':[21.6, 0, 0, 0],'2026_19':[17.7, 0, 0, 0],'2026_20':[19.2, 0, 0, 0],'2026_21':[29.6, 0, 0, 0],'2026_22':[33.7, 2, 0, 0],'2026_23':[31.0, 0, 0, 0],'2026_24':[32.6, 0, 0, 0]},
+  'ES_Seville':{'2026_01':[14.5, 0, 0, 0],'2026_02':[12.6, 0, 0, 0],'2026_03':[14.0, 0, 0, 0],'2026_04':[14.3, 0, 0, 1],'2026_05':[16.7, 0, 0, 0],'2026_06':[15.2, 0, 0, 2],'2026_07':[17.2, 0, 0, 0],'2026_08':[18.5, 0, 0, 0],'2026_09':[21.1, 0, 0, 0],'2026_10':[17.1, 0, 0, 0],'2026_11':[18.9, 0, 0, 0],'2026_12':[21.5, 0, 0, 0],'2026_13':[22.9, 0, 0, 0],'2026_14':[25.3, 0, 0, 0],'2026_15':[23.0, 0, 0, 0],'2026_16':[26.9, 0, 0, 0],'2026_17':[26.8, 0, 0, 0],'2026_18':[24.5, 0, 0, 0],'2026_19':[23.3, 0, 0, 0],'2026_20':[24.2, 0, 0, 0],'2026_21':[33.1, 3, 0, 0],'2026_22':[35.7, 4, 0, 0],'2026_23':[33.9, 1, 0, 0],'2026_24':[34.9, 6, 0, 0]},
+  'FR_Bordeaux':{'2026_01':[3.8, 0, 7, 0],'2026_02':[8.1, 0, 3, 0],'2026_03':[12.8, 0, 0, 0],'2026_04':[11.1, 0, 0, 0],'2026_05':[11.9, 0, 0, 1],'2026_06':[12.7, 0, 0, 0],'2026_07':[12.5, 0, 0, 1],'2026_08':[14.0, 0, 0, 0],'2026_09':[17.1, 0, 0, 0],'2026_10':[17.3, 0, 0, 0],'2026_11':[15.1, 0, 0, 0],'2026_12':[18.3, 0, 0, 0],'2026_13':[13.9, 0, 0, 0],'2026_14':[16.2, 0, 0, 0],'2026_15':[23.2, 0, 0, 0],'2026_16':[20.9, 0, 0, 0],'2026_17':[24.7, 0, 0, 0],'2026_18':[22.0, 0, 0, 0],'2026_19':[19.3, 0, 0, 0],'2026_20':[16.6, 0, 0, 0],'2026_21':[26.3, 0, 0, 0],'2026_22':[31.6, 0, 0, 0],'2026_23':[21.9, 0, 0, 0],'2026_24':[25.4, 0, 0, 0]},
+  'FR_Lyon':{'2026_01':[1.9, 0, 7, 0],'2026_02':[3.1, 0, 5, 0],'2026_03':[10.8, 0, 1, 0],'2026_04':[7.5, 0, 0, 0],'2026_05':[8.7, 0, 0, 0],'2026_06':[11.7, 0, 0, 0],'2026_07':[10.3, 0, 0, 0],'2026_08':[11.4, 0, 0, 0],'2026_09':[14.6, 0, 0, 0],'2026_10':[17.1, 0, 0, 0],'2026_11':[13.2, 0, 0, 0],'2026_12':[14.0, 0, 1, 0],'2026_13':[11.5, 0, 0, 0],'2026_14':[15.4, 0, 0, 0],'2026_15':[23.6, 0, 0, 0],'2026_16':[17.6, 0, 0, 0],'2026_17':[22.2, 0, 0, 0],'2026_18':[23.0, 0, 0, 0],'2026_19':[18.0, 0, 0, 2],'2026_20':[15.6, 0, 0, 0],'2026_21':[25.3, 0, 0, 0],'2026_22':[32.0, 0, 0, 0],'2026_23':[23.0, 0, 0, 0],'2026_24':[25.1, 0, 0, 0]},
+  'FR_Marseille':{'2026_01':[9.2, 0, 1, 0],'2026_02':[7.8, 0, 3, 0],'2026_03':[13.4, 0, 0, 1],'2026_04':[12.3, 0, 0, 0],'2026_05':[11.8, 0, 0, 0],'2026_06':[12.3, 0, 0, 1],'2026_07':[12.8, 0, 0, 0],'2026_08':[14.1, 0, 0, 0],'2026_09':[14.9, 0, 0, 0],'2026_10':[17.0, 0, 0, 0],'2026_11':[14.1, 0, 0, 0],'2026_12':[15.5, 0, 0, 0],'2026_13':[14.1, 0, 0, 0],'2026_14':[17.0, 0, 0, 0],'2026_15':[19.6, 0, 0, 0],'2026_16':[20.3, 0, 0, 0],'2026_17':[20.2, 0, 0, 0],'2026_18':[20.7, 0, 0, 0],'2026_19':[18.8, 0, 0, 1],'2026_20':[19.0, 0, 0, 0],'2026_21':[23.7, 0, 0, 0],'2026_22':[27.4, 0, 0, 0],'2026_23':[25.0, 0, 0, 0],'2026_24':[26.6, 0, 0, 0]},
+  'FR_Paris':{'2026_01':[3.6, 0, 6, 0],'2026_02':[4.5, 0, 4, 0],'2026_03':[11.3, 0, 0, 0],'2026_04':[9.7, 0, 0, 0],'2026_05':[8.2, 0, 0, 0],'2026_06':[11.4, 0, 0, 0],'2026_07':[10.6, 0, 2, 0],'2026_08':[11.1, 0, 0, 0],'2026_09':[15.2, 0, 0, 0],'2026_10':[17.1, 0, 0, 0],'2026_11':[13.0, 0, 0, 0],'2026_12':[15.2, 0, 0, 0],'2026_13':[12.2, 0, 0, 0],'2026_14':[13.5, 0, 0, 0],'2026_15':[19.7, 0, 0, 0],'2026_16':[18.6, 0, 0, 0],'2026_17':[20.2, 0, 0, 0],'2026_18':[23.2, 0, 0, 0],'2026_19':[17.6, 0, 0, 1],'2026_20':[13.7, 0, 0, 0],'2026_21':[23.1, 0, 0, 0],'2026_22':[30.8, 0, 0, 0],'2026_23':[20.8, 0, 0, 0],'2026_24':[22.1, 0, 0, 0]},
+  'IT_Milan':{'2026_01':[5.3, 0, 3, 0],'2026_02':[5.2, 0, 6, 0],'2026_03':[7.3, 0, 1, 0],'2026_04':[5.7, 0, 3, 0],'2026_05':[7.9, 0, 1, 1],'2026_06':[9.0, 0, 0, 0],'2026_07':[12.3, 0, 0, 0],'2026_08':[12.8, 0, 0, 1],'2026_09':[14.7, 0, 0, 0],'2026_10':[14.4, 0, 0, 0],'2026_11':[14.3, 0, 0, 2],'2026_12':[15.3, 0, 0, 0],'2026_13':[16.2, 0, 0, 0],'2026_14':[19.4, 0, 0, 0],'2026_15':[22.6, 0, 0, 0],'2026_16':[21.5, 0, 0, 0],'2026_17':[22.8, 0, 0, 0],'2026_18':[23.7, 0, 0, 0],'2026_19':[20.2, 0, 0, 1],'2026_20':[18.7, 0, 0, 1],'2026_21':[27.8, 0, 0, 0],'2026_22':[33.6, 2, 0, 0],'2026_23':[26.3, 0, 0, 1],'2026_24':[29.9, 0, 0, 0]},
+  'IT_Naples':{'2026_01':[13.6, 0, 1, 0],'2026_02':[13.0, 0, 0, 1],'2026_03':[14.1, 0, 0, 0],'2026_04':[12.9, 0, 0, 1],'2026_05':[13.6, 0, 0, 1],'2026_06':[15.3, 0, 0, 2],'2026_07':[14.3, 0, 0, 1],'2026_08':[15.0, 0, 0, 0],'2026_09':[15.9, 0, 0, 0],'2026_10':[17.5, 0, 0, 0],'2026_11':[16.8, 0, 0, 0],'2026_12':[15.4, 0, 0, 0],'2026_13':[15.8, 0, 0, 0],'2026_14':[16.0, 0, 0, 0],'2026_15':[19.1, 0, 0, 0],'2026_16':[22.3, 0, 0, 0],'2026_17':[20.7, 0, 0, 0],'2026_18':[22.0, 0, 0, 0],'2026_19':[22.2, 0, 0, 0],'2026_20':[20.6, 0, 0, 0],'2026_21':[25.8, 0, 0, 0],'2026_22':[29.2, 0, 0, 0],'2026_23':[26.4, 0, 0, 0],'2026_24':[28.5, 0, 0, 0]},
+  'IT_Rome':{'2026_01':[12.6, 0, 0, 2],'2026_02':[11.4, 0, 1, 1],'2026_03':[14.1, 0, 1, 0],'2026_04':[13.4, 0, 0, 2],'2026_05':[13.3, 0, 0, 1],'2026_06':[14.7, 0, 0, 1],'2026_07':[14.9, 0, 0, 2],'2026_08':[15.5, 0, 0, 1],'2026_09':[16.9, 0, 0, 0],'2026_10':[17.4, 0, 0, 0],'2026_11':[17.0, 0, 0, 0],'2026_12':[17.0, 0, 0, 0],'2026_13':[15.8, 0, 0, 0],'2026_14':[18.7, 0, 0, 0],'2026_15':[23.8, 0, 0, 0],'2026_16':[23.7, 0, 0, 0],'2026_17':[22.5, 0, 0, 0],'2026_18':[23.3, 0, 0, 1],'2026_19':[22.5, 0, 0, 0],'2026_20':[20.8, 0, 0, 0],'2026_21':[26.9, 0, 0, 0],'2026_22':[31.8, 0, 0, 0],'2026_23':[27.9, 0, 0, 0],'2026_24':[30.5, 0, 0, 0]},
+  'NL_Amsterdam':{'2026_01':[4.6, 0, 2, 0],'2026_02':[1.1, 0, 7, 0],'2026_03':[8.6, 0, 0, 0],'2026_04':[5.1, 0, 1, 0],'2026_05':[4.3, 0, 3, 0],'2026_06':[6.5, 0, 4, 0],'2026_07':[5.9, 0, 2, 0],'2026_08':[7.2, 0, 0, 0],'2026_09':[12.9, 0, 0, 0],'2026_10':[15.2, 0, 0, 0],'2026_11':[11.5, 0, 0, 0],'2026_12':[12.7, 0, 0, 0],'2026_13':[10.1, 0, 0, 0],'2026_14':[11.9, 0, 0, 0],'2026_15':[15.2, 0, 0, 0],'2026_16':[15.3, 0, 0, 0],'2026_17':[13.6, 0, 0, 0],'2026_18':[18.2, 0, 0, 0],'2026_19':[15.9, 0, 0, 0],'2026_20':[12.0, 0, 0, 0],'2026_21':[20.4, 0, 0, 0],'2026_22':[25.3, 0, 0, 0],'2026_23':[18.9, 0, 0, 0],'2026_24':[17.1, 0, 0, 0]},
+  'NL_Eindhoven':{'2026_01':[3.0, 0, 4, 0],'2026_02':[1.2, 0, 6, 0],'2026_03':[9.9, 0, 0, 0],'2026_04':[6.5, 0, 4, 0],'2026_05':[5.4, 0, 4, 0],'2026_06':[8.5, 0, 0, 0],'2026_07':[7.4, 0, 3, 0],'2026_08':[7.4, 0, 0, 0],'2026_09':[14.7, 0, 0, 0],'2026_10':[16.9, 0, 0, 0],'2026_11':[12.1, 0, 1, 0],'2026_12':[13.7, 0, 0, 0],'2026_13':[11.6, 0, 1, 0],'2026_14':[12.6, 0, 0, 0],'2026_15':[17.6, 0, 0, 0],'2026_16':[17.2, 0, 0, 0],'2026_17':[17.0, 0, 0, 0],'2026_18':[21.2, 0, 0, 0],'2026_19':[16.3, 0, 0, 0],'2026_20':[12.9, 0, 0, 0],'2026_21':[22.5, 0, 0, 0],'2026_22':[27.9, 0, 0, 0],'2026_23':[20.0, 0, 0, 0],'2026_24':[18.3, 0, 0, 0]},
+  'NL_Rotterdam':{'2026_01':[4.4, 0, 1, 0],'2026_02':[1.8, 0, 6, 0],'2026_03':[9.2, 0, 0, 0],'2026_04':[6.2, 0, 1, 0],'2026_05':[5.2, 0, 2, 0],'2026_06':[7.6, 0, 1, 0],'2026_07':[6.6, 0, 2, 0],'2026_08':[7.4, 0, 0, 0],'2026_09':[13.3, 0, 0, 0],'2026_10':[15.2, 0, 0, 0],'2026_11':[11.8, 0, 0, 0],'2026_12':[13.1, 0, 0, 0],'2026_13':[10.5, 0, 0, 0],'2026_14':[11.9, 0, 0, 0],'2026_15':[15.9, 0, 0, 0],'2026_16':[16.0, 0, 0, 0],'2026_17':[15.2, 0, 0, 0],'2026_18':[19.7, 0, 0, 0],'2026_19':[17.0, 0, 0, 0],'2026_20':[12.1, 0, 0, 0],'2026_21':[20.7, 0, 0, 0],'2026_22':[26.1, 0, 0, 0],'2026_23':[19.0, 0, 0, 0],'2026_24':[17.3, 0, 0, 0]},
+  'PT_Lisbon':{'2026_01':[14.7, 0, 0, 1],'2026_02':[13.7, 0, 0, 0],'2026_03':[13.5, 0, 0, 0],'2026_04':[14.6, 0, 0, 1],'2026_05':[15.7, 0, 0, 1],'2026_06':[15.1, 0, 0, 2],'2026_07':[15.6, 0, 0, 0],'2026_08':[16.7, 0, 0, 0],'2026_09':[17.8, 0, 0, 0],'2026_10':[16.6, 0, 0, 0],'2026_11':[16.8, 0, 0, 0],'2026_12':[19.0, 0, 0, 0],'2026_13':[21.7, 0, 0, 0],'2026_14':[24.5, 0, 0, 0],'2026_15':[18.8, 0, 0, 0],'2026_16':[22.4, 0, 0, 0],'2026_17':[23.4, 0, 0, 0],'2026_18':[21.5, 0, 0, 0],'2026_19':[19.2, 0, 0, 0],'2026_20':[19.8, 0, 0, 0],'2026_21':[28.4, 0, 0, 0],'2026_22':[30.8, 0, 0, 0],'2026_23':[25.6, 0, 0, 0],'2026_24':[29.9, 1, 0, 0]},
+  'PT_Porto':{'2026_01':[13.8, 0, 0, 0],'2026_02':[11.8, 0, 0, 0],'2026_03':[11.9, 0, 0, 0],'2026_04':[12.2, 0, 0, 4],'2026_05':[14.0, 0, 0, 5],'2026_06':[13.2, 0, 0, 5],'2026_07':[14.1, 0, 0, 3],'2026_08':[14.7, 0, 0, 0],'2026_09':[15.8, 0, 0, 0],'2026_10':[15.9, 0, 0, 0],'2026_11':[14.4, 0, 0, 0],'2026_12':[19.3, 0, 0, 0],'2026_13':[20.3, 0, 0, 0],'2026_14':[22.4, 0, 0, 0],'2026_15':[20.0, 0, 0, 0],'2026_16':[17.6, 0, 0, 0],'2026_17':[20.9, 0, 0, 0],'2026_18':[19.9, 0, 0, 0],'2026_19':[17.2, 0, 0, 0],'2026_20':[17.6, 0, 0, 1],'2026_21':[24.1, 0, 0, 0],'2026_22':[25.0, 0, 0, 0],'2026_23':[20.4, 0, 0, 0],'2026_24':[26.6, 1, 0, 0]},
+  'SE_Gothenburg':{'2026_01':[-0.2, 0, 7, 0],'2026_02':[-4.2, 0, 7, 0],'2026_03':[2.1, 0, 2, 0],'2026_04':[-0.4, 0, 7, 0],'2026_05':[-2.4, 0, 7, 0],'2026_06':[-2.3, 0, 7, 0],'2026_07':[-3.3, 0, 7, 0],'2026_08':[-1.6, 0, 7, 0],'2026_09':[4.1, 0, 2, 0],'2026_10':[7.2, 0, 2, 0],'2026_11':[6.8, 0, 0, 0],'2026_12':[6.6, 0, 1, 0],'2026_13':[7.0, 0, 0, 0],'2026_14':[7.8, 0, 0, 0],'2026_15':[10.5, 0, 2, 0],'2026_16':[11.8, 0, 0, 0],'2026_17':[12.4, 0, 0, 0],'2026_18':[14.0, 0, 0, 0],'2026_19':[13.4, 0, 0, 0],'2026_20':[11.3, 0, 0, 1],'2026_21':[16.8, 0, 0, 0],'2026_22':[17.8, 0, 0, 0],'2026_23':[18.7, 0, 0, 0],'2026_24':[15.9, 0, 0, 0]},
+  'SE_Malmö':{'2026_01':[2.6, 0, 5, 0],'2026_02':[-0.8, 0, 7, 0],'2026_03':[3.4, 0, 2, 0],'2026_04':[1.3, 0, 6, 0],'2026_05':[-0.9, 0, 7, 0],'2026_06':[-0.4, 0, 7, 0],'2026_07':[-0.0, 0, 7, 0],'2026_08':[-0.1, 0, 6, 0],'2026_09':[5.5, 0, 1, 0],'2026_10':[8.1, 0, 1, 0],'2026_11':[7.3, 0, 0, 0],'2026_12':[7.1, 0, 0, 0],'2026_13':[7.4, 0, 0, 0],'2026_14':[8.4, 0, 0, 0],'2026_15':[8.5, 0, 0, 0],'2026_16':[10.1, 0, 0, 0],'2026_17':[11.9, 0, 0, 0],'2026_18':[15.1, 0, 0, 0],'2026_19':[14.2, 0, 0, 0],'2026_20':[11.3, 0, 0, 1],'2026_21':[16.9, 0, 0, 0],'2026_22':[19.1, 0, 0, 0],'2026_23':[18.4, 0, 0, 0],'2026_24':[16.5, 0, 0, 0]},
+  'SE_Stockholm':{'2026_01':[-1.1, 0, 7, 0],'2026_02':[-1.8, 0, 7, 0],'2026_03':[1.0, 0, 3, 0],'2026_04':[-0.9, 0, 7, 0],'2026_05':[-4.0, 0, 7, 0],'2026_06':[-5.5, 0, 7, 0],'2026_07':[-6.4, 0, 7, 0],'2026_08':[-2.3, 0, 7, 0],'2026_09':[3.5, 0, 3, 0],'2026_10':[7.6, 0, 5, 0],'2026_11':[7.5, 0, 0, 0],'2026_12':[9.8, 0, 2, 0],'2026_13':[8.1, 0, 0, 0],'2026_14':[8.0, 0, 0, 0],'2026_15':[8.3, 0, 3, 0],'2026_16':[12.3, 0, 0, 0],'2026_17':[12.4, 0, 0, 0],'2026_18':[16.1, 0, 0, 0],'2026_19':[13.9, 0, 0, 0],'2026_20':[12.6, 0, 0, 0],'2026_21':[19.1, 0, 0, 0],'2026_22':[19.2, 0, 0, 0],'2026_23':[20.4, 0, 0, 0],'2026_24':[18.2, 0, 0, 0]},
+};
+
 // Lead Share by Cohort — source: Tableau CJ Dashboard, LEAD SHARE BY view (EU aggregate, all countries)
 // Array order per period: [Dealer_Now, Private_Now, Dealer_4W, Private_4W, Dealer_3M, Private_3M, Not_Planned]
 const LEAD_SHARE_SEGMENTS = ['Dealer Now','Private Now','Dealer 4W','Private 4W','Dealer 3M','Private 3M','Not Planned'];
@@ -6345,8 +6390,55 @@ function getPwCountries() {
   return c === 'EU' ? COUNTRIES : [c];
 }
 
+const PW_ALL_WEEKS = Array.from({length:24},(_,i)=>`2026_${String(i+1).padStart(2,'0')}`);
+
 function getPwMonth() {
   return ((document.getElementById('pw_month')||{value:'2026_05'}).value);
+}
+
+function getPwRegionKey() {
+  const s = document.getElementById('pw_region');
+  return s ? s.value : '';
+}
+
+function onPwCountryChange() {
+  updatePwRegionDropdown();
+  renderWeatherTab();
+}
+
+function updatePwRegionDropdown() {
+  const c = (document.getElementById('pw_country')||{value:'EU'}).value;
+  const wrap = document.getElementById('pw_region_wrap');
+  const sel = document.getElementById('pw_region');
+  if (!wrap||!sel) return;
+  if (c==='EU'||!WEATHER_REGIONS[c]) { wrap.style.display='none'; sel.value=''; return; }
+  const prev = sel.value; // preserve current selection
+  wrap.style.display='';
+  sel.innerHTML = '<option value="">All regions</option>' +
+    WEATHER_REGIONS[c].map(r=>`<option value="${r.key}">${r.city} (${r.region})</option>`).join('');
+  if (prev && [...sel.options].some(o=>o.value===prev)) sel.value = prev;
+}
+
+// Helper: get weekly extreme days for a city key across all 2026 weeks
+function pwWeeklyExtreme(cityKey) {
+  return PW_ALL_WEEKS.map(w => {
+    const d = WEATHER_WEEKLY[cityKey] && WEATHER_WEEKLY[cityKey][w];
+    return d ? {heat:d[1], cold:d[2], rain:d[3], tmax:d[0]} : {heat:0, cold:0, rain:0, tmax:null};
+  });
+}
+
+// Helper: avg weekly extreme across multiple city keys
+function pwAvgWeeklyExtreme(cityKeys) {
+  return PW_ALL_WEEKS.map((w,i) => {
+    const vals = cityKeys.map(k=>{const d=WEATHER_WEEKLY[k]&&WEATHER_WEEKLY[k][w];return d||[null,0,0,0];});
+    const n = vals.length || 1;
+    return {
+      heat: Math.round(vals.reduce((s,d)=>s+d[1],0)/n*10)/10,
+      cold: Math.round(vals.reduce((s,d)=>s+d[2],0)/n*10)/10,
+      rain: Math.round(vals.reduce((s,d)=>s+d[3],0)/n*10)/10,
+      tmax: vals.filter(d=>d[0]!==null).length ? Math.round(vals.filter(d=>d[0]!==null).reduce((s,d)=>s+d[0],0)/vals.filter(d=>d[0]!==null).length*10)/10 : null,
+    };
+  });
 }
 
 function pwGetSR(c, m) {
@@ -6364,6 +6456,7 @@ function renderWeatherTab() {
   const pwWeek = document.getElementById('pw_pt_week');
   const pwMonth = document.getElementById('pw_pt_month');
   if (pwWeek && pwMonth) { pwWeek.checked = GLOBAL_PTYPE==='week'; pwMonth.checked = GLOBAL_PTYPE==='month'; }
+  updatePwRegionDropdown();
   renderPwKPIs();
   renderPwMainChart();
   renderPwExtremeChart();
@@ -6395,86 +6488,83 @@ function renderPwKPIs() {
   `;
 }
 
-// Main combo chart: show rate (bars) + extreme weather days (line)
-// - EU mode: X = countries, for the selected month
-// - Single country: X = all months, trend over time
 function renderPwMainChart() {
   if (PW_CHART_MAIN) { PW_CHART_MAIN.destroy(); PW_CHART_MAIN = null; }
   const ctx = document.getElementById('pw_main_chart').getContext('2d');
   const ctries = getPwCountries();
   const m = getPwMonth();
+  const c = ctries[0];
   const singleCountry = ctries.length === 1;
+  const isWeekly = GLOBAL_PTYPE === 'week';
+  const regionKey = getPwRegionKey();
   const mLabel = PW_MONTH_LABELS[PW_MONTHS.indexOf(m)] || m;
 
-  let labels, srData, extremeData, heatData, coldData, rainData, bgColors;
+  let labels, srData, extremeData, bgColors, xIsWeeks = false;
 
-  if (singleCountry) {
-    // Trend for selected country across all months
-    const c = ctries[0];
+  if (singleCountry && isWeekly) {
+    // ── Weekly trend for one country (optionally one region/city) ──
+    xIsWeeks = true;
+    labels = PW_ALL_WEEKS.map(w=>'CW'+parseInt(w.split('_')[1]));
+    srData = PW_ALL_WEEKS.map(w=>{const r=RAW_DATA.find(x=>x.country===c&&x.period_type==='week'&&x.period_name===w);return r?+r.show_rate*100:null;});
+
+    let weeklyStats;
+    if (regionKey && WEATHER_WEEKLY[regionKey]) {
+      weeklyStats = pwWeeklyExtreme(regionKey);
+    } else {
+      const cityKeys = (WEATHER_REGIONS[c]||[]).map(r=>r.key).filter(k=>WEATHER_WEEKLY[k]);
+      weeklyStats = cityKeys.length ? pwAvgWeeklyExtreme(cityKeys) : PW_ALL_WEEKS.map(()=>({heat:0,cold:0,rain:0,tmax:null}));
+    }
+    extremeData = weeklyStats.map(d=>d.heat+d.cold+d.rain);
+    bgColors = extremeData.map(s=>s>=5?'#ef444455':s>=2?'#f59e0b44':COUNTRY_COLORS[c]+'66');
+
+    const cityLabel = regionKey ? ((WEATHER_REGIONS[c]||[]).find(r=>r.key===regionKey)||{city:regionKey}).city+', ' : '';
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${cityLabel}${c} · Weekly (CW01–CW24 2026)`;
+
+  } else if (singleCountry) {
+    // ── Monthly trend for one country ──
     labels = PW_MONTH_LABELS;
-    srData = PW_MONTHS.map(mo => pwGetSR(c, mo));
-    heatData = PW_MONTHS.map(mo => (WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo])||{days_extreme_heat:0,days_extreme_cold:0,days_heavy_rain:0}).map(d=>d.days_extreme_heat);
-    coldData = PW_MONTHS.map(mo => (WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo])||{days_extreme_cold:0}).map(d=>d.days_extreme_cold);
-    rainData = PW_MONTHS.map(mo => (WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo])||{days_heavy_rain:0}).map(d=>d.days_heavy_rain);
-    // fix: recompute cleanly
-    heatData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat:0;});
-    coldData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_cold:0;});
-    rainData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_heavy_rain:0;});
-    extremeData = PW_MONTHS.map((mo,i)=>heatData[i]+coldData[i]+rainData[i]);
-    bgColors = PW_MONTHS.map(mo => {
-      const idx = PW_MONTHS.indexOf(mo);
-      const stress = extremeData[idx];
-      return stress >= 15 ? '#ef444455' : stress >= 5 ? '#f59e0b44' : COUNTRY_COLORS[c]+'66';
-    });
-    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather Days — ${c} (all months)`;
+    srData = PW_MONTHS.map(mo=>pwGetSR(c, mo));
+    extremeData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;});
+    bgColors = extremeData.map(s=>s>=15?'#ef444455':s>=5?'#f59e0b44':COUNTRY_COLORS[c]+'66');
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${c} · Monthly trend`;
+
   } else {
-    // Cross-country comparison for selected month
+    // ── Cross-country comparison for selected month ──
     labels = ctries;
-    srData = ctries.map(c => pwGetSR(c, m));
-    heatData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_heat:0;});
-    coldData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_cold:0;});
-    rainData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_heavy_rain:0;});
-    extremeData = ctries.map((_,i)=>heatData[i]+coldData[i]+rainData[i]);
-    bgColors = ctries.map(c => COUNTRY_COLORS[c]+'99');
-    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather Days — ${mLabel}`;
+    srData = ctries.map(cc=>pwGetSR(cc, m));
+    extremeData = ctries.map(cc=>{const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];return wd?wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain:0;});
+    bgColors = ctries.map(cc=>COUNTRY_COLORS[cc]+'99');
+    document.getElementById('pw_main_title').textContent = `Show Rate & Extreme Weather — ${mLabel} · All countries`;
   }
 
   PW_CHART_MAIN = new Chart(ctx, {
     data: {
       labels,
       datasets: [
-        {
-          type: 'bar', label: 'Show Rate %', data: srData, yAxisID: 'ySR',
-          backgroundColor: bgColors, borderColor: singleCountry ? COUNTRY_COLORS[ctries[0]] : ctries.map(c=>COUNTRY_COLORS[c]),
-          borderWidth: 1,
-        },
-        {
-          type: 'line', label: 'Extreme Weather Days', data: extremeData, yAxisID: 'yEx',
-          borderColor: '#ef4444', backgroundColor: '#ef444422', borderWidth: 2.5,
-          tension: singleCountry?0.3:0, pointRadius: 5, pointBackgroundColor: extremeData.map(v=>v>10?'#dc2626':v>4?'#f59e0b':'#94a3b8'),
-          pointBorderColor: '#fff', pointBorderWidth: 1.5,
-        },
+        { type:'bar', label:'Show Rate %', data:srData, yAxisID:'ySR',
+          backgroundColor:bgColors, borderColor:singleCountry?COUNTRY_COLORS[c]:ctries.map(cc=>COUNTRY_COLORS[cc]), borderWidth:1 },
+        { type:'line', label:'Extreme Weather Days', data:extremeData, yAxisID:'yEx',
+          borderColor:'#ef4444', backgroundColor:'#ef444420', borderWidth:2.5,
+          tension:xIsWeeks?0.2:singleCountry?0.3:0, pointRadius:5,
+          pointBackgroundColor:extremeData.map(v=>v>=5?'#dc2626':v>=2?'#f59e0b':'#94a3b8'),
+          pointBorderColor:'#fff', pointBorderWidth:1.5 },
       ],
     },
     options: {
-      responsive: true, maintainAspectRatio: true,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
-        datalabels: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              if (ctx.dataset.label === 'Show Rate %') return `Show Rate: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1)+'%' : 'N/A'}`;
-              return `Extreme days: ${ctx.parsed.y} (heat+cold+rain)`;
-            }
-          }
-        }
+      responsive:true, maintainAspectRatio:true,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:true, position:'bottom', labels:{boxWidth:12, font:{size:11}}},
+        datalabels:{display:false},
+        tooltip:{callbacks:{label:c=>{
+          if(c.dataset.label==='Show Rate %') return `SR: ${c.parsed.y!==null?c.parsed.y.toFixed(1)+'%':'N/A'}`;
+          return `Extreme days: ${c.parsed.y}`;
+        }}},
       },
-      scales: {
-        ySR: { position: 'left', min: 60, max: 80, ticks: { callback: v => v+'%', font: { size: 11 } }, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Show Rate', font: { size: 11 } } },
-        yEx: { position: 'right', beginAtZero: true, ticks: { font: { size: 11 } }, grid: { display: false }, title: { display: true, text: 'Extreme days', font: { size: 11 } } },
-        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+      scales:{
+        ySR:{position:'left', min:60, max:80, ticks:{callback:v=>v+'%', font:{size:11}}, grid:{color:'#f1f5f9'}, title:{display:true, text:'Show Rate', font:{size:11}}},
+        yEx:{position:'right', beginAtZero:true, ticks:{font:{size:11}}, grid:{display:false}, title:{display:true, text:'Extreme days', font:{size:11}}},
+        x:{ticks:{font:{size:11}, maxRotation: xIsWeeks?45:0}, grid:{display:false}},
       },
     },
   });
@@ -6485,38 +6575,49 @@ function renderPwExtremeChart() {
   const ctx = document.getElementById('pw_extreme_chart').getContext('2d');
   const ctries = getPwCountries();
   const m = getPwMonth();
+  const c = ctries[0];
   const singleCountry = ctries.length === 1;
+  const isWeekly = GLOBAL_PTYPE === 'week';
+  const regionKey = getPwRegionKey();
   let labels, heatData, coldData, rainData;
-  if (singleCountry) {
-    // All months for this country
-    const c = ctries[0];
+
+  if (singleCountry && isWeekly) {
+    // Weekly breakdown for country/region
+    labels = PW_ALL_WEEKS.map(w=>'CW'+parseInt(w.split('_')[1]));
+    let stats;
+    if (regionKey && WEATHER_WEEKLY[regionKey]) {
+      stats = pwWeeklyExtreme(regionKey);
+    } else {
+      const cityKeys = (WEATHER_REGIONS[c]||[]).map(r=>r.key).filter(k=>WEATHER_WEEKLY[k]);
+      stats = cityKeys.length ? pwAvgWeeklyExtreme(cityKeys) : PW_ALL_WEEKS.map(()=>({heat:0,cold:0,rain:0}));
+    }
+    heatData = stats.map(d=>d.heat);
+    coldData = stats.map(d=>d.cold);
+    rainData = stats.map(d=>d.rain);
+  } else if (singleCountry) {
     labels = PW_MONTH_LABELS;
     heatData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_heat:0;});
     coldData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_extreme_cold:0;});
     rainData = PW_MONTHS.map(mo=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][mo];return wd?wd.days_heavy_rain:0;});
   } else {
-    // All selected countries for this month
     labels = ctries;
-    heatData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_heat:0;});
-    coldData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_extreme_cold:0;});
-    rainData = ctries.map(c=>{const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];return wd?wd.days_heavy_rain:0;});
+    heatData = ctries.map(cc=>{const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];return wd?wd.days_extreme_heat:0;});
+    coldData = ctries.map(cc=>{const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];return wd?wd.days_extreme_cold:0;});
+    rainData = ctries.map(cc=>{const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];return wd?wd.days_heavy_rain:0;});
   }
   PW_CHART_EXTREME = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Heat (>35°C)', data: heatData, backgroundColor: '#ef444499', borderColor: '#ef4444', borderWidth: 1, stack: 's' },
-        { label: 'Cold (<0°C)',  data: coldData, backgroundColor: '#3b82f699', borderColor: '#3b82f6', borderWidth: 1, stack: 's' },
-        { label: 'Rain (>20mm)', data: rainData, backgroundColor: '#06b6d499', borderColor: '#06b6d4', borderWidth: 1, stack: 's' },
-      ],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }, datalabels: { display: false } },
-      scales: {
-        x: { stacked: true, ticks: { font: { size: 11 } }, grid: { display: false } },
-        y: { stacked: true, beginAtZero: true, ticks: { font: { size: 11 } }, grid: { color: '#f1f5f9' }, title: { display: true, text: 'Days', font: { size: 11 } } },
+    type:'bar',
+    data:{ labels, datasets:[
+      {label:'Heat (>35°C)', data:heatData, backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:1, stack:'s'},
+      {label:'Cold (<0°C)',  data:coldData, backgroundColor:'#3b82f699', borderColor:'#3b82f6', borderWidth:1, stack:'s'},
+      {label:'Rain (>20mm)', data:rainData, backgroundColor:'#06b6d499', borderColor:'#06b6d4', borderWidth:1, stack:'s'},
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:12,font:{size:11}}}, datalabels:{display:false}},
+      scales:{
+        x:{stacked:true, ticks:{font:{size:11}, maxRotation:singleCountry&&isWeekly?45:0}, grid:{display:false}},
+        y:{stacked:true, beginAtZero:true, ticks:{font:{size:11}}, grid:{color:'#f1f5f9'}, title:{display:true,text:'Days',font:{size:11}}},
       },
     },
   });
@@ -6564,28 +6665,73 @@ function renderPwScatterChart() {
 function renderPwCountryCards() {
   const ctries = getPwCountries();
   const m = getPwMonth();
-  const html = ctries.map(c => {
-    const wd = WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][m];
-    const heat=wd?wd.days_extreme_heat:0, cold=wd?wd.days_extreme_cold:0, rain=wd?wd.days_heavy_rain:0;
-    const avgT=wd&&wd.avg_tmax!==null?wd.avg_tmax+'°C':'-';
-    const sr = pwGetSR(c, m);
-    const avgSR = sr!==null ? sr.toFixed(1)+'%' : '-';
-    const stress=heat+cold+rain;
-    const stressColor=stress>=15?'#dc2626':stress>=5?'#f59e0b':'#15803d';
-    const hasBadWeather = stress > 0;
-    return `<div class="kpi-card" style="border-left:4px solid ${COUNTRY_COLORS[c]};min-width:150px;flex:1${hasBadWeather?';background:#fffbeb':''}">
-      <div class="label" style="color:${COUNTRY_COLORS[c]};font-size:13px;font-weight:700">${c}</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
-        <div><div style="font-size:11px;color:#64748b">Temp</div><div style="font-weight:700;font-size:15px">${avgT}</div></div>
-        <div><div style="font-size:11px;color:#64748b">Show Rate</div><div style="font-weight:700;font-size:15px">${avgSR}</div></div>
-        ${heat>0?`<div><div style="font-size:11px;color:#dc2626">Heat</div><div style="font-weight:700;color:#dc2626">${heat}d</div></div>`:''}
-        ${cold>0?`<div><div style="font-size:11px;color:#2563eb">Cold</div><div style="font-weight:700;color:#2563eb">${cold}d</div></div>`:''}
-        ${rain>0?`<div><div style="font-size:11px;color:#0891b2">Rain</div><div style="font-weight:700;color:#0891b2">${rain}d</div></div>`:''}
-        ${stress>0?`<div><div style="font-size:11px;color:#64748b">Stress</div><div style="font-weight:700;color:${stressColor}">${stress}d</div></div>`:''}
-      </div>
-    </div>`;
-  }).join('');
+  const singleCountry = ctries.length === 1;
+  const isWeekly = GLOBAL_PTYPE === 'week';
+  const c = ctries[0];
+  let html = '';
+
+  if (singleCountry && WEATHER_REGIONS[c]) {
+    // Show regional breakdown for this country
+    const regions = WEATHER_REGIONS[c];
+    const sr = pwGetSR(c, m); // country-level show rate (not per-region)
+    const latestWeek = PW_ALL_WEEKS[PW_ALL_WEEKS.length - 1];
+
+    html = regions.map(r => {
+      let heat=0, cold=0, rain=0, tmax=null;
+      if (isWeekly && WEATHER_WEEKLY[r.key]) {
+        // Use latest available week
+        const wk = [...PW_ALL_WEEKS].reverse().find(w=>WEATHER_WEEKLY[r.key][w]);
+        if (wk) { const d=WEATHER_WEEKLY[r.key][wk]; tmax=d[0]; heat=d[1]; cold=d[2]; rain=d[3]; }
+      } else {
+        // Use selected month from WEATHER_MONTHLY (only capital has monthly data; approximate with weekly sum)
+        const wks = PW_ALL_WEEKS.filter(w=>pwWeekToMonth(w)===m);
+        if (WEATHER_WEEKLY[r.key]) {
+          wks.forEach(w=>{ const d=WEATHER_WEEKLY[r.key][w]; if(d){heat+=d[1];cold+=d[2];rain+=d[3];if(d[0]!==null&&tmax===null)tmax=d[0];} });
+        }
+      }
+      const stress=heat+cold+rain;
+      const stressColor=stress>=5?'#dc2626':stress>=2?'#f59e0b':'#15803d';
+      const hasBad=stress>0;
+      return `<div class="kpi-card" style="border-left:4px solid ${COUNTRY_COLORS[c]};min-width:150px;flex:1${hasBad?';background:#fffbeb':''}">
+        <div class="label" style="color:${COUNTRY_COLORS[c]};font-size:13px;font-weight:700">${r.city}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:4px">${r.region}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${tmax!==null?`<div><div style="font-size:11px;color:#64748b">Temp</div><div style="font-weight:700">${tmax}°C</div></div>`:''}
+          ${sr!==null?`<div><div style="font-size:11px;color:#64748b">Show Rate</div><div style="font-weight:700">${sr.toFixed(1)}%</div></div>`:''}
+          ${heat>0?`<div><div style="font-size:11px;color:#dc2626">Heat</div><div style="font-weight:700;color:#dc2626">${heat}d</div></div>`:''}
+          ${cold>0?`<div><div style="font-size:11px;color:#2563eb">Cold</div><div style="font-weight:700;color:#2563eb">${cold}d</div></div>`:''}
+          ${rain>0?`<div><div style="font-size:11px;color:#0891b2">Rain</div><div style="font-weight:700;color:#0891b2">${rain}d</div></div>`:''}
+          ${stress>0?`<div><div style="font-size:11px;color:#64748b">Stress</div><div style="font-weight:700;color:${stressColor}">${stress}d</div></div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    // EU: show per-country cards for selected month
+    html = ctries.map(cc => {
+      const wd=WEATHER_MONTHLY[cc]&&WEATHER_MONTHLY[cc][m];
+      const heat=wd?wd.days_extreme_heat:0, cold=wd?wd.days_extreme_cold:0, rain=wd?wd.days_heavy_rain:0;
+      const avgT=wd&&wd.avg_tmax!==null?wd.avg_tmax+'°C':'-';
+      const sr=pwGetSR(cc,m); const avgSR=sr!==null?sr.toFixed(1)+'%':'-';
+      const stress=heat+cold+rain;
+      const stressColor=stress>=15?'#dc2626':stress>=5?'#f59e0b':'#15803d';
+      const hasBad=stress>0;
+      return `<div class="kpi-card" style="border-left:4px solid ${COUNTRY_COLORS[cc]};min-width:150px;flex:1${hasBad?';background:#fffbeb':''}">
+        <div class="label" style="color:${COUNTRY_COLORS[cc]};font-size:13px;font-weight:700">${cc}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <div><div style="font-size:11px;color:#64748b">Temp</div><div style="font-weight:700">${avgT}</div></div>
+          <div><div style="font-size:11px;color:#64748b">SR</div><div style="font-weight:700">${avgSR}</div></div>
+          ${heat>0?`<div><div style="font-size:11px;color:#dc2626">Heat</div><div style="font-weight:700;color:#dc2626">${heat}d</div></div>`:''}
+          ${cold>0?`<div><div style="font-size:11px;color:#2563eb">Cold</div><div style="font-weight:700;color:#2563eb">${cold}d</div></div>`:''}
+          ${rain>0?`<div><div style="font-size:11px;color:#0891b2">Rain</div><div style="font-weight:700;color:#0891b2">${rain}d</div></div>`:''}
+          ${stress>0?`<div><div style="font-size:11px;color:#64748b">Stress</div><div style="font-weight:700;color:${stressColor}">${stress}d</div></div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
   document.getElementById('pw_region_cards').innerHTML = html;
+  // Update section title
+  const titleEl = document.getElementById('pw_region_section_title');
+  if (titleEl) titleEl.textContent = singleCountry ? `Regional breakdown — ${c}` : 'Country Summary';
 }
 
 function renderPwTable() {
@@ -8996,7 +9142,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </optgroup>
     </select>
     <label>Country:</label>
-    <select id="pw_country" onchange="renderWeatherTab()">
+    <select id="pw_country" onchange="onPwCountryChange()">
       <option value="EU">All Countries (EU)</option>
       <option value="AT">Austria (AT)</option>
       <option value="BE">Belgium (BE)</option>
@@ -9008,6 +9154,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <option value="PT">Portugal (PT)</option>
       <option value="SE">Sweden (SE)</option>
     </select>
+    <span id="pw_region_wrap" style="display:none">
+      <label>Region:</label>
+      <select id="pw_region" onchange="renderWeatherTab()">
+        <option value="">All regions</option>
+      </select>
+    </span>
   </div>
 
   <div class="kpi-row" id="pw_kpis"></div>
@@ -9033,8 +9185,8 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   </div>
 
-  <!-- Country summary cards -->
-  <div class="section-title">Country Summary</div>
+  <!-- Country/region summary cards -->
+  <div class="section-title" id="pw_region_section_title">Country Summary</div>
   <div id="pw_region_cards" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px"></div>
 
   <!-- Country detail table -->
