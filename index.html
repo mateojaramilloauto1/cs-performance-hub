@@ -2512,7 +2512,7 @@ function rerenderActivePage() {
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
   else if (id==='p8') renderP8();
-  else if (id==='pW') renderWeatherTab();
+  else if (id==='pW') { pwAutoSelectSeverestCountry(); renderWeatherTab(); }
 }
 
 // ---- Chart registry (destroy before recreate) ----
@@ -4900,7 +4900,7 @@ function showTab(id) {
   else if (id==='p3') renderP3();
   else if (id==='p4') renderP4();
   else if (id==='p8') renderP8();
-  else if (id==='pW') renderWeatherTab();
+  else if (id==='pW') { pwAutoSelectSeverestCountry(); renderWeatherTab(); }
   // p6, p7 are static — no render needed
 }
 
@@ -6625,6 +6625,46 @@ function renderPwKPIs() {
     <div class="kpi-card"><div class="label">Heavy Rain Days</div><div class="value" style="color:#0891b2">${totalRain}</div><div class="sub">&gt; 20mm precip</div></div>
     ${avgSR !== '-' ? '<div class="kpi-card kpi-card-primary"><div class="label">Show Rate</div><div class="value">'+avgSR+'%</div><div class="sub">'+ptLabel+'</div></div>' : ''}
   `;
+}
+
+// Auto-select the country with the highest weather stress (current + upcoming forecast)
+function pwAutoSelectSeverestCountry() {
+  if (typeof WEATHER_WEEKLY === 'undefined' || typeof WEATHER_FORECAST === 'undefined') return;
+  const isWeekly = GLOBAL_PTYPE === 'week';
+  const latestWeek  = PW_ALL_WEEKS[PW_ALL_WEEKS.length - 1];
+  const latestMonth = '2026_06';
+
+  const score = c => {
+    let s = 0;
+    if (isWeekly) {
+      // Latest historical week (avg across all cities)
+      const keys = (WEATHER_REGIONS[c]||[]).map(r=>r.key).filter(k=>WEATHER_WEEKLY[k]&&WEATHER_WEEKLY[k][latestWeek]);
+      if (keys.length) {
+        s += keys.reduce((t,k)=>{const d=WEATHER_WEEKLY[k][latestWeek];return t+d[1]+d[2]+d[3];},0)/keys.length;
+      }
+      // Upcoming forecast weeks (weighted: nearest counts most)
+      PW_FORECAST_WEEKS.forEach((wk,i)=>{
+        const fd=WEATHER_FORECAST[c]&&WEATHER_FORECAST[c].weekly&&WEATHER_FORECAST[c].weekly[wk];
+        if(fd) s += (fd[1]+fd[2]+fd[3]) * (1 - i*0.25);
+      });
+    } else {
+      // Monthly mode — use current month + Jul 2026 forecast
+      const wd=WEATHER_MONTHLY[c]&&WEATHER_MONTHLY[c][latestMonth];
+      if(wd) s += wd.days_extreme_heat+wd.days_extreme_cold+wd.days_heavy_rain;
+      const fd=WEATHER_FORECAST[c]&&WEATHER_FORECAST[c].monthly&&WEATHER_FORECAST[c].monthly['2026_07'];
+      if(fd) s += (fd[1]+fd[2]+fd[3])*0.8;
+    }
+    return s;
+  };
+
+  const ranked = COUNTRIES.map(c=>({c,s:score(c)})).sort((a,b)=>b.s-a.s);
+  const best = ranked[0];
+  if (best && best.s > 0) {
+    GLOBAL_COUNTRY = best.c;
+    GLOBAL_COUNTRY_SET = new Set([best.c]);
+    GLOBAL_SHOW_EU_AVG = false;
+    updateCountryBarStyles();
+  }
 }
 
 function pwDestroyChart(varKey, canvasId) {
